@@ -1,0 +1,27 @@
+assets/
+├── audio/
+│   ├── background.mp3
+│   ├── crowd_cheer.mp3
+│   ├── goal.mp3
+│   ├── goalkeeper_save.mp3
+│   ├── kick.mp3
+│   └── whistle.mp3
+├── fonts/
+│   ├── Roboto-Bold.ttf
+│   ├── Roboto-Medium.ttf
+│   └── Roboto-Regular.ttf
+└── images/
+    ├── logo.png
+    ├── ball.png
+    ├── stadium_background.jpg
+    ├── field_background.jpg
+    ├── flags/
+    │   ├── france_flag.png
+    │   ├── benin_flag.png
+    │   ├── germany_flag.png
+    │   ├── spain_flag.png
+    │   ├── argentina_flag.png
+    │   └── italy_flag.png
+    └── players/
+        ├── goalkeeper.png
+        └── striker.png
