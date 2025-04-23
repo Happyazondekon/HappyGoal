@@ -3,11 +3,12 @@ import 'dart:async';
 import 'dart:math';
 import '../constants.dart';
 import '../models/game_state.dart';
+import '../models/team.dart';
 import '../widgets/goal_post_widget.dart';
-import '../widgets/goalkeeper_widget.dart';
-import '../widgets/player_widget.dart';
 import '../widgets/score_board_widget.dart';
 import '../widgets/shot_controller_widget.dart';
+import '../utils/audio_manager.dart';
+import '../utils/game_logic.dart';
 import 'result_screen.dart';
 
 class GameScreen extends StatefulWidget {
@@ -24,24 +25,25 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late GameState _gameState;
-  late AnimationController _ballController;
-  late Animation<Offset> _ballAnimation;
+  late AnimationController _ballAnimationController;
+  late Animation<double> _ballXAnimation;
+  late Animation<double> _ballYAnimation;
   late AnimationController _goalkeeperController;
   late Animation<Offset> _goalkeeperAnimation;
+  bool _isShooting = false;
 
   final Random _random = Random();
-
-  // Ball position
-  double _ballX = 0.0;
-  double _ballY = 0.0;
 
   @override
   void initState() {
     super.initState();
     _gameState = widget.gameState;
 
-    _ballController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+    // Jouer le son du coup de sifflet au début
+    AudioManager.playSound('whistle');
+
+    _ballAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
@@ -50,10 +52,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    _setupAnimations(ShotDirection.center);
+    // Initialiser les animations
+    _setupGoalkeeperAnimation(ShotDirection.center);
+    _setupBallAnimation();
+
+    _ballAnimationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _handleShotResult();
+      }
+    });
   }
 
-  void _setupAnimations(int direction) {
+  void _setupGoalkeeperAnimation(int direction) {
     // Setup goalkeeper animation
     Offset goalkeeperEndOffset;
     switch (direction) {
@@ -74,205 +84,279 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       parent: _goalkeeperController,
       curve: Curves.easeInOut,
     ));
+  }
 
-    // Setup ball animation
-    double endX;
-    switch (_gameState.selectedDirection) {
-      case ShotDirection.left:
-        endX = -0.7;
-        break;
-      case ShotDirection.right:
-        endX = 0.7;
-        break;
-      default:
-        endX = 0.0;
-    }
+  void _setupBallAnimation() {
+    // La première fois, context pourrait ne pas être disponible
+    // Donc on utilise WidgetsBinding pour s'assurer que le widget est construit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final Size screenSize = MediaQuery.of(context).size;
 
-    _ballAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.0),
-      end: Offset(endX, -1.5),
-    ).animate(CurvedAnimation(
-      parent: _ballController,
-      curve: Curves.easeOut,
-    ));
+      // Position initiale du ballon (près du joueur)
+      double startX = screenSize.width / 2;
+      double startY = screenSize.height - 150;
+
+      // Position finale du ballon (dans le but selon la direction)
+      double endX;
+      switch (_gameState.selectedDirection) {
+        case ShotDirection.left:
+          endX = screenSize.width / 3 - 20;
+          break;
+        case ShotDirection.right:
+          endX = screenSize.width * 2 / 3 + 20;
+          break;
+        default:
+          endX = screenSize.width / 2;
+      }
+      double endY = 100; // Hauteur du but
+
+      setState(() {
+        // Créer des animations pour les coordonnées X et Y
+        _ballXAnimation = Tween<double>(
+          begin: startX,
+          end: endX,
+        ).animate(_ballAnimationController);
+
+        _ballYAnimation = Tween<double>(
+          begin: startY,
+          end: endY,
+        ).animate(
+          CurvedAnimation(
+            parent: _ballAnimationController,
+            curve: Curves.easeOut,
+          ),
+        );
+      });
+    });
   }
 
   void _shoot(int direction) {
+    if (_isShooting) return;
+
     setState(() {
+      _isShooting = true;
       _gameState.selectedDirection = direction;
       _gameState.currentPhase = GamePhase.goalkeeeperSaving;
 
       // Simulate goalkeeper prediction
       _gameState.goalkeepeerDirection = _random.nextInt(3);
-
-      // Setup animations with selected direction
-      _setupAnimations(direction);
     });
 
-    // Play animations
+    // Reconfigurer les animations avec la direction sélectionnée
+    _setupGoalkeeperAnimation(_gameState.goalkeepeerDirection);
+    _setupBallAnimation();
+
+    // Jouer un son de tir
+    AudioManager.playSound('kick');
+
+    // Démarrer les animations
     _goalkeeperController.forward();
-    _ballController.forward().then((_) {
-      // Determine if goal is scored
-      final bool isGoalScored = _gameState.selectedDirection != _gameState.goalkeepeerDirection;
+    _ballAnimationController.forward(from: 0.0);
+  }
 
-      setState(() {
-        _gameState.isGoalScored = isGoalScored;
-        _gameState.currentPhase = isGoalScored ? GamePhase.goalScored : GamePhase.goalSaved;
+  void _handleShotResult() {
+    if (!mounted) return;
 
-        if (isGoalScored) {
-          _gameState.currentTeam!.incrementScore();
-        }
-      });
+    // Déterminer si un but est marqué
+    final bool isGoalScored = _gameState.selectedDirection != _gameState.goalkeepeerDirection;
 
-      // Check if game is over
-      if (_gameState.checkWinner()) {
-        Timer(const Duration(milliseconds: 1500), () {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => ResultScreen(winner: _gameState.getWinner()!),
-            ),
-          );
+    setState(() {
+      _gameState.isGoalScored = isGoalScored;
+      _gameState.currentPhase = isGoalScored ? GamePhase.goalScored : GamePhase.goalSaved;
+
+      if (isGoalScored) {
+        _gameState.currentTeam!.incrementScore();
+        AudioManager.playSound('goal');
+        // Ajouter les acclamations de la foule après un but
+        Timer(const Duration(milliseconds: 300), () {
+          AudioManager.playSound('crowd_cheer');
         });
       } else {
-        // Continue to next round
-        Timer(const Duration(milliseconds: 1500), () {
-          setState(() {
-            _resetRound();
-          });
-        });
+        AudioManager.playSound('goalkeeper_save');
       }
     });
+
+    // Vérifier si le jeu est terminé
+    if (_gameState.checkWinner()) {
+      // Jouer le coup de sifflet final
+      Timer(const Duration(milliseconds: 1000), () {
+        AudioManager.playSound('whistle');
+      });
+
+      Timer(const Duration(milliseconds: 1500), () {
+        Team winner = _gameState.getWinner()!;
+        Team loser = winner == _gameState.team1! ? _gameState.team2! : _gameState.team1!;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(
+              winner: winner,
+              loser: loser,
+            ),
+          ),
+        );
+      });
+    } else {
+      // Continuer au prochain tour
+      Timer(const Duration(milliseconds: 1500), () {
+        setState(() {
+          _resetRound();
+        });
+      });
+    }
   }
 
   void _resetRound() {
-    _ballController.reset();
+    _ballAnimationController.reset();
     _goalkeeperController.reset();
 
     _gameState.switchTeam();
     _gameState.roundCount++;
     _gameState.currentPhase = GamePhase.playerShooting;
     _gameState.isGoalScored = false;
+    _isShooting = false;
+
+    // Son de sifflet pour le nouveau tour
+    AudioManager.playSound('whistle');
   }
 
   @override
   void dispose() {
-    _ballController.dispose();
+    _ballAnimationController.dispose();
     _goalkeeperController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/field_background.jpg'),
-            fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async {
+        // Jouer un son lorsque l'utilisateur quitte l'écran
+        AudioManager.playSound('whistle');
+        return true;
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/field_background.jpg'),
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Score Board
-              ScoreBoardWidget(
-                team1: _gameState.team1!,
-                team2: _gameState.team2!,
-                currentTeam: _gameState.currentTeam!,
-              ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Score Board
+                ScoreBoardWidget(
+                  team1: _gameState.team1!,
+                  team2: _gameState.team2!,
+                  currentTeam: _gameState.currentTeam!,
+                ),
 
-              // Game Status Text
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(
-                  _getStatusText(),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(1, 1),
-                        blurRadius: 3,
-                        color: Colors.black,
+                // Game Status Text
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    _getStatusText(),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(1, 1),
+                          blurRadius: 3,
+                          color: Colors.black,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Game Field
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Goal Post
+                      const Positioned(
+                        top: 0,
+                        child: GoalPostWidget(),
+                      ),
+
+                      // Goalkeeper
+                      Positioned(
+                        top: 60,
+                        child: SlideTransition(
+                          position: _goalkeeperAnimation,
+                          child: Image.asset(
+                            'assets/images/players/goalkeeper.png',
+                            width: 100,
+                            height: 120,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+
+                      // Ball - displayed only when shooting
+                      if (_ballXAnimation != null && _ballYAnimation != null)
+                        AnimatedBuilder(
+                          animation: _ballAnimationController,
+                          builder: (context, child) {
+                            return _isShooting
+                                ? Positioned(
+                              left: _ballXAnimation.value - 20, // Centrer le ballon (largeur/2)
+                              top: _ballYAnimation.value - 20,  // Centrer le ballon (hauteur/2)
+                              child: Image.asset(
+                                'assets/images/ball.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                            )
+                                : Container(); // Ne pas afficher le ballon si pas de tir en cours
+                          },
+                        ),
+
+                      // Player
+                      Positioned(
+                        bottom: 20,
+                        child: Image.asset(
+                          'assets/images/players/striker.png',
+                          width: 80,
+                          height: 100,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
 
-              // Game Field
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Goal Post
-                    const Positioned(
-                      top: 0,
-                      child: GoalPostWidget(),
+                // Shot Controls
+                if (_gameState.currentPhase == GamePhase.playerShooting)
+                  ShotControllerWidget(
+                    onShoot: _shoot,
+                  ),
+
+                // Result Text
+                if (_gameState.currentPhase == GamePhase.goalScored ||
+                    _gameState.currentPhase == GamePhase.goalSaved)
+                  Container(
+                    margin: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _gameState.isGoalScored ? AppColors.primary : Colors.red,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-
-                    // Goalkeeper
-                    Positioned(
-                      top: 60,
-                      child: SlideTransition(
-                        position: _goalkeeperAnimation,
-                        child: GoalkeeperWidget(
-                          team: _gameState.currentTeam == _gameState.team1
-                              ? _gameState.team2!
-                              : _gameState.team1!,
-                        ),
+                    child: Text(
+                      _gameState.isGoalScored ? 'BUUUUT!' : 'ARRÊT DU GARDIEN!',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-
-                    // Ball
-                    Positioned(
-                      bottom: 100,
-                      child: SlideTransition(
-                        position: _ballAnimation,
-                        child: Image.asset(
-                          'assets/images/ball.png',
-                          width: 40,
-                          height: 40,
-                        ),
-                      ),
-                    ),
-
-                    // Player
-                    const Positioned(
-                      bottom: 20,
-                      child: PlayerWidget(),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Shot Controls
-              if (_gameState.currentPhase == GamePhase.playerShooting)
-                ShotControllerWidget(
-                  onShoot: _shoot,
-                ),
-
-              // Result Text
-              if (_gameState.currentPhase == GamePhase.goalScored ||
-                  _gameState.currentPhase == GamePhase.goalSaved)
-                Container(
-                  margin: const EdgeInsets.all(20),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  decoration: BoxDecoration(
-                    color: _gameState.isGoalScored ? AppColors.primary : Colors.red,
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    _gameState.isGoalScored ? 'BUUUUT!' : 'ARRÊT DU GARDIEN!',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

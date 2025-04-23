@@ -156,7 +156,7 @@ class Shooter extends Player {
         accuracy: 9,
         power: 7,
         imageAsset: "assets/images/players/striker.png",
-        countryCode: "BE",
+        countryCode: "BE B",
       ),
       Shooter(
         name: "Toni Kroos",

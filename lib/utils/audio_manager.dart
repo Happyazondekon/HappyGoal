@@ -1,60 +1,114 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
+import 'package:just_audio/just_audio.dart';
 
+/// Gestionnaire audio pour les sons du jeu
 class AudioManager {
-  static AudioPlayer? _audioPlayer;
-  static bool _isMuted = false;
+  static final Map<String, AudioPlayer> _players = {};
+  static final AudioPlayer _backgroundPlayer = AudioPlayer();
+  static bool _isSoundEnabled = true;
+  static bool _isMusicEnabled = true;
 
-  static final Map<String, String> _sounds = {
-    'whistle': 'assets/audio/whistle.mp3',
-    'kick': 'assets/audio/kick.mp3',
-    'crowd_cheer': 'assets/audio/crowd_cheer.mp3',
-    'goalkeeper_save': 'assets/audio/goalkeeper_save.mp3',
-    'goal': 'assets/audio/goal.mp3',
-    'background': 'assets/audio/background.mp3',
-  };
-
+  /// Initialiser le système audio
   static Future<void> init() async {
-    _audioPlayer = AudioPlayer();
-  }
-
-  static Future<void> playSound(String soundName) async {
-    if (_isMuted) return;
-
-    final String? path = _sounds[soundName];
-    if (path == null) return;
-
     try {
-      await _audioPlayer?.play(AssetSource(path));
+      await _backgroundPlayer.setAsset('assets/audio/background.mp3');
+      await _backgroundPlayer.setLoopMode(LoopMode.one);
+      await _backgroundPlayer.setVolume(0.5);
+
+      // Précharger les effets sonores
+      final sounds = [
+        'crowd_cheer',
+        'goal',
+        'goalkeeper_save',
+        'kick',
+        'whistle',
+      ];
+
+      for (var sound in sounds) {
+        final player = AudioPlayer();
+        await player.setAsset('assets/audio/${sound}.mp3');
+        _players[sound] = player;
+      }
     } catch (e) {
-      print('Error playing sound: $e');
+      if (kDebugMode) {
+        print('Erreur d\'initialisation audio: $e');
+      }
     }
   }
 
+  /// Jouer un son
+  static Future<void> playSound(String name) async {
+    if (!_isSoundEnabled) return;
+
+    try {
+      final player = _players[name];
+      if (player != null) {
+        await player.seek(Duration.zero);
+        await player.play();
+      } else {
+        if (kDebugMode) {
+          print('Son non trouvé: $name');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur de lecture du son: $e');
+      }
+    }
+  }
+
+  /// Démarrer la musique de fond
   static Future<void> playBackgroundMusic() async {
-    if (_isMuted) return;
+    if (!_isMusicEnabled) return;
 
     try {
-      await _audioPlayer?.play(AssetSource(_sounds['background']!));
-      await _audioPlayer?.setReleaseMode(ReleaseMode.loop);
+      await _backgroundPlayer.seek(Duration.zero);
+      await _backgroundPlayer.play();
     } catch (e) {
-      print('Error playing background music: $e');
+      if (kDebugMode) {
+        print('Erreur de lecture de la musique: $e');
+      }
     }
   }
 
-  static Future<void> stopSound() async {
-    await _audioPlayer?.stop();
+  /// Arrêter la musique de fond
+  static Future<void> stopBackgroundMusic() async {
+    try {
+      await _backgroundPlayer.pause();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur d\'arrêt de la musique: $e');
+      }
+    }
   }
 
-  static void toggleMute() {
-    _isMuted = !_isMuted;
-    if (_isMuted) {
-      _audioPlayer?.pause();
+  /// Activer/désactiver les sons
+  static void setSoundEnabled(bool enabled) {
+    _isSoundEnabled = enabled;
+  }
+
+  /// Activer/désactiver la musique
+  static void setMusicEnabled(bool enabled) {
+    _isMusicEnabled = enabled;
+    if (_isMusicEnabled) {
+      playBackgroundMusic();
     } else {
-      _audioPlayer?.resume();
+      stopBackgroundMusic();
     }
   }
 
-  static void dispose() {
-    _audioPlayer?.dispose();
+  /// Libérer les ressources
+  static Future<void> dispose() async {
+    try {
+      for (var player in _players.values) {
+        await player.dispose();
+      }
+      await _backgroundPlayer.dispose();
+      _players.clear();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur de libération des ressources audio: $e');
+      }
+    }
   }
 }

@@ -78,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                               Text("• À tour de rôle, tirez les penalties"),
                               Text("• Choisissez la direction du tir: gauche, centre ou droite"),
                               Text("• Le gardien essaiera de deviner la direction"),
-                              Text("• Premier à 20 points gagne la partie!"),
+                              Text("• Premier à 05 points gagne la partie!"),
                             ],
                           ),
                         ),
