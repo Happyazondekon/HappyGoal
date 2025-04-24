@@ -188,8 +188,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       Timer(const Duration(milliseconds: 1500), () {
         Team winner = _gameState.getWinner()!;
         Team loser = winner == _gameState.team1! ? _gameState.team2! : _gameState.team1!;
-        List<bool> winnerResults = winner == _gameState.team1! ? _gameState.team1Results : _gameState.team2Results;
-        List<bool> loserResults = loser == _gameState.team1! ? _gameState.team1Results : _gameState.team2Results;
+
+        // Combinons les résultats réguliers et de mort subite pour l'affichage
+        List<bool> winnerResults = [];
+        List<bool> loserResults = [];
+
+        if (winner == _gameState.team1!) {
+          winnerResults.addAll(_gameState.team1Results);
+          winnerResults.addAll(_gameState.team1SuddenDeathResults);
+
+          loserResults.addAll(_gameState.team2Results);
+          loserResults.addAll(_gameState.team2SuddenDeathResults);
+        } else {
+          winnerResults.addAll(_gameState.team2Results);
+          winnerResults.addAll(_gameState.team2SuddenDeathResults);
+
+          loserResults.addAll(_gameState.team1Results);
+          loserResults.addAll(_gameState.team1SuddenDeathResults);
+        }
 
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -286,6 +302,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
 
                 // Round indicator
+                // Round indicator
                 if (_gameState.isSuddenDeathPhase())
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -303,13 +320,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                // Show round number
+// Show round number
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Text(
-                    _gameState.isRegularPhase()
-                        ? 'Tour ${_gameState.roundNumber}/${PenaltySettings.shotsPerTeam}'
-                        : 'Tour de départage ${_gameState.roundNumber - PenaltySettings.shotsPerTeam}',
+                    _gameState.isSuddenDeathPhase()
+                        ? 'Tour de départage ${_gameState.roundNumber - PenaltySettings.shotsPerTeam}'
+                        : 'Tour ${_gameState.roundNumber}/${PenaltySettings.shotsPerTeam}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -415,6 +432,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
 
   String _getStatusText() {
     switch (_gameState.currentPhase) {
