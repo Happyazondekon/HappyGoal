@@ -41,11 +41,11 @@ HappyGoal est développé avec Flutter, offrant une expérience utilisateur flui
 1. Assurez-vous d'avoir Flutter et Dart installés sur votre machine
 2. Clonez ce dépôt:
    ```
-   git clone https://github.com/happyazondekon/happygoal.git
+   git clone https://github.com/Happyazondekon/HappyGoal.git
    ```
 3. Naviguez vers le répertoire du projet:
    ```
-   cd happygoal
+   cd HappyGoal
    ```
 4. Installez les dépendances:
    ```
