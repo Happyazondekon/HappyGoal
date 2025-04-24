@@ -164,10 +164,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _gameState.isGoalScored = isGoalScored;
       _gameState.currentPhase = isGoalScored ? GamePhase.goalScored : GamePhase.goalSaved;
 
+      // Enregistrer le résultat du tir
+      _gameState.recordShotResult(isGoalScored);
+
       if (isGoalScored) {
-        _gameState.currentTeam!.incrementScore();
         AudioManager.playSound('goal');
-        // Ajouter les acclamations de la foule après un but
+        // Acclamations de la foule après un but
         Timer(const Duration(milliseconds: 300), () {
           AudioManager.playSound('crowd_cheer');
         });
@@ -178,7 +180,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     // Vérifier si le jeu est terminé
     if (_gameState.checkWinner()) {
-      // Jouer le coup de sifflet final
+      // Coup de sifflet final
       Timer(const Duration(milliseconds: 1000), () {
         AudioManager.playSound('whistle');
       });
@@ -186,11 +188,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       Timer(const Duration(milliseconds: 1500), () {
         Team winner = _gameState.getWinner()!;
         Team loser = winner == _gameState.team1! ? _gameState.team2! : _gameState.team1!;
+        List<bool> winnerResults = winner == _gameState.team1! ? _gameState.team1Results : _gameState.team2Results;
+        List<bool> loserResults = loser == _gameState.team1! ? _gameState.team1Results : _gameState.team2Results;
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => ResultScreen(
               winner: winner,
               loser: loser,
+              winnerResults: winnerResults,
+              loserResults: loserResults,
             ),
           ),
         );
@@ -209,8 +216,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _ballAnimationController.reset();
     _goalkeeperController.reset();
 
+    // Vérifier si nous devons commencer un nouveau round
+    // (cas où les deux équipes ont tiré dans le round actuel)
+    _gameState.shouldStartNewRound();
+
     _gameState.switchTeam();
-    _gameState.roundCount++;
     _gameState.currentPhase = GamePhase.playerShooting;
     _gameState.isGoalScored = false;
     _isShooting = false;
@@ -250,6 +260,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   team1: _gameState.team1!,
                   team2: _gameState.team2!,
                   currentTeam: _gameState.currentTeam!,
+                  team1Results: _gameState.team1Results,
+                  team2Results: _gameState.team2Results,
+                  shotsPerTeam: PenaltySettings.shotsPerTeam,  // ou PenaltySettings.shotsPerTeam selon votre solution au problème précédent
                 ),
 
                 // Game Status Text
@@ -265,6 +278,46 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         Shadow(
                           offset: Offset(1, 1),
                           blurRadius: 3,
+                          color: Colors.black,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Round indicator
+                if (_gameState.isSuddenDeathPhase())
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Text(
+                      'MORT SUBITE',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+
+                // Show round number
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Text(
+                    _gameState.isRegularPhase()
+                        ? 'Tour ${_gameState.roundNumber}/${PenaltySettings.shotsPerTeam}'
+                        : 'Tour de départage ${_gameState.roundNumber - PenaltySettings.shotsPerTeam}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(1, 1),
+                          blurRadius: 2,
                           color: Colors.black,
                         ),
                       ],

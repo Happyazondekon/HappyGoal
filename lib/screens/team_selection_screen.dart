@@ -59,15 +59,22 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
               itemBuilder: (context, index) {
                 final team = teams[index];
                 final bool isSelected = team == selectedTeam1 || team == selectedTeam2;
-                final bool isDisabled =
-                    (selectedTeam1 != null && selectedTeam2 != null) ||
-                        (selectedTeam1 != null && team == selectedTeam1) ||
-                        (selectedTeam2 != null && team == selectedTeam2);
+
+                // Une équipe n'est désactivée que si elle est déjà sélectionnée pour l'autre équipe
+                final bool isDisabled = (selectedTeam1 == team && selectedTeam2 != null) ||
+                    (selectedTeam2 == team && selectedTeam1 != null);
 
                 return GestureDetector(
                   onTap: isDisabled ? null : () {
                     setState(() {
-                      if (selectedTeam1 == null) {
+                      // Si l'équipe est déjà sélectionnée, la désélectionner
+                      if (team == selectedTeam1) {
+                        selectedTeam1 = null;
+                      } else if (team == selectedTeam2) {
+                        selectedTeam2 = null;
+                      }
+                      // Sinon, sélectionner pour l'équipe appropriée
+                      else if (selectedTeam1 == null) {
                         selectedTeam1 = team;
                       } else if (selectedTeam2 == null && team != selectedTeam1) {
                         selectedTeam2 = team;

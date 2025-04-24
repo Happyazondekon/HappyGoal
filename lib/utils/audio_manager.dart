@@ -43,11 +43,18 @@ class AudioManager {
     try {
       final player = _players[name];
       if (player != null) {
+        if (kDebugMode) {
+          print('Tentative de lecture du son: $name');
+        }
         await player.seek(Duration.zero);
         await player.play();
+        if (kDebugMode) {
+          print('Son joué avec succès: $name');
+        }
       } else {
         if (kDebugMode) {
-          print('Son non trouvé: $name');
+          print('Son non trouvé dans la map _players: $name');
+          print('Sons disponibles: ${_players.keys.toList()}');
         }
       }
     } catch (e) {
