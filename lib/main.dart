@@ -15,6 +15,7 @@ void main() async {
   // Initialiser le gestionnaire audio
   await AudioManager.init();
 
+
   runApp(const HappyGoalApp());
 }
 

@@ -9,41 +9,41 @@ enum GamePhase {
   goalSaved,
   gameOver,
 }
+
 class PenaltySettings {
-  static const int shotsPerTeam = 5;  // 5 tirs par équipe en phase régulière
+  static const int shotsPerTeam = 5;
 }
 
 class SuddenDeathSettings {
-  static const int shotsPerRound = 1;  // 1 tir par équipe par round en mort subite
+  static const int shotsPerRound = 1;
 }
-
 
 class GameState {
   Team? team1;
   Team? team2;
   Team? currentTeam;
   GamePhase currentPhase;
-  int roundNumber;  // Numéro de la ronde actuelle (1-5 pour les tirs normaux, > 5 pour les tirs de mort subite)
-  int team1Shots;   // Nombre de tirs effectués par l'équipe 1
-  int team2Shots;   // Nombre de tirs effectués par l'équipe 2
+  int roundNumber;
+  int team1Shots;
+  int team2Shots;
   int selectedDirection;
   bool isGoalScored;
   int goalkeepeerDirection;
 
-  // Pour suivre les résultats des tirs
-  List<bool> team1Results = [];  // true = but marqué, false = tir raté
-  List<bool> team2Results = [];  // true = but marqué, false = tir raté
+  List<bool> team1Results = [];
+  List<bool> team2Results = [];
   List<bool> team1SuddenDeathResults = [];
   List<bool> team2SuddenDeathResults = [];
   bool isSuddenDeathActive = false;
+
   GameState({
     this.team1,
     this.team2,
     this.currentPhase = GamePhase.notStarted,
-    this.roundNumber = 1,
+    this.roundNumber = 0,
     this.team1Shots = 0,
     this.team2Shots = 0,
-    this.selectedDirection = 1, // Default to center
+    this.selectedDirection = 1,
     this.isGoalScored = false,
     this.goalkeepeerDirection = 1,
   }) {
@@ -83,44 +83,37 @@ class GameState {
   }
 
   bool checkWinner() {
+    if (team1?.score == null || team2?.score == null) return false;
+
     if (isRegularPhase()) {
-      // Pendant la phase régulière (5 tirs)
-      // Si une équipe ne peut plus rattraper l'autre même en marquant tous ses tirs restants
       int team1Remaining = PenaltySettings.shotsPerTeam - team1Shots;
       int team2Remaining = PenaltySettings.shotsPerTeam - team2Shots;
 
-      if (team1?.score != null && team2?.score != null) {
-        if (team1!.score > team2!.score + team2Remaining) return true;
-        if (team2!.score > team1!.score + team1Remaining) return true;
-      }
+      // Victoire anticipée si une équipe ne peut plus être rattrapée
+      if (team1!.score > team2!.score + team2Remaining) return true;
+      if (team2!.score > team1!.score + team1Remaining) return true;
+    }
 
-      // Si les deux équipes ont tiré leurs 5 tirs et ont un score différent
-      if (team1Shots == PenaltySettings.shotsPerTeam &&
-          team2Shots == PenaltySettings.shotsPerTeam &&
-          team1?.score != team2?.score) {
-        return true;
-      }
-
-      // Si égalité après 5 tirs, activer la mort subite
-      if (team1Shots == PenaltySettings.shotsPerTeam &&
-          team2Shots == PenaltySettings.shotsPerTeam &&
-          team1?.score == team2?.score) {
-        isSuddenDeathActive = true;
+    if (team1Shots == PenaltySettings.shotsPerTeam &&
+        team2Shots == PenaltySettings.shotsPerTeam) {
+      if (team1!.score != team2!.score) {
+        return true; // Vainqueur après tirs complets
+      } else {
+        if (!isSuddenDeathActive) {
+          isSuddenDeathActive = true;
+        }
       }
     }
-    else {
-      // En mort subite - vérifier après que chaque équipe ait tiré
+
+    // Vérification en mort subite
+    if (isSuddenDeathActive) {
       int suddenDeathRound = team1SuddenDeathResults.length;
-
-      // S'assurer que les deux équipes ont tiré dans ce round de mort subite
       if (team2SuddenDeathResults.length == suddenDeathRound && suddenDeathRound > 0) {
-        // Comparer les résultats du dernier round
-        bool team1LastResult = team1SuddenDeathResults[suddenDeathRound - 1];
-        bool team2LastResult = team2SuddenDeathResults[suddenDeathRound - 1];
+        bool team1Last = team1SuddenDeathResults[suddenDeathRound - 1];
+        bool team2Last = team2SuddenDeathResults[suddenDeathRound - 1];
 
-        // Si une équipe marque et l'autre rate, nous avons un gagnant
-        if (team1LastResult && !team2LastResult) return true;
-        if (!team1LastResult && team2LastResult) return true;
+        if (team1Last && !team2Last) return true;
+        if (!team1Last && team2Last) return true;
       }
     }
 
@@ -130,20 +123,17 @@ class GameState {
   Team? getWinner() {
     if (team1?.score == null || team2?.score == null) return null;
 
-    // En phase régulière, le vainqueur est celui avec le plus de points
     if (!isSuddenDeathActive) {
       if (team1!.score > team2!.score) return team1;
       if (team2!.score > team1!.score) return team2;
-    }
-    // En mort subite, comparons le dernier tir
-    else {
+    } else {
       int lastRound = team1SuddenDeathResults.length - 1;
       if (lastRound >= 0 && team2SuddenDeathResults.length > lastRound) {
-        bool team1LastResult = team1SuddenDeathResults[lastRound];
-        bool team2LastResult = team2SuddenDeathResults[lastRound];
+        bool team1Last = team1SuddenDeathResults[lastRound];
+        bool team2Last = team2SuddenDeathResults[lastRound];
 
-        if (team1LastResult && !team2LastResult) return team1;
-        if (!team1LastResult && team2LastResult) return team2;
+        if (team1Last && !team2Last) return team1;
+        if (!team1Last && team2Last) return team2;
       }
     }
 
@@ -151,27 +141,22 @@ class GameState {
   }
 
   bool shouldStartNewRound() {
-    // Au début de la mort subite
     if (team1Shots == PenaltySettings.shotsPerTeam &&
         team2Shots == PenaltySettings.shotsPerTeam &&
         !isSuddenDeathActive &&
         team1?.score == team2?.score) {
       isSuddenDeathActive = true;
-      roundNumber = 1; // Redémarrer le compteur pour la mort subite
+      roundNumber = 1;
       return true;
     }
 
-    // Pendant la mort subite
     if (isSuddenDeathActive) {
-      // Si les deux équipes ont tiré dans ce round de mort subite
       int suddenDeathRound = team1SuddenDeathResults.length;
       if (team2SuddenDeathResults.length == suddenDeathRound && currentTeam == team1) {
         roundNumber++;
         return true;
       }
-    }
-    // En phase régulière
-    else if (team1Shots % SuddenDeathSettings.shotsPerRound == 0 &&
+    } else if (team1Shots % SuddenDeathSettings.shotsPerRound == 0 &&
         team2Shots % SuddenDeathSettings.shotsPerRound == 0 &&
         currentTeam == team1) {
       roundNumber++;
