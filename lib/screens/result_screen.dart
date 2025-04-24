@@ -30,6 +30,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
 
+  // Maximum number of shots to display
+  final int _maxShotsToDisplay = 5;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +65,14 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
     _confettiController.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  // Method to get the last N shots from a results list
+  List<bool> _getLastShots(List<bool> results) {
+    if (results.length <= _maxShotsToDisplay) {
+      return results;
+    }
+    return results.sublist(results.length - _maxShotsToDisplay);
   }
 
   @override
@@ -366,6 +377,8 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   Widget _buildShotStats(Team team, List<bool> results) {
     final goals = results.where((r) => r).length;
     final total = results.length;
+    final displayResults = _getLastShots(results);
+    final hasMoreShots = results.length > _maxShotsToDisplay;
 
     return Column(
       children: [
@@ -388,10 +401,26 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           ),
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 5,
-          runSpacing: 5,
-          children: results.map((isGoal) => _buildShotIndicator(isGoal)).toList(),
+        Column(
+          children: [
+            if (hasMoreShots)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Text(
+                  '(Derniers $_maxShotsToDisplay tirs)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.7),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            Wrap(
+              spacing: 5,
+              runSpacing: 5,
+              children: displayResults.map((isGoal) => _buildShotIndicator(isGoal)).toList(),
+            ),
+          ],
         ),
       ],
     );

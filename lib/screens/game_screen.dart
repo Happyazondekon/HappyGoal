@@ -30,7 +30,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late Animation<double> _ballYAnimation;
   late AnimationController _goalkeeperController;
   late Animation<Offset> _goalkeeperAnimation;
+  late AnimationController _goalTextController;
+  late Animation<Offset> _goalTextAnimation;
   bool _isShooting = false;
+  bool _showGoalText = false;
 
   final Random _random = Random();
 
@@ -38,33 +41,54 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _gameState = widget.gameState;
-
-    // Jouer le son du coup de sifflet au début
     AudioManager.playSound('whistle');
 
+    // Contrôleur pour l'animation du ballon
     _ballAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
+    // Contrôleur pour l'animation du gardien
     _goalkeeperController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    // Initialiser les animations
+    // Contrôleur pour l'animation du texte "GOALLL..!"
+    _goalTextController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
+    _setupAnimations();
+    _setupListeners();
+  }
+
+  void _setupAnimations() {
     _setupGoalkeeperAnimation(ShotDirection.center);
     _setupBallAnimation();
+    _setupGoalTextAnimation();
+  }
 
+  void _setupListeners() {
     _ballAnimationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _handleShotResult();
       }
     });
+
+    _goalTextController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _showGoalText = false;
+        });
+        _goalTextController.reset();
+      }
+    });
   }
 
   void _setupGoalkeeperAnimation(int direction) {
-    // Setup goalkeeper animation
     Offset goalkeeperEndOffset;
     switch (direction) {
       case ShotDirection.left:
@@ -87,16 +111,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _setupBallAnimation() {
-    // La première fois, context pourrait ne pas être disponible
-    // Donc on utilise WidgetsBinding pour s'assurer que le widget est construit
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final Size screenSize = MediaQuery.of(context).size;
-
-      // Position initiale du ballon (près du joueur)
       double startX = screenSize.width / 2;
       double startY = screenSize.height - 150;
 
-      // Position finale du ballon (dans le but selon la direction)
       double endX;
       switch (_gameState.selectedDirection) {
         case ShotDirection.left:
@@ -108,10 +127,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         default:
           endX = screenSize.width / 2;
       }
-      double endY = 100; // Hauteur du but
+      double endY = 100;
 
       setState(() {
-        // Créer des animations pour les coordonnées X et Y
         _ballXAnimation = Tween<double>(
           begin: startX,
           end: endX,
@@ -130,6 +148,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _setupGoalTextAnimation() {
+    _goalTextAnimation = Tween<Offset>(
+      begin: const Offset(-1.5, 0.0),
+      end: const Offset(1.5, 0.0),
+    ).animate(CurvedAnimation(
+      parent: _goalTextController,
+      curve: Curves.linear,
+    ));
+  }
+
   void _shoot(int direction) {
     if (_isShooting) return;
 
@@ -137,19 +165,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _isShooting = true;
       _gameState.selectedDirection = direction;
       _gameState.currentPhase = GamePhase.goalkeeeperSaving;
-
-      // Simulate goalkeeper prediction
       _gameState.goalkeepeerDirection = _random.nextInt(3);
     });
 
-    // Reconfigurer les animations avec la direction sélectionnée
     _setupGoalkeeperAnimation(_gameState.goalkeepeerDirection);
     _setupBallAnimation();
 
-    // Jouer un son de tir
     AudioManager.playSound('kick');
-
-    // Démarrer les animations
     _goalkeeperController.forward();
     _ballAnimationController.forward(from: 0.0);
   }
@@ -157,19 +179,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _handleShotResult() {
     if (!mounted) return;
 
-    // Déterminer si un but est marqué
     final bool isGoalScored = _gameState.selectedDirection != _gameState.goalkeepeerDirection;
 
     setState(() {
       _gameState.isGoalScored = isGoalScored;
       _gameState.currentPhase = isGoalScored ? GamePhase.goalScored : GamePhase.goalSaved;
-
-      // Enregistrer le résultat du tir
       _gameState.recordShotResult(isGoalScored);
 
       if (isGoalScored) {
+        _showGoalText = true;
+        _goalTextController.forward(from: 0.0);
         AudioManager.playSound('goal');
-        // Acclamations de la foule après un but
         Timer(const Duration(milliseconds: 300), () {
           AudioManager.playSound('crowd_cheer');
         });
@@ -178,9 +198,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     });
 
-    // Vérifier si le jeu est terminé
     if (_gameState.checkWinner()) {
-      // Coup de sifflet final
       Timer(const Duration(milliseconds: 1000), () {
         AudioManager.playSound('whistle');
       });
@@ -189,20 +207,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         Team winner = _gameState.getWinner()!;
         Team loser = winner == _gameState.team1! ? _gameState.team2! : _gameState.team1!;
 
-        // Combinons les résultats réguliers et de mort subite pour l'affichage
         List<bool> winnerResults = [];
         List<bool> loserResults = [];
 
         if (winner == _gameState.team1!) {
           winnerResults.addAll(_gameState.team1Results);
           winnerResults.addAll(_gameState.team1SuddenDeathResults);
-
           loserResults.addAll(_gameState.team2Results);
           loserResults.addAll(_gameState.team2SuddenDeathResults);
         } else {
           winnerResults.addAll(_gameState.team2Results);
           winnerResults.addAll(_gameState.team2SuddenDeathResults);
-
           loserResults.addAll(_gameState.team1Results);
           loserResults.addAll(_gameState.team1SuddenDeathResults);
         }
@@ -219,7 +234,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         );
       });
     } else {
-      // Continuer au prochain tour
       Timer(const Duration(milliseconds: 1500), () {
         setState(() {
           _resetRound();
@@ -231,24 +245,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _resetRound() {
     _ballAnimationController.reset();
     _goalkeeperController.reset();
-
-    // Vérifier si nous devons commencer un nouveau round
-    // (cas où les deux équipes ont tiré dans le round actuel)
     _gameState.shouldStartNewRound();
-
     _gameState.switchTeam();
     _gameState.currentPhase = GamePhase.playerShooting;
     _gameState.isGoalScored = false;
     _isShooting = false;
-
-    // Son de sifflet pour le nouveau tour
     AudioManager.playSound('whistle');
+  }
+
+  // Méthode pour obtenir la couleur de l'équipe adverse
+  Color _getOpponentTeamColor() {
+    if (_gameState.currentTeam == _gameState.team1) {
+      return _gameState.team2!.color;
+    } else {
+      return _gameState.team1!.color;
+    }
   }
 
   @override
   void dispose() {
     _ballAnimationController.dispose();
     _goalkeeperController.dispose();
+    _goalTextController.dispose();
     super.dispose();
   }
 
@@ -256,7 +274,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Jouer un son lorsque l'utilisateur quitte l'écran
         AudioManager.playSound('whistle');
         return true;
       },
@@ -278,10 +295,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   currentTeam: _gameState.currentTeam!,
                   team1Results: _gameState.team1Results,
                   team2Results: _gameState.team2Results,
-                  shotsPerTeam: PenaltySettings.shotsPerTeam,  // ou PenaltySettings.shotsPerTeam selon votre solution au problème précédent
+                  shotsPerTeam: PenaltySettings.shotsPerTeam,
                 ),
 
-                // Game Status Text
+                // Game Status
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Text(
@@ -291,17 +308,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       shadows: [
-                        Shadow(
-                          offset: Offset(1, 1),
-                          blurRadius: 3,
-                          color: Colors.black,
-                        ),
+                        Shadow(offset: Offset(1, 1), blurRadius: 3, color: Colors.black),
                       ],
                     ),
                   ),
                 ),
 
-                // Round indicator
                 // Round indicator
                 if (_gameState.isSuddenDeathPhase())
                   Container(
@@ -320,7 +332,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-// Show round number
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Text(
@@ -332,11 +343,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       shadows: [
-                        Shadow(
-                          offset: Offset(1, 1),
-                          blurRadius: 2,
-                          color: Colors.black,
-                        ),
+                        Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black),
                       ],
                     ),
                   ),
@@ -348,63 +355,110 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     alignment: Alignment.center,
                     children: [
                       // Goal Post
-                      const Positioned(
-                        top: 0,
-                        child: GoalPostWidget(),
-                      ),
+                      const Positioned(top: 0, child: GoalPostWidget()),
 
-                      // Goalkeeper
+                      // Goalkeeper with aura
                       Positioned(
                         top: 60,
                         child: SlideTransition(
                           position: _goalkeeperAnimation,
-                          child: Image.asset(
-                            'assets/images/players/goalkeeper.png',
+                          child: Container(
                             width: 100,
                             height: 120,
-                            fit: BoxFit.contain,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _getOpponentTeamColor().withOpacity(0.7),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: Image.asset(
+                              'assets/images/players/goalkeeper.png',
+                              width: 100,
+                              height: 120,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
 
-                      // Ball - displayed only when shooting
+                      // Ball
                       if (_ballXAnimation != null && _ballYAnimation != null)
                         AnimatedBuilder(
                           animation: _ballAnimationController,
                           builder: (context, child) {
                             return _isShooting
                                 ? Positioned(
-                              left: _ballXAnimation.value - 20, // Centrer le ballon (largeur/2)
-                              top: _ballYAnimation.value - 20,  // Centrer le ballon (hauteur/2)
+                              left: _ballXAnimation.value - 20,
+                              top: _ballYAnimation.value - 20,
                               child: Image.asset(
                                 'assets/images/ball.png',
                                 width: 40,
                                 height: 40,
                               ),
                             )
-                                : Container(); // Ne pas afficher le ballon si pas de tir en cours
+                                : Container();
                           },
                         ),
 
-                      // Player
+                      // Player with aura
                       Positioned(
                         bottom: 20,
-                        child: Image.asset(
-                          'assets/images/players/striker.png',
+                        child: Container(
                           width: 80,
                           height: 100,
-                          fit: BoxFit.contain,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: _gameState.currentTeam!.color.withOpacity(0.7),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Image.asset(
+                            'assets/images/players/striker.png',
+                            width: 80,
+                            height: 100,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
+
+                      // GOALLL..! Text Animation
+                      if (_showGoalText && _gameState.isGoalScored)
+                        Positioned(
+                          top: MediaQuery.of(context).size.height * 0.3,
+                          child: SlideTransition(
+                            position: _goalTextAnimation,
+                            child: Text(
+                              'GOALLL..!',
+                              style: TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: _gameState.currentTeam!.color,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 0),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
 
                 // Shot Controls
                 if (_gameState.currentPhase == GamePhase.playerShooting)
-                  ShotControllerWidget(
-                    onShoot: _shoot,
-                  ),
+                  ShotControllerWidget(onShoot: _shoot),
 
                 // Result Text
                 if (_gameState.currentPhase == GamePhase.goalScored ||
@@ -432,7 +486,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
 
   String _getStatusText() {
     switch (_gameState.currentPhase) {

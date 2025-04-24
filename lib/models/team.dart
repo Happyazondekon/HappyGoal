@@ -36,7 +36,7 @@ class Team {
       ),
       Team(
         name: 'Allemagne',
-        color: Colors.white,
+        color: Colors.greenAccent,
         flagImage: 'assets/images/flags/germany_flag.png',
       ),
       Team(
@@ -51,7 +51,7 @@ class Team {
       ),
       Team(
         name: 'Italie',
-        color: Colors.blueAccent,
+        color: Colors.green,
         flagImage: 'assets/images/flags/italy_flag.png',
       ),
     ];

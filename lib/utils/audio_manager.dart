@@ -17,11 +17,11 @@ class AudioManager {
 
       // Précharger les effets sonores
       final sounds = [
-        'crowd_cheer',
-        'goal',
-        'goalkeeper_save',
-        'kick',
-        'whistle',
+        'assets/audio/crowd_cheer.mp3',
+        'assets/audio/goal.mp3',
+        'assets/audio/goalkeeper_save.mp3',
+        'assets/audio/kick.mp3',
+        'assets/audio/whistle.mp3',
       ];
 
       for (var sound in sounds) {
