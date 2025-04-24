@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
-/// Gestionnaire audio pour les sons du jeu
 class AudioManager {
   static final Map<String, AudioPlayer> _players = {};
   static final AudioPlayer _backgroundPlayer = AudioPlayer();
   static bool _isSoundEnabled = true;
   static bool _isMusicEnabled = true;
+  static bool _isInitialized = false;
 
   /// Initialiser le système audio
   static Future<void> init() async {
+    if (_isInitialized) return;
+
     try {
+      // Charger la musique de fond
       await _backgroundPlayer.setAsset('assets/audio/background.mp3');
       await _backgroundPlayer.setLoopMode(LoopMode.one);
       await _backgroundPlayer.setVolume(0.5);
@@ -24,10 +27,15 @@ class AudioManager {
         'whistle',
       ];
 
+      // Création de nouveaux joueurs pour chaque son
       for (var sound in sounds) {
-        final player = AudioPlayer();
-        await player.setAsset('assets/audio/${sound}.mp3');
-        _players[sound] = player;
+        _players[sound] = AudioPlayer();
+        // Uniquement précharger, pas besoin de setAsset ici
+      }
+
+      _isInitialized = true;
+      if (kDebugMode) {
+        print('Initialisation audio réussie');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -39,13 +47,18 @@ class AudioManager {
   /// Jouer un son
   static Future<void> playSound(String name) async {
     if (!_isSoundEnabled) return;
+    if (!_isInitialized) {
+      if (kDebugMode) {
+        print('AudioManager non initialisé');
+      }
+      return;
+    }
 
     try {
       final player = _players[name];
       if (player != null) {
-        if (kDebugMode) {
-          print('Tentative de lecture du son: $name');
-        }
+        // Charger le fichier audio juste avant de le jouer
+        await player.setAsset('assets/audio/$name.mp3');
         await player.seek(Duration.zero);
         await player.play();
         if (kDebugMode) {
@@ -53,20 +66,20 @@ class AudioManager {
         }
       } else {
         if (kDebugMode) {
-          print('Son non trouvé dans la map _players: $name');
+          print('Son non trouvé: $name');
           print('Sons disponibles: ${_players.keys.toList()}');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Erreur de lecture du son: $e');
+        print('Erreur de lecture du son $name: $e');
       }
     }
   }
 
   /// Démarrer la musique de fond
   static Future<void> playBackgroundMusic() async {
-    if (!_isMusicEnabled) return;
+    if (!_isMusicEnabled || !_isInitialized) return;
 
     try {
       await _backgroundPlayer.seek(Duration.zero);

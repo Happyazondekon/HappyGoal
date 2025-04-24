@@ -7,14 +7,11 @@ import 'utils/audio_manager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Définir l'orientation portrait uniquement
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  // Préférences d'orientation
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Initialiser le gestionnaire audio
+  // Initialiser l'audio - problème potentiel ici
   await AudioManager.init();
-
 
   runApp(const HappyGoalApp());
 }
