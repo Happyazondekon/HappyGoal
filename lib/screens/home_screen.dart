@@ -187,10 +187,44 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildRuleItem("1. Choisissez deux équipes pour jouer"),
-                _buildRuleItem("2. À tour de rôle, tirez les penalties"),
-                _buildRuleItem("3. Choisissez la direction du tir: gauche, centre ou droite"),
-                _buildRuleItem("4. Le gardien essaiera de deviner la direction"),
+
+                // Principe du jeu
+                _buildSectionTitle("Principe du jeu"),
+                _buildRuleItem("HappyGoal est un jeu de penalties où deux équipes s'affrontent dans une séance de tirs au but."),
+                _buildRuleItem("Chaque équipe tire à tour de rôle pour marquer le plus de buts possible."),
+
+                const SizedBox(height: 15),
+
+                // Déroulement du jeu
+                _buildSectionTitle("Déroulement du jeu"),
+                _buildRuleItem("1. Choisissez deux équipes pour commencer le match."),
+                _buildRuleItem("2. Chaque équipe dispose de 5 tirs pendant la phase normale."),
+                _buildRuleItem("3. Pour chaque tir, choisissez une direction: gauche, centre ou droite."),
+                _buildRuleItem("4. Le gardien plongera aléatoirement dans une des trois directions."),
+                _buildRuleItem("5. Si le gardien plonge dans la même direction que votre tir, c'est un arrêt. Sinon, c'est un but!"),
+
+                const SizedBox(height: 15),
+
+                // Comment gagner
+                _buildSectionTitle("Comment gagner"),
+                _buildRuleItem("L'équipe avec le plus de buts après les 5 tirs remporte le match."),
+                _buildRuleItem("Si une équipe ne peut mathématiquement plus rattraper son retard, le match se termine immédiatement."),
+
+                const SizedBox(height: 15),
+
+                // Mort subite
+                _buildSectionTitle("Mort subite"),
+                _buildRuleItem("En cas d'égalité après les 5 tirs, une phase de mort subite commence."),
+                _buildRuleItem("Chaque équipe tire à tour de rôle. Si une équipe marque et l'autre rate, la première remporte le match."),
+                _buildRuleItem("Si les deux équipes marquent ou ratent, la mort subite continue avec un nouveau tour."),
+
+                const SizedBox(height: 15),
+
+                // Astuces stratégiques
+                _buildSectionTitle("Astuces stratégiques"),
+                _buildRuleItem("Les gardiens plongent de façon aléatoire, donc variez vos directions de tir pour ne pas être prévisible."),
+                _buildRuleItem("Le choix judicieux des équipes peut influencer l'ambiance visuelle du match."),
+
                 const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
@@ -222,9 +256,23 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
   Widget _buildRuleItem(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
