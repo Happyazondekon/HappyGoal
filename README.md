@@ -55,9 +55,7 @@ HappyGoal est développé avec Flutter, offrant une expérience utilisateur flui
    ```
    flutter run
    ```
-
-```
-
+   
 ## 📷 Captures d'écran
 
 ![Écran d'accueil](screenshots/home.png)
