@@ -2,7 +2,7 @@
 
 HappyGoal est un jeu de football mobile développé avec Flutter, mettant l'accent sur les séances de tirs au but (penalties). Les joueurs s'affrontent dans des duels de penalties palpitants, avec des équipes colorées et une expérience de jeu immersive.
 
-![Logo HappyGoal](assets/images/logo.png){ width=250px }
+<img src="assets/images/logo.png" width="250" alt="Logo HappyGoal">
 
 ## Caractéristiques
 
@@ -58,26 +58,13 @@ HappyGoal est développé avec Flutter, offrant une expérience utilisateur flui
 
 ## Captures d'écran
 
-::::: {.columns}
-::: {.column width="33%"}
-![Écran d'accueil](screenshots/home.png){ width=200px }
-:::
-::: {.column width="33%"}
-![Sélection d'équipe](screenshots/team_selection.png){ width=200px }
-:::
-::: {.column width="33%"}
-![Jeu en cours](screenshots/gameplay.png){ width=200px }
-:::
-:::::
+| Écran d'accueil | Sélection d'équipe | Jeu en cours |
+|:---------------:|:------------------:|:------------:|
+| <img src="screenshots/home.png" width="200"> | <img src="screenshots/team_selection.png" width="200"> | <img src="screenshots/gameplay.png" width="200"> |
 
-::::: {.columns}
-::: {.column width="50%"}
-![Mort subite](screenshots/death_suden.png){ width=200px }
-:::
-::: {.column width="50%"}
-![Résultats](screenshots/results.png){ width=200px }
-:::
-:::::
+| Mort subite | Résultats |
+|:-----------:|:---------:|
+| <img src="screenshots/death_suden.png" width="200"> | <img src="screenshots/results.png" width="200"> |
 
 ## Fonctionnalités à venir
 
