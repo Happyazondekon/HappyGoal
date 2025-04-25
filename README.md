@@ -64,7 +64,7 @@ HappyGoal est développé avec Flutter, offrant une expérience utilisateur flui
 ![Mort subite](screenshots/death_suden.png)
 ![Résultats](screenshots/results.png)
 
-## ✨ Fonctionnalités à venir
+## Fonctionnalités à venir
 
 - Mode multijoueur en ligne
 - Statistiques de jeu et classements
