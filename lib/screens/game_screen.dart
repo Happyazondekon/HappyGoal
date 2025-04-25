@@ -354,11 +354,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     alignment: Alignment.center,
                     children: [
                       // Goal Post
-                      const Positioned(top: 0, child: GoalPostWidget()),
-
+                      Positioned(
+                        top: 0,
+                        left: MediaQuery.of(context).size.width * 0.05, // Center it with 5% padding on each side
+                        child: const GoalPostWidget(),
+                      ),
                       // Goalkeeper with aura
                       Positioned(
-                        top: 60,
+                        top: 120,
                         child: SlideTransition(
                           position: _goalkeeperAnimation,
                           child: Container(
