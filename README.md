@@ -56,27 +56,6 @@ HappyGoal est développé avec Flutter, offrant une expérience utilisateur flui
    flutter run
    ```
 
-## 🏗️ Structure du projet
-
-```
-lib/
-├── constants.dart
-├── main.dart
-├── models/
-│   ├── game_state.dart
-│   ├── team.dart
-├── screens/
-│   ├── game_screen.dart
-│   ├── home_screen.dart
-│   ├── result_screen.dart
-│   ├── team_selection_screen.dart
-├── utils/
-│   ├── audio_manager.dart
-│   ├── game_logic.dart
-├── widgets/
-│   ├── goal_post_widget.dart
-│   ├── score_board_widget.dart
-│   ├── shot_controller_widget.dart
 ```
 
 ## 📷 Captures d'écran
@@ -84,6 +63,7 @@ lib/
 ![Écran d'accueil](screenshots/home.png)
 ![Sélection d'équipe](screenshots/team_selection.png)
 ![Jeu en cours](screenshots/gameplay.png)
+![Mort subite](screenshots/death_suden.png)
 ![Résultats](screenshots/results.png)
 
 ## ✨ Fonctionnalités à venir
