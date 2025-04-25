@@ -8,7 +8,6 @@ import '../widgets/goal_post_widget.dart';
 import '../widgets/score_board_widget.dart';
 import '../widgets/shot_controller_widget.dart';
 import '../utils/audio_manager.dart';
-import '../utils/game_logic.dart';
 import 'result_screen.dart';
 
 class GameScreen extends StatefulWidget {

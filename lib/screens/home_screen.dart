@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
             ),
             child: BackdropFilter(
               filter: ColorFilter.mode(
-                Colors.black.withOpacity(0.3),
+                Colors.white,
                 BlendMode.darken,
               ),
               child: Container(
@@ -38,11 +38,6 @@ class HomeScreen extends StatelessWidget {
                   // Logo et titre
                   Column(
                     children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        width: 120,
-                        height: 120,
-                      ),
                       const SizedBox(height: 20),
                       const Text(
                         'HappyGoal',

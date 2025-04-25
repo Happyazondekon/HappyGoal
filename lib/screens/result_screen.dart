@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../constants.dart';
 import '../models/team.dart';
-import '../models/game_state.dart';
 import 'home_screen.dart';
 
 class ResultScreen extends StatefulWidget {
