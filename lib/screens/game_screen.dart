@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
-import '../constants.dart';
+import '../constants.dart' hide ShotDirection; // Utiliser hide pour éviter le conflit
 import '../models/game_state.dart';
 import '../models/team.dart';
 import '../widgets/goal_post_widget.dart';
@@ -126,7 +126,32 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         default:
           endX = screenSize.width / 2;
       }
-      double endY = 100;
+
+
+      // Ajuster la position finale Y en fonction de la puissance
+      // Un tir avec moins de puissance sera plus haut
+      double endY = 100 - (_gameState.shotPower < 50 ? 30 : 0);
+
+      // Durée de l'animation basée sur la puissance
+      int duration = _gameState.shotPower > 70 ? 1000 : 1500;
+      _ballAnimationController.duration = Duration(milliseconds: duration);
+
+      // Animation de courbe pour les effets spéciaux
+      Curve animationCurve;
+      switch (_gameState.shotEffect) {
+        case 'curve':
+          animationCurve = Curves.easeInOutBack;
+          break;
+        case 'lob':
+          animationCurve = Curves.easeOutCirc;
+          break;
+        case 'knuckle':
+          animationCurve = Curves.elasticOut;
+          break;
+        default:
+          animationCurve = Curves.easeOut;
+          break;
+      }
 
       setState(() {
         _ballXAnimation = Tween<double>(
@@ -140,7 +165,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         ).animate(
           CurvedAnimation(
             parent: _ballAnimationController,
-            curve: Curves.easeOut,
+            curve: animationCurve,
           ),
         );
       });
@@ -157,12 +182,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     ));
   }
 
-  void _shoot(int direction) {
+  void _shoot(int direction, int power, String effect) {
     if (_isShooting) return;
 
     setState(() {
       _isShooting = true;
       _gameState.selectedDirection = direction;
+      _gameState.shotPower = power;
+      _gameState.shotEffect = effect;
       _gameState.currentPhase = GamePhase.goalkeeeperSaving;
       _gameState.goalkeepeerDirection = _random.nextInt(3);
     });
@@ -170,7 +197,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _setupGoalkeeperAnimation(_gameState.goalkeepeerDirection);
     _setupBallAnimation();
 
-    AudioManager.playSound('kick');
+    // Jouer un son différent selon la puissance
+    if (_gameState.shotPower > 70) {
+      AudioManager.playSound('powerful_kick');
+    } else {
+      AudioManager.playSound('kick');
+    }
+
     _goalkeeperController.forward();
     _ballAnimationController.forward(from: 0.0);
   }
@@ -178,7 +211,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _handleShotResult() {
     if (!mounted) return;
 
-    final bool isGoalScored = _gameState.selectedDirection != _gameState.goalkeepeerDirection;
+    // La chance de marquer est influencée par la puissance et l'effet
+    final bool isGoalKeepDirectionMatch = _gameState.selectedDirection == _gameState.goalkeepeerDirection;
+
+    // Base: Si le gardien va dans la mauvaise direction, c'est sûr que c'est but
+    bool isGoalScored = !isGoalKeepDirectionMatch;
+
+    // Même si le gardien va dans la bonne direction, un tir spécial ou puissant peut le tromper
+    if (isGoalKeepDirectionMatch) {
+      double chanceToScore = 0.0;
+
+      // Tir très puissant = 30% de chance de marquer même si le gardien va dans la bonne direction
+      if (_gameState.shotPower > 80) chanceToScore += 0.3;
+
+      // Effets spéciaux augmentent la chance de marquer
+      if (_gameState.shotEffect == 'curve') chanceToScore += 0.2;
+      else if (_gameState.shotEffect == 'knuckle') chanceToScore += 0.25;
+
+      // Vérifie si le tir est marqué malgré la bonne direction du gardien
+      if (_random.nextDouble() < chanceToScore) {
+        isGoalScored = true;
+      }
+    }
+
+    // Trop faible puissance = risque de manquer même si le gardien va dans la mauvaise direction
+    if (isGoalScored && _gameState.shotPower < 20 && _random.nextDouble() < 0.3) {
+      isGoalScored = false; // Tir trop faible, but manqué
+    }
 
     setState(() {
       _gameState.isGoalScored = isGoalScored;
@@ -197,48 +256,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     });
 
-    if (_gameState.checkWinner()) {
-      Timer(const Duration(milliseconds: 1000), () {
-        AudioManager.playSound('whistle');
-      });
-
-      Timer(const Duration(milliseconds: 1500), () {
-        Team winner = _gameState.getWinner()!;
-        Team loser = winner == _gameState.team1! ? _gameState.team2! : _gameState.team1!;
-
-        List<bool> winnerResults = [];
-        List<bool> loserResults = [];
-
-        if (winner == _gameState.team1!) {
-          winnerResults.addAll(_gameState.team1Results);
-          winnerResults.addAll(_gameState.team1SuddenDeathResults);
-          loserResults.addAll(_gameState.team2Results);
-          loserResults.addAll(_gameState.team2SuddenDeathResults);
-        } else {
-          winnerResults.addAll(_gameState.team2Results);
-          winnerResults.addAll(_gameState.team2SuddenDeathResults);
-          loserResults.addAll(_gameState.team1Results);
-          loserResults.addAll(_gameState.team1SuddenDeathResults);
-        }
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => ResultScreen(
-              winner: winner,
-              loser: loser,
-              winnerResults: winnerResults,
-              loserResults: loserResults,
-            ),
-          ),
-        );
-      });
-    } else {
-      Timer(const Duration(milliseconds: 1500), () {
+    // 🔥 AJOUT pour passer automatiquement au prochain tir après 2 secondes :
+    Timer(const Duration(seconds: 2), () {
+      if (mounted) {
         setState(() {
-          _resetRound();
+          if (_gameState.checkWinner()) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ResultScreen(
+                  winner: _gameState.getWinner()!,
+                  loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
+                  winnerResults: _gameState.getWinner() == _gameState.team1
+                      ? _gameState.team1Results
+                      : _gameState.team2Results,
+                  loserResults: _gameState.getWinner() == _gameState.team1
+                      ? _gameState.team2Results
+                      : _gameState.team1Results,
+                ),
+              ),
+            );
+
+          } else {
+            _resetRound();
+          }
         });
-      });
-    }
+      }
+    });
   }
 
   void _resetRound() {
@@ -260,6 +304,72 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       return _gameState.team1!.color;
     }
   }
+
+  String _getStatusText() {
+    switch (_gameState.currentPhase) {
+      case GamePhase.playerShooting:
+        return "Au tour de ${_gameState.currentTeam!.name} - Choisissez une direction";
+      case GamePhase.goalkeeeperSaving:
+        return "Le gardien plonge...";
+      case GamePhase.goalScored:
+      // 🔥 Ici, personnalisation du message selon effet et puissance
+        if (_gameState.shotEffect == ShotEffect.lob) {
+          return "But sur LOB ! 🎯";
+        } else if (_gameState.shotEffect == ShotEffect.curve) {
+          return "But avec un superbe EFFET ! 🔥";
+        } else if (_gameState.shotEffect == ShotEffect.knuckle) {
+          return "But spectaculaire KNUCKLE ! ⚡";
+        } else if (_gameState.shotPower < 30) {
+          return "But malgré une faible puissance ! 💨";
+        } else {
+          return "But pour ${_gameState.currentTeam!.name} !";
+        }
+      case GamePhase.goalSaved:
+      // 🔥 Ici, on précise aussi si la balle était faible ou si c'était un lob raté
+        if (_gameState.shotPower < 20) {
+          return "Tir trop faible ! 😢";
+        } else if (_gameState.shotEffect == ShotEffect.lob) {
+          return "Lob raté, le gardien capte facilement ! 🧤";
+        } else if (_gameState.shotEffect == ShotEffect.curve) {
+          return "Le gardien arrête le tir à effet ! 🛡️";
+        } else if (_gameState.shotEffect == ShotEffect.knuckle) {
+          return "Knuckle shot arrêté par le gardien ! ❌";
+        } else {
+          return "Arrêt du gardien !";
+        }
+      default:
+        return "";
+    }
+  }
+  String _getResultText() {
+    if (_gameState.isGoalScored) {
+      if (_gameState.shotEffect == ShotEffect.lob) {
+        return "BUT sur LOB 🎯";
+      } else if (_gameState.shotEffect == ShotEffect.curve) {
+        return "BUT avec EFFET 🔥";
+      } else if (_gameState.shotEffect == ShotEffect.knuckle) {
+        return "BUT KNUCKLE ⚡";
+      } else if (_gameState.shotPower < 30) {
+        return "BUT faiblement tiré 💨";
+      } else {
+        return "BUUUUT!";
+      }
+    } else {
+      if (_gameState.shotPower < 20) {
+        return "TIR TROP FAIBLE 😢";
+      } else if (_gameState.shotEffect == ShotEffect.lob) {
+        return "LOB raté 😔";
+      } else if (_gameState.shotEffect == ShotEffect.curve) {
+        return "EFFET arrêté 🛡️";
+      } else if (_gameState.shotEffect == ShotEffect.knuckle) {
+        return "KNUCKLE arrêté ❌";
+      } else {
+        return "ARRÊT DU GARDIEN!";
+      }
+    }
+  }
+
+
 
   @override
   void dispose() {
@@ -392,17 +502,118 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         AnimatedBuilder(
                           animation: _ballAnimationController,
                           builder: (context, child) {
-                            return _isShooting
-                                ? Positioned(
-                              left: _ballXAnimation.value - 20,
-                              top: _ballYAnimation.value - 20,
-                              child: Image.asset(
-                                'assets/images/ball.png',
-                                width: 40,
-                                height: 40,
+                            if (!_isShooting) return Container();
+
+                            // Variables pour l'animation d'effet
+                            double ballSize = 40.0;
+                            double rotation = 0.0;
+                            List<Widget> effectWidgets = [];
+
+                            // Adapter la taille du ballon selon la puissance
+                            if (_gameState.shotPower > 70) {
+                              ballSize = 45.0; // Ballon légèrement plus gros pour un tir puissant
+                            }
+
+                            // Animation de rotation pour l'effet "curve"
+                            if (_gameState.shotEffect == 'curve') {
+                              rotation = _ballAnimationController.value * 2 * 3.14159;
+                            }
+
+                            // Effet visuel pour knuckle (oscillation aléatoire)
+                            if (_gameState.shotEffect == 'knuckle' && _ballAnimationController.value > 0.2) {
+                              double offsetX = sin(_ballAnimationController.value * 10) * 5;
+                              double offsetY = cos(_ballAnimationController.value * 8) * 5;
+
+                              // Ajouter un effet de trainée pour le knuckle ball
+                              for (int i = 1; i <= 3; i++) {
+                                double opacity = (1 - i * 0.25).clamp(0.1, 0.7);
+                                effectWidgets.add(
+                                  Positioned(
+                                    left: _ballXAnimation.value - 20 - offsetX * i * 0.5,
+                                    top: _ballYAnimation.value - 20 - offsetY * i * 0.5,
+                                    child: Opacity(
+                                      opacity: opacity,
+                                      child: Image.asset(
+                                        'assets/images/ball.png',
+                                        width: ballSize - i * 2,
+                                        height: ballSize - i * 2,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+
+                            // Effet visuel pour lob (trajectoire plus haute)
+                            if (_gameState.shotEffect == 'lob') {
+                              // Ajouter une ombre au sol pour indiquer la trajectoire haute
+                              effectWidgets.add(
+                                Positioned(
+                                  left: _ballXAnimation.value - 15,
+                                  bottom: 100,
+                                  child: Opacity(
+                                    opacity: (1 - _ballAnimationController.value).clamp(0.0, 0.5),
+                                    child: Container(
+                                      width: 30,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            // Effet visuel pour tir puissant (trainée de feu)
+                            if (_gameState.shotPower > 80) {
+                              for (int i = 1; i <= 5; i++) {
+                                double opacity = (1 - i * 0.15).clamp(0.1, 0.7);
+                                effectWidgets.add(
+                                  Positioned(
+                                    left: _ballXAnimation.value - 20 - ((_ballXAnimation.value -
+                                        (MediaQuery.of(context).size.width / 2)) / 10) * i,
+                                    top: _ballYAnimation.value - 20 + 2 * i,
+                                    child: Opacity(
+                                      opacity: opacity,
+                                      child: Container(
+                                        width: ballSize - i * 3,
+                                        height: ballSize - i * 3,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: RadialGradient(
+                                            colors: [
+                                              Colors.orange,
+                                              Colors.red.withOpacity(0.5),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+
+                            // Ajouter le ballon principal (avec rotation si effet curve)
+                            effectWidgets.add(
+                              Positioned(
+                                left: _ballXAnimation.value - ballSize/2,
+                                top: _ballYAnimation.value - ballSize/2,
+                                child: Transform.rotate(
+                                  angle: rotation,
+                                  child: Image.asset(
+                                    'assets/images/ball.png',
+                                    width: ballSize,
+                                    height: ballSize,
+                                  ),
+                                ),
                               ),
-                            )
-                                : Container();
+                            );
+
+                            return Stack(children: effectWidgets);
                           },
                         ),
 
@@ -460,7 +671,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
                 // Shot Controls
                 if (_gameState.currentPhase == GamePhase.playerShooting)
-                  ShotControllerWidget(onShoot: _shoot),
+                  ShotControllerWidget(
+                    onShoot: (direction, power, effect) => _shoot(direction, power, effect),
+                  ),
 
                 // Result Text
                 if (_gameState.currentPhase == GamePhase.goalScored ||
@@ -473,7 +686,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _gameState.isGoalScored ? 'BUUUUT!' : 'ARRÊT DU GARDIEN!',
+                      _getResultText(),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -487,20 +700,5 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  String _getStatusText() {
-    switch (_gameState.currentPhase) {
-      case GamePhase.playerShooting:
-        return "Au tour de ${_gameState.currentTeam!.name} - Choisissez une direction";
-      case GamePhase.goalkeeeperSaving:
-        return "Le gardien plonge...";
-      case GamePhase.goalScored:
-        return "But pour ${_gameState.currentTeam!.name}!";
-      case GamePhase.goalSaved:
-        return "Arrêt du gardien!";
-      default:
-        return "";
-    }
   }
 }
