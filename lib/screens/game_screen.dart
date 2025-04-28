@@ -35,6 +35,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _showGoalText = false;
 
   final Random _random = Random();
+  void _handleAITurn() {
+    if (_gameState.isSoloMode &&
+        _gameState.currentTeam == _gameState.team2 &&
+        _gameState.currentPhase == GamePhase.playerShooting) {
+      // Petit délai pour simuler "l'intelligence" de l'IA
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (!mounted) return;
+
+        // Obtenir la décision de l'IA
+        final aiDecision = _gameState.getAIDecision();
+
+        // Effectuer le tir
+        _shoot(
+          aiDecision['direction'],
+          aiDecision['power'],
+          aiDecision['effect'],
+        );
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -42,19 +62,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _gameState = widget.gameState;
     AudioManager.playSound('whistle');
 
-    // Contrôleur pour l'animation du ballon
     _ballAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    // Contrôleur pour l'animation du gardien
     _goalkeeperController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    // Contrôleur pour l'animation du texte "GOALLL..!"
     _goalTextController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -62,7 +79,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     _setupAnimations();
     _setupListeners();
+
+    // Lancer l'IA directement si c'est son tour
+    if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+      _handleAITurn();  // L'IA joue automatiquement au début
+    }
   }
+
+
+
 
   void _setupAnimations() {
     _setupGoalkeeperAnimation(ShotDirection.center);
@@ -76,6 +101,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         _handleShotResult();
       }
     });
+
+
 
     _goalTextController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -294,7 +321,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _gameState.isGoalScored = false;
     _isShooting = false;
     AudioManager.playSound('whistle');
+
+    // Vérifier si c'est l'IA qui doit jouer
+    _handleAITurn();  // L'IA joue automatiquement après chaque round
   }
+
+
 
   // Méthode pour obtenir la couleur de l'équipe adverse
   Color _getOpponentTeamColor() {

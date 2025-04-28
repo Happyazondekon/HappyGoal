@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
-import 'team_selection_screen.dart';
+import 'mode_selection_screen.dart'; // ⚡ importer ModeSelectionScreen
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -10,7 +10,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Arrière-plan avec effet de flou
+          // Arrière-plan
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -85,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                           Navigator.of(context).push(
                             PageRouteBuilder(
                               pageBuilder: (context, animation, secondaryAnimation) =>
-                              const TeamSelectionScreen(),
+                              const ModeSelectionScreen(), // 🔥 rediriger vers ModeSelectionScreen maintenant
                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                 return SlideTransition(
                                   position: Tween<Offset>(

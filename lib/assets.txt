@@ -1,27 +1,200 @@
-assets/
-├── audio/
-│   ├── background.mp3
-│   ├── crowd_cheer.mp3
-│   ├── goal.mp3
-│   ├── goalkeeper_save.mp3
-│   ├── kick.mp3
-│   └── whistle.mp3
-├── fonts/
-│   ├── Roboto-Bold.ttf
-│   ├── Roboto-Medium.ttf
-│   └── Roboto-Regular.ttf
-└── images/
-    ├── logo.png
-    ├── ball.png
-    ├── stadium_background.jpg
-    ├── field_background.jpg
-    ├── flags/
-    │   ├── france_flag.png
-    │   ├── benin_flag.png
-    │   ├── germany_flag.png
-    │   ├── spain_flag.png
-    │   ├── argentina_flag.png
-    │   └── italy_flag.png
-    └── players/
-        ├── goalkeeper.png
-        └── striker.png
+import 'team.dart';
+import 'ai_opponent.dart'; // Ajout pour utiliser l'IA
+
+enum GamePhase {
+  notStarted,
+  teamSelection,
+  playerShooting,
+  goalkeeeperSaving,
+  goalScored,
+  goalSaved,
+  gameOver,
+}
+
+class ShotDirection {
+  static const int left = 0;
+  static const int center = 1;
+  static const int right = 2;
+}
+
+class ShotEffect {
+  static const String normal = 'normal';
+  static const String curve = 'curve';
+  static const String lob = 'lob';
+  static const String knuckle = 'knuckle';
+
+  static List<String> getAllEffects() {
+    return [normal, curve, lob, knuckle];
+  }
+
+  static String getDisplayName(String effect) {
+    switch (effect) {
+      case normal: return 'Normal';
+      case curve: return 'Effet';
+      case lob: return 'Lob';
+      case knuckle: return 'Knuckle';
+      default: return effect;
+    }
+  }
+}
+
+class PenaltySettings {
+  static const int shotsPerTeam = 5;
+  static const int minPower = 0;
+  static const int maxPower = 100;
+  static const int defaultPower = 50;
+}
+
+class SuddenDeathSettings {
+  static const int shotsPerRound = 1;
+}
+
+class GameState {
+  Team? team1;
+  Team? team2;
+  Team? currentTeam;
+  GamePhase currentPhase;
+  int roundNumber;
+  int team1Shots;
+  int team2Shots;
+  int selectedDirection;
+  bool isGoalScored;
+  int goalkeepeerDirection;
+
+  int shotPower;
+  String shotEffect;
+  double shotPrecision;
+
+  // ➡️ Nouvelles propriétés pour IA
+  bool isSoloMode = false;
+  AIOpponent? aiOpponent;
+
+  Map<String, int> team1EffectUsage = {};
+  Map<String, int> team2EffectUsage = {};
+  int team1PowerfulShots = 0;
+  int team2PowerfulShots = 0;
+  int team1AccurateShots = 0;
+  int team2AccurateShots = 0;
+
+  List<bool> team1Results = [];
+  List<bool> team2Results = [];
+  List<bool> team1SuddenDeathResults = [];
+  List<bool> team2SuddenDeathResults = [];
+  bool isSuddenDeathActive = false;
+
+  List<ShotData> team1ShotData = [];
+  List<ShotData> team2ShotData = [];
+
+  GameState({
+    this.team1,
+    this.team2,
+    this.currentPhase = GamePhase.notStarted,
+    this.roundNumber = 0,
+    this.team1Shots = 0,
+    this.team2Shots = 0,
+    this.selectedDirection = ShotDirection.center,
+    this.isGoalScored = false,
+    this.goalkeepeerDirection = ShotDirection.center,
+    this.shotPower = PenaltySettings.defaultPower,
+    this.shotEffect = ShotEffect.normal,
+    this.shotPrecision = 1.0,
+    this.isSoloMode = false, // ⚡ ajouté ici
+  }) {
+    currentTeam = team1;
+
+    // Initialiser l'IA si en mode solo
+    if (isSoloMode) {
+      aiOpponent = AIOpponent();
+    }
+
+    for (String effect in ShotEffect.getAllEffects()) {
+      team1EffectUsage[effect] = 0;
+      team2EffectUsage[effect] = 0;
+    }
+  }
+
+  void switchTeam() {
+    currentTeam = (currentTeam == team1) ? team2 : team1;
+  }
+
+  void recordShotResult(bool isGoal) {
+    ShotData shotData = ShotData(
+      direction: selectedDirection,
+      power: shotPower,
+      effect: shotEffect,
+      precision: shotPrecision,
+      goalkeeeperDirection: goalkeepeerDirection,
+      isGoal: isGoal,
+    );
+
+    if (currentTeam == team1) {
+      if (isSuddenDeathActive) {
+        team1SuddenDeathResults.add(isGoal);
+      } else {
+        team1Results.add(isGoal);
+      }
+      team1Shots++;
+      if (isGoal) team1?.incrementScore();
+
+      team1ShotData.add(shotData);
+      team1EffectUsage[shotEffect] = (team1EffectUsage[shotEffect] ?? 0) + 1;
+      if (shotPower > 70) team1PowerfulShots++;
+      if (shotPrecision > 0.8) team1AccurateShots++;
+    } else {
+      if (isSuddenDeathActive) {
+        team2SuddenDeathResults.add(isGoal);
+      } else {
+        team2Results.add(isGoal);
+      }
+      team2Shots++;
+      if (isGoal) team2?.incrementScore();
+
+      team2ShotData.add(shotData);
+      team2EffectUsage[shotEffect] = (team2EffectUsage[shotEffect] ?? 0) + 1;
+      if (shotPower > 70) team2PowerfulShots++;
+      if (shotPrecision > 0.8) team2AccurateShots++;
+    }
+  }
+
+  bool isRegularPhase() => team1Shots < PenaltySettings.shotsPerTeam || team2Shots < PenaltySettings.shotsPerTeam;
+  bool isSuddenDeathPhase() => !isRegularPhase();
+
+  bool checkWinner() { /* même logique que toi */ }
+  Team? getWinner() { /* même logique */ }
+  bool shouldStartNewRound() { /* même logique */ }
+  double calculateScoringChance() { /* même logique */ }
+  Map<String, double> calculateShotDeviation() { /* même logique */ }
+  void reset() { /* même logique */ }
+  Map<String, dynamic> getEffectStats(String effect) { /* même logique */ }
+
+  // 🔥 Ajouter méthode pour IA
+  Map<String, dynamic> getAIDecision() {
+    if (!isSoloMode || aiOpponent == null) {
+      return {
+        'direction': ShotDirection.center,
+        'power': PenaltySettings.defaultPower,
+        'effect': ShotEffect.normal,
+      };
+    }
+    return aiOpponent!.takeShot();
+  }
+}
+
+// Stockage des données d'un tir
+class ShotData {
+  final int direction;
+  final int power;
+  final String effect;
+  final double precision;
+  final int goalkeepeerDirection;
+  final bool isGoal;
+
+  ShotData({
+    required this.direction,
+    required this.power,
+    required this.effect,
+    required this.precision,
+    required this.goalkeepeerDirection,
+    required this.isGoal,
+  });
+}

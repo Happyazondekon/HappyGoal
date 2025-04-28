@@ -1,3 +1,4 @@
+// lib/screens/team_selection_screen.dart
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import '../models/team.dart';
@@ -5,7 +6,12 @@ import '../models/game_state.dart';
 import 'game_screen.dart';
 
 class TeamSelectionScreen extends StatefulWidget {
-  const TeamSelectionScreen({Key? key}) : super(key: key);
+  final bool isSoloMode;
+
+  const TeamSelectionScreen({
+    Key? key,
+    this.isSoloMode = false,
+  }) : super(key: key);
 
   @override
   State<TeamSelectionScreen> createState() => _TeamSelectionScreenState();
@@ -17,10 +23,13 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
   final List<Team> teams = Team.getPredefinedTeams();
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  late String _modeTitle;
 
   @override
   void initState() {
     super.initState();
+    _modeTitle = widget.isSoloMode ? 'Mode Solo' : 'Mode Multijoueur';
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -57,6 +66,27 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     });
   }
 
+  void _startGame() {
+    if (selectedTeam1 != null && selectedTeam2 != null) {
+      final gameState = GameState(
+        team1: selectedTeam1,
+        team2: selectedTeam2,
+        currentPhase: GamePhase.playerShooting,
+        isSoloMode: widget.isSoloMode,
+      );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => GameScreen(gameState: gameState),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner deux équipes')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,10 +103,42 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             bottom: Radius.circular(20),
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Chip(
+              label: Text(_modeTitle),
+              backgroundColor: AppColors.primary,
+              labelStyle: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
           const SizedBox(height: 30),
+
+          // Texte d'aide en mode solo
+          if (widget.isSoloMode)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Choisissez votre équipe et l\'équipe adverse contrôlée par l\'ordinateur',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: const Offset(1.0, 1.0),
+                      blurRadius: 3.0,
+                      color: Colors.black54,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Affichage des équipes sélectionnées
           AnimatedBuilder(
             animation: _controller,
@@ -89,12 +151,12 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                     _buildSelectedTeamCard(
                       team: selectedTeam1,
                       teamColor: AppColors.team1,
-                      label: 'Équipe 1',
+                      label: widget.isSoloMode ? 'Votre Équipe' : 'Équipe 1',
                     ),
                     _buildSelectedTeamCard(
                       team: selectedTeam2,
                       teamColor: AppColors.team2,
-                      label: 'Équipe 2',
+                      label: widget.isSoloMode ? 'Équipe IA' : 'Équipe 2',
                     ),
                   ],
                 ),
@@ -132,21 +194,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
               duration: const Duration(milliseconds: 300),
               opacity: selectedTeam1 != null && selectedTeam2 != null ? 1.0 : 0.5,
               child: ElevatedButton(
-                onPressed: selectedTeam1 != null && selectedTeam2 != null
-                    ? () {
-                  final gameState = GameState(
-                    team1: selectedTeam1,
-                    team2: selectedTeam2,
-                    currentPhase: GamePhase.playerShooting,
-                  );
-
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => GameScreen(gameState: gameState),
-                    ),
-                  );
-                }
-                    : null,
+                onPressed: selectedTeam1 != null && selectedTeam2 != null ? _startGame : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),

@@ -1,4 +1,5 @@
 import 'team.dart';
+import 'ai_opponent.dart'; // Ajout pour utiliser l'IA
 
 enum GamePhase {
   notStarted,
@@ -60,17 +61,19 @@ class GameState {
   bool isGoalScored;
   int goalkeepeerDirection;
 
-  // Nouvelles propriétés pour le contrôle avancé des tirs
   int shotPower;
   String shotEffect;
-  double shotPrecision;  // 0.0 (très imprécis) à 1.0 (parfait)
+  double shotPrecision;
 
-  // Statistiques avancées
+  // ➡️ Nouvelles propriétés pour IA
+  bool isSoloMode = false;
+  AIOpponent? aiOpponent;
+
   Map<String, int> team1EffectUsage = {};
   Map<String, int> team2EffectUsage = {};
-  int team1PowerfulShots = 0;  // Tirs avec puissance > 70
+  int team1PowerfulShots = 0;
   int team2PowerfulShots = 0;
-  int team1AccurateShots = 0;  // Tirs avec précision > 0.8
+  int team1AccurateShots = 0;
   int team2AccurateShots = 0;
 
   List<bool> team1Results = [];
@@ -79,7 +82,6 @@ class GameState {
   List<bool> team2SuddenDeathResults = [];
   bool isSuddenDeathActive = false;
 
-  // Statistiques détaillées des tirs
   List<ShotData> team1ShotData = [];
   List<ShotData> team2ShotData = [];
 
@@ -96,10 +98,15 @@ class GameState {
     this.shotPower = PenaltySettings.defaultPower,
     this.shotEffect = ShotEffect.normal,
     this.shotPrecision = 1.0,
+    this.isSoloMode = false, // ⚡ ajouté ici
   }) {
     currentTeam = team1;
 
-    // Initialiser les compteurs d'effets
+    // Initialiser l'IA si en mode solo
+    if (isSoloMode) {
+      aiOpponent = AIOpponent();
+    }
+
     for (String effect in ShotEffect.getAllEffects()) {
       team1EffectUsage[effect] = 0;
       team2EffectUsage[effect] = 0;
@@ -111,7 +118,6 @@ class GameState {
   }
 
   void recordShotResult(bool isGoal) {
-    // Créer les données du tir
     ShotData shotData = ShotData(
       direction: selectedDirection,
       power: shotPower,
@@ -121,7 +127,6 @@ class GameState {
       isGoal: isGoal,
     );
 
-    // Enregistrer les statistiques
     if (currentTeam == team1) {
       if (isSuddenDeathActive) {
         team1SuddenDeathResults.add(isGoal);
@@ -131,7 +136,6 @@ class GameState {
       team1Shots++;
       if (isGoal) team1?.incrementScore();
 
-      // Statistiques avancées
       team1ShotData.add(shotData);
       team1EffectUsage[shotEffect] = (team1EffectUsage[shotEffect] ?? 0) + 1;
       if (shotPower > 70) team1PowerfulShots++;
@@ -145,7 +149,6 @@ class GameState {
       team2Shots++;
       if (isGoal) team2?.incrementScore();
 
-      // Statistiques avancées
       team2ShotData.add(shotData);
       team2EffectUsage[shotEffect] = (team2EffectUsage[shotEffect] ?? 0) + 1;
       if (shotPower > 70) team2PowerfulShots++;
@@ -153,13 +156,8 @@ class GameState {
     }
   }
 
-  bool isRegularPhase() {
-    return team1Shots < PenaltySettings.shotsPerTeam || team2Shots < PenaltySettings.shotsPerTeam;
-  }
-
-  bool isSuddenDeathPhase() {
-    return !isRegularPhase();
-  }
+  bool isRegularPhase() => team1Shots < PenaltySettings.shotsPerTeam || team2Shots < PenaltySettings.shotsPerTeam;
+  bool isSuddenDeathPhase() => !isRegularPhase();
 
   bool checkWinner() {
     if (team1?.score == null || team2?.score == null) return false;
@@ -340,7 +338,17 @@ class GameState {
     isSuddenDeathActive = false;
     currentPhase = GamePhase.teamSelection;
   }
-
+// 🔥 Ajouter méthode pour IA
+  Map<String, dynamic> getAIDecision() {
+    if (!isSoloMode || aiOpponent == null) {
+      return {
+        'direction': ShotDirection.center,
+        'power': PenaltySettings.defaultPower,
+        'effect': ShotEffect.normal,
+      };
+    }
+    return aiOpponent!.takeShot();
+  }
   // Obtenir des statistiques sur l'efficacité d'un type d'effet
   Map<String, dynamic> getEffectStats(String effect) {
     int team1Count = team1EffectUsage[effect] ?? 0;
