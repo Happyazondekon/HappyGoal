@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'team_selection_screen.dart';
+import 'difficulty_selection_screen.dart';
+import '../utils/audio_manager.dart';
 
 class ModeSelectionScreen extends StatelessWidget {
   const ModeSelectionScreen({Key? key}) : super(key: key);
@@ -64,10 +66,11 @@ class ModeSelectionScreen extends StatelessWidget {
                         subtitle: 'Jouez contre l\'ordinateur',
                         icon: Icons.person,
                         onPressed: () {
+                          AudioManager.playSound('click');
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const TeamSelectionScreen(isSoloMode: true),
+                              builder: (context) => const DifficultySelectionScreen(),
                             ),
                           );
                         },
@@ -82,6 +85,7 @@ class ModeSelectionScreen extends StatelessWidget {
                         subtitle: 'Jouez à deux',
                         icon: Icons.people,
                         onPressed: () {
+                          AudioManager.playSound('click');
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -96,6 +100,7 @@ class ModeSelectionScreen extends StatelessWidget {
                       // Bouton Retour
                       TextButton.icon(
                         onPressed: () {
+                          AudioManager.playSound('click');
                           Navigator.pop(context);
                         },
                         icon: const Icon(Icons.arrow_back, color: Colors.white),

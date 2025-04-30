@@ -10,6 +10,8 @@ class ResultScreen extends StatefulWidget {
   final Team loser;
   final List<bool> winnerResults;
   final List<bool> loserResults;
+  final bool isSoloMode; // Nouveau paramètre pour indiquer le mode de jeu
+  final bool isUserWinner; // Nouveau paramètre pour indiquer si l'utilisateur a gagné
 
   const ResultScreen({
     Key? key,
@@ -17,6 +19,8 @@ class ResultScreen extends StatefulWidget {
     required this.loser,
     required this.winnerResults,
     required this.loserResults,
+    this.isSoloMode = false, // Par défaut, on considère que ce n'est pas le mode solo
+    this.isUserWinner = true, // Par défaut, on considère que l'utilisateur a gagné
   }) : super(key: key);
 
   @override
@@ -56,7 +60,11 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
     );
 
     _animationController.forward();
-    _confettiController.play();
+
+    // Ne joue les confettis que si l'utilisateur a gagné en mode solo ou en mode multijoueur
+    if (!widget.isSoloMode || widget.isUserWinner) {
+      _confettiController.play();
+    }
   }
 
   @override
@@ -76,6 +84,17 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    // Déterminer si on est dans un cas de défaite en mode solo
+    final bool isDefeat = widget.isSoloMode && !widget.isUserWinner;
+
+    // Couleur de fond en fonction du résultat
+    final Color backgroundColor = isDefeat
+        ? Colors.grey[800]! // Couleur sombre pour la défaite
+        : widget.winner.color;
+
+    // Titre à afficher en fonction du résultat
+    final String resultTitle = isDefeat ? 'DÉFAITE...' : 'VICTOIRE!';
+
     return Scaffold(
       body: Stack(
         children: [
@@ -87,7 +106,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                 center: Alignment.center,
                 radius: 1.5,
                 colors: [
-                  widget.winner.color.withOpacity(0.8),
+                  backgroundColor.withOpacity(0.8),
                   AppColors.background.withOpacity(0.9),
                 ],
                 stops: const [0.1, 1.0],
@@ -108,13 +127,13 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Titre "VICTOIRE" avec animation
+                  // Titre "VICTOIRE" ou "DÉFAITE" avec animation
                   ScaleTransition(
                     scale: _scaleAnimation,
                     child: FadeTransition(
                       opacity: _opacityAnimation,
-                      child: const Text(
-                        'VICTOIRE!',
+                      child: Text(
+                        resultTitle,
                         style: TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
@@ -182,6 +201,21 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                         ..color = widget.winner.color.withOpacity(0.8),
                     ),
                   ),
+
+                  // Message spécial pour la défaite en mode solo
+                  if (isDefeat)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      child: Text(
+                        "L'ordinateur a remporté cette séance de tirs au but !",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.8),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
 
                   const SizedBox(height: 30),
 
@@ -267,6 +301,20 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
                   const SizedBox(height: 50),
 
+                  // Message d'encouragement en cas de défaite
+                  if (isDefeat)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        "Ne vous découragez pas, réessayez !",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
                   // Bouton de retour
                   AnimatedOpacity(
                     opacity: 1.0,
@@ -287,9 +335,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                         elevation: 8,
                         shadowColor: widget.winner.color.withOpacity(0.5),
                       ),
-                      child: const Text(
-                        'RETOUR AU MENU',
-                        style: TextStyle(
+                      child: Text(
+                        isDefeat ? 'REVANCHE' : 'RETOUR AU MENU',
+                        style: const TextStyle(
                           fontSize: 18,
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
@@ -303,29 +351,30 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
             ),
           ),
 
-          // Confettis
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              emissionFrequency: 0.05,
-              numberOfParticles: 30,
-              maxBlastForce: 30,
-              minBlastForce: 15,
-              gravity: 0.1,
-              colors: const [
-                Colors.red,
-                Colors.green,
-                Colors.blue,
-                Colors.yellow,
-                Colors.purple,
-                Colors.orange,
-                Colors.white,
-              ],
-              shouldLoop: true,
+          // Confettis - uniquement pour les victoires
+          if (!isDefeat)
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                emissionFrequency: 0.05,
+                numberOfParticles: 30,
+                maxBlastForce: 30,
+                minBlastForce: 15,
+                gravity: 0.1,
+                colors: const [
+                  Colors.red,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.yellow,
+                  Colors.purple,
+                  Colors.orange,
+                  Colors.white,
+                ],
+                shouldLoop: true,
+              ),
             ),
-          ),
         ],
       ),
     );

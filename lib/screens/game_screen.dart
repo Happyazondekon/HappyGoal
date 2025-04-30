@@ -284,10 +284,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
 
     // 🔥 AJOUT pour passer automatiquement au prochain tir après 2 secondes :
+    // 🔥 AJOUT pour passer automatiquement au prochain tir après 2 secondes :
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           if (_gameState.checkWinner()) {
+            // Déterminer si l'utilisateur est le gagnant en mode solo
+            final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
+
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -300,10 +304,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   loserResults: _gameState.getWinner() == _gameState.team1
                       ? _gameState.team2Results
                       : _gameState.team1Results,
+                  isSoloMode: _gameState.isSoloMode,
+                  isUserWinner: isUserWinner,
                 ),
               ),
             );
-
           } else {
             _resetRound();
           }

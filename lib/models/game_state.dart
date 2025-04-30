@@ -98,13 +98,14 @@ class GameState {
     this.shotPower = PenaltySettings.defaultPower,
     this.shotEffect = ShotEffect.normal,
     this.shotPrecision = 1.0,
-    this.isSoloMode = false, // ⚡ ajouté ici
+    this.isSoloMode = false,
+    double? aiIntelligenceLevel, // Nouveau paramètre optionnel
   }) {
     currentTeam = team1;
 
-    // Initialiser l'IA si en mode solo
+    // Initialiser l'IA si en mode solo avec l'intelligence spécifiée
     if (isSoloMode) {
-      aiOpponent = AIOpponent();
+      aiOpponent = AIOpponent(intelligence: aiIntelligenceLevel ?? 0.6);
     }
 
     for (String effect in ShotEffect.getAllEffects()) {

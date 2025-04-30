@@ -4,18 +4,22 @@ import '../constants.dart';
 import '../models/team.dart';
 import '../models/game_state.dart';
 import 'game_screen.dart';
+import '../models/ai_opponent.dart';
 
 class TeamSelectionScreen extends StatefulWidget {
   final bool isSoloMode;
+  final double? aiIntelligence; // Nouveau paramètre
 
   const TeamSelectionScreen({
     Key? key,
-    this.isSoloMode = false,
+    required this.isSoloMode,
+    this.aiIntelligence, // Paramètre optionnel avec valeur par défaut null
   }) : super(key: key);
 
   @override
   State<TeamSelectionScreen> createState() => _TeamSelectionScreenState();
 }
+
 
 class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTickerProviderStateMixin {
   Team? selectedTeam1;
@@ -74,8 +78,13 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         currentPhase: GamePhase.playerShooting,
         isSoloMode: widget.isSoloMode,
       );
+      // Initialiser l'IA avec le niveau de difficulté choisi si disponible
+      if (widget.isSoloMode && widget.aiIntelligence != null) {
+        gameState.aiOpponent = AIOpponent(intelligence: widget.aiIntelligence!);
+      }
 
-      Navigator.of(context).pushReplacement(
+      Navigator.push(
+        context,
         MaterialPageRoute(
           builder: (context) => GameScreen(gameState: gameState),
         ),
