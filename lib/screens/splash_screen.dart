@@ -102,8 +102,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: Transform.scale(
                       scale: 0.5 + _controller.value * 0.5,
                       child: Icon(
-                        Icons.star,
-                        color: Colors.white.withOpacity(0.8),
+                        Icons.sports_soccer_rounded,
+                        color: Colors.yellow.withOpacity(0.8),
                         size: 16,
                       ),
                     ),
@@ -155,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Le défi des penalties',
+                              'Le défi des tirs au but..!',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.9),
                                 fontSize: 20,
@@ -182,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           width: 100,
                           child: LinearProgressIndicator(
                             backgroundColor: Colors.white.withOpacity(0.2),
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.lightGreenAccent),
                             minHeight: 4,
                           ),
                         ),

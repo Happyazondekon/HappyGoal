@@ -54,6 +54,36 @@ class Team {
         color: Colors.green,
         flagImage: 'assets/images/flags/italy_flag.png',
       ),
+      Team(
+        name: 'Brésil',
+        color: Colors.yellow,
+        flagImage: 'assets/images/flags/brasil_flag.png',
+      ),
+      Team(
+        name: 'Nigéria',
+        color: Colors.green,
+        flagImage: 'assets/images/flags/nigeria_flag.png',
+      ),
+      Team(
+        name: 'Japon',
+        color: Colors.white,
+        flagImage: 'assets/images/flags/japan_flag.png',
+      ),
+      Team(
+        name: 'Russie',
+        color: Colors.blue,
+        flagImage: 'assets/images/flags/russia_flag.png',
+      ),
+      Team(
+        name: 'Angleterre',
+        color: Colors.white70,
+        flagImage: 'assets/images/flags/england_flag.png',
+      ),
+      Team(
+        name: 'USA',
+        color: Colors.red,
+        flagImage: 'assets/images/flags/usa_flag.png',
+      ),
     ];
   }
 }

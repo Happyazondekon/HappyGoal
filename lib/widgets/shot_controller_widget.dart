@@ -18,7 +18,13 @@ class _ShotControllerWidgetState extends State<ShotControllerWidget> {
   int _shotPower = 50; // Valeur par défaut
   String _selectedEffect = 'normal'; // Effet par défaut
 
-  List<String> effects = ['normal', 'curve', 'lob', 'knuckle'];
+  // Liste des effets disponibles
+  final List<Map<String, dynamic>> effects = [
+    {'id': 'normal', 'name': 'Normal', 'icon': Icons.sports_soccer},
+    {'id': 'curve', 'name': 'Effet', 'icon': Icons.rotate_right},
+    {'id': 'lob', 'name': 'Lob', 'icon': Icons.arrow_upward},
+    {'id': 'knuckle', 'name': 'Knuckle', 'icon': Icons.waves},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +72,7 @@ class _ShotControllerWidgetState extends State<ShotControllerWidget> {
           ),
         ),
 
-        // Zone de sélection d'effet
+        // Zone de sélection d'effet avec icônes
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
@@ -81,27 +87,31 @@ class _ShotControllerWidgetState extends State<ShotControllerWidget> {
                 ),
               ),
               SizedBox(
-                height: 50,
+                height: 70,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: effects.map((effect) {
+                    final bool isSelected = _selectedEffect == effect['id'];
                     return Padding(
                       padding: const EdgeInsets.only(right: 10),
                       child: ChoiceChip(
+                        avatar: Icon(
+                          effect['icon'] as IconData,
+                          color: isSelected ? Colors.white : Colors.black,
+                          size: 18,
+                        ),
                         label: Text(
-                          _getEffectName(effect),
+                          effect['name'] as String,
                           style: TextStyle(
-                            color: _selectedEffect == effect
-                                ? Colors.white
-                                : Colors.black,
+                            color: isSelected ? Colors.white : Colors.black,
                           ),
                         ),
-                        selected: _selectedEffect == effect,
+                        selected: isSelected,
                         selectedColor: Colors.blue,
                         onSelected: (selected) {
                           if (selected) {
                             setState(() {
-                              _selectedEffect = effect;
+                              _selectedEffect = effect['id'] as String;
                             });
                           }
                         },
@@ -140,21 +150,6 @@ class _ShotControllerWidgetState extends State<ShotControllerWidget> {
         ),
       ],
     );
-  }
-
-  String _getEffectName(String effect) {
-    switch (effect) {
-      case 'normal':
-        return 'Normal';
-      case 'curve':
-        return 'Effet';
-      case 'lob':
-        return 'Lob';
-      case 'knuckle':
-        return 'Knuckle';
-      default:
-        return effect;
-    }
   }
 
   Color _getPowerColor() {

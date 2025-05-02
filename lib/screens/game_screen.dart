@@ -345,6 +345,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   String _getStatusText() {
     switch (_gameState.currentPhase) {
       case GamePhase.playerShooting:
+        if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+          return "L'IA réfléchit...";
+        }
         return "Au tour de ${_gameState.currentTeam!.name} - Choisissez une direction";
       case GamePhase.goalkeeeperSaving:
         return "Le gardien plonge...";
@@ -705,9 +708,27 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-
+                // Indicateur pour le tour de l'IA
+                if (_gameState.isSoloMode &&
+                    _gameState.currentTeam == _gameState.team2 &&
+                    _gameState.currentPhase == GamePhase.playerShooting)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      "Tour de l'IA - Patientez...",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(offset: Offset(1, 1), blurRadius: 3, color: Colors.black),
+                        ],
+                      ),
+                    ),
+                  ),
                 // Shot Controls
-                if (_gameState.currentPhase == GamePhase.playerShooting)
+                if (_gameState.currentPhase == GamePhase.playerShooting &&
+                    !(_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2))
                   ShotControllerWidget(
                     onShoot: (direction, power, effect) => _shoot(direction, power, effect),
                   ),

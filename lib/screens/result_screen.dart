@@ -207,7 +207,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       child: Text(
-                        "L'ordinateur a remporté cette séance de tirs au but !",
+                        "L'IA a remporté cette séance de tirs au but !",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,

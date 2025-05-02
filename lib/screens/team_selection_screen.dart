@@ -188,8 +188,10 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                 itemBuilder: (context, index) {
                   final team = teams[index];
                   final bool isSelected = team == selectedTeam1 || team == selectedTeam2;
-                  final bool isDisabled = (selectedTeam1 == team && selectedTeam2 != null) ||
-                      (selectedTeam2 == team && selectedTeam1 != null);
+                  // Une équipe est désactivée seulement si elle n'est pas sélectionnée et qu'une autre équipe est en cours de sélection
+                  final bool isDisabled = !isSelected &&
+                      ((selectedTeam1 != null && selectedTeam2 != null) ||
+                          (selectedTeam1 == null && selectedTeam2 == null && index >= 0));
 
                   return _buildTeamCard(team, isSelected, isDisabled);
                 },
@@ -346,9 +348,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: isDisabled ? null : () => _handleTeamSelection(team),
+          onTap: () => _handleTeamSelection(team), // Toujours cliquable
           child: Opacity(
-            opacity: isDisabled ? 0.5 : 1.0,
+            opacity: isDisabled && !isSelected ? 0.5 : 1.0,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -364,7 +366,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isDisabled ? Colors.grey : Colors.black,
+                    color: isDisabled && !isSelected ? Colors.grey : Colors.black,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,

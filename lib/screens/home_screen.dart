@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       const Text(
-                        'Le défi des penalties',
+                        'Le défi des tirs au but..!',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
