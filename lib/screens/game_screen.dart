@@ -446,7 +446,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   team2Results: _gameState.team2Results,
                   shotsPerTeam: PenaltySettings.shotsPerTeam,
                 ),
-
                 // Game Status
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),

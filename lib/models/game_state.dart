@@ -113,7 +113,7 @@ class GameState {
       team2EffectUsage[effect] = 0;
     }
   }
-
+  double? get aiIntelligenceLevel => aiOpponent?.intelligence;
   void switchTeam() {
     currentTeam = (currentTeam == team1) ? team2 : team1;
   }
@@ -246,65 +246,85 @@ class GameState {
 
   // Méthode pour calculer la chance de marquer un but en fonction des paramètres du tir
   double calculateScoringChance() {
-    // Base chance
-    double chance = 0.5;
+    // Base chance réduite pour augmenter la difficulté
+    double chance = 0.4; // Avant: 0.5
 
-    // Si le gardien va dans la mauvaise direction, énorme avantage
+    // Si le gardien va dans la mauvaise direction, avantage réduit
     if (selectedDirection != goalkeepeerDirection) {
-      chance += 0.4;
+      chance += 0.35; // Avant: 0.4
     } else {
-      // Si le gardien va dans la bonne direction, c'est plus difficile
-      chance -= 0.3;
+      // Si le gardien va dans la bonne direction, c'est encore plus difficile
+      chance -= 0.35; // Avant: 0.3
     }
 
-    // Les effets peuvent augmenter les chances de marquer
+    // Les effets peuvent augmenter les chances de marquer mais avec un bonus réduit
     switch (shotEffect) {
-      case ShotEffect.curve: chance += 0.15; break;
-      case ShotEffect.knuckle: chance += 0.2; break;
-      case ShotEffect.lob: chance += 0.1; break;
+      case ShotEffect.curve: chance += 0.12; break; // Avant: 0.15
+      case ShotEffect.knuckle: chance += 0.15; break; // Avant: 0.2
+      case ShotEffect.lob: chance += 0.08; break; // Avant: 0.1
+    }
+    if (shotPower > 95) {
+      // NOUVELLE CONDITION: Pénalité sévère pour les tirs à très haute puissance
+      chance -= 0.7; // Grande pénalité pour rendre ces tirs très difficiles
+    }
+    // La puissance a un impact ajusté
+    if (shotPower > 85) { // Seuil plus élevé (avant: 80)
+      chance += 0.08; // Réduit (avant: 0.1)
+    } else if (shotPower < 40) { // Seuil plus élevé (avant: 30)
+      chance -= 0.25; // Pénalité accrue (avant: 0.2)
+    } else if (shotPower < 60) {
+      // Nouvelle condition: les tirs moyens sont aussi moins efficaces
+      chance -= 0.1;
     }
 
-    // La puissance a un impact
-    if (shotPower > 80) {
-      chance += 0.1; // Tir puissant difficile à arrêter
-    } else if (shotPower < 30) {
-      chance -= 0.2; // Tir faible facile à arrêter
-    }
+    // La précision influence encore plus
+    // Avec une fonction exponentielle pour pénaliser davantage les tirs moins précis
+    chance *= (shotPrecision * shotPrecision);
 
-    // La précision influence beaucoup
-    chance *= shotPrecision;
-
-    // Limiter entre 0.05 (toujours une petite chance) et 0.95 (toujours un risque)
-    return chance.clamp(0.05, 0.95);
+    // Limiter entre 0.03 (chance réduite) et 0.9 (toujours un risque accru)
+    return chance.clamp(0.03, 0.9); // Avant: 0.05 à 0.95
   }
 
 
-  // Calculer la déviation du tir basée sur la précision ET la puissance
+  // 2. Améliorer calculateShotDeviation() pour plus de variations
   Map<String, double> calculateShotDeviation() {
-    double deviationFactor = 1.0 - shotPrecision;
+    // Facteur de déviation de base augmenté
+    double deviationFactor = 1.2 - shotPrecision; // Avant: 1.0 - shotPrecision
     double xDeviation = 0.0;
     double yDeviation = 0.0;
 
     if (shotPrecision < 1.0) {
-      xDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 100) / 50.0 - 1.0;
-      yDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 71) / 35.0 - 1.0;
+      // Ajout d'un peu plus d'aléatoire pour augmenter la difficulté
+      xDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 120) / 50.0 - 1.2;
+      yDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 90) / 35.0 - 1.2;
     }
 
-    // 🔥 Nouvelle logique : augmenter les risques si tir très puissant
-    if (shotPower > 80) {
-      xDeviation *= 1.5; // Tir très fort = balle moins contrôlée horizontalement
-      yDeviation *= 1.2; // Tir très fort = risque de tirer au-dessus
-    }
-
-    // 🔥 BONUS : tirs ultra faibles peuvent aussi dévier (par faiblesse)
-    if (shotPower < 20) {
+    // Augmenter l'impact de la puissance sur la déviation
+    if (shotPower > 75) { // Seuil réduit (avant: 80)
+      xDeviation *= 1.8; // Augmenté (avant: 1.5)
+      yDeviation *= 1.5; // Augmenté (avant: 1.2)
+    } else if (shotPower > 60) {
+      // Nouvelle condition: même les tirs moyennement puissants ont une déviation
       xDeviation *= 1.3;
-      yDeviation *= 1.1;
+      yDeviation *= 1.2;
+    }
+
+    // Tirs faibles encore plus variables
+    if (shotPower < 30) { // Seuil augmenté (avant: 20)
+      xDeviation *= 1.5; // Augmenté (avant: 1.3)
+      yDeviation *= 1.3; // Augmenté (avant: 1.1)
+    }
+
+    // Ajout d'une variable aléatoire supplémentaire pour créer des situations inattendues
+    if (DateTime.now().millisecondsSinceEpoch % 10 == 0) {
+      // 10% de chance que le tir dévie encore plus
+      xDeviation *= 1.5;
+      yDeviation *= 1.5;
     }
 
     return {
-      'x': xDeviation * 60, // étendu (avant c'était 50)
-      'y': yDeviation * 40, // étendu (avant c'était 30)
+      'x': xDeviation * 70, // Étendu davantage (avant: 60)
+      'y': yDeviation * 50, // Étendu davantage (avant: 40)
     };
   }
 
@@ -339,7 +359,7 @@ class GameState {
     isSuddenDeathActive = false;
     currentPhase = GamePhase.teamSelection;
   }
-// 🔥 Ajouter méthode pour IA
+// 3. Modifier getAIDecision pour utiliser la prédiction des mouvements du gardien
   Map<String, dynamic> getAIDecision() {
     if (!isSoloMode || aiOpponent == null) {
       return {
@@ -348,7 +368,46 @@ class GameState {
         'effect': ShotEffect.normal,
       };
     }
-    return aiOpponent!.takeShot();
+
+    // Récupérer l'historique des mouvements du gardien
+    List<int> goalkeeperHistory = [];
+
+    // Pour l'équipe 2 (IA), nous examinons les tirs précédents de l'équipe 1
+    for (var shot in team1ShotData) {
+      goalkeeperHistory.add(shot.goalkeeeperDirection);
+    }
+
+    // Utiliser les données pour une décision plus intelligente
+    var decision = aiOpponent!.takeShot();
+
+    // Enregistrer le résultat du dernier tir pour adapter la stratégie
+    if (team2ShotData.isNotEmpty) {
+      aiOpponent!.setLastShotResult(team2ShotData.last.isGoal);
+    }
+
+    return decision;
+  }
+  // 4. Ajouter une nouvelle méthode pour calculer la difficulté du gardien de but
+  double calculateGoalkeeperDifficulty() {
+    // Difficulté de base plus élevée
+    double difficulty = 0.6; // Base difficulty - plus élevée qu'avant
+
+    // Ajuster en fonction de la situation de jeu
+    if (isSuddenDeathActive) {
+      difficulty += 0.20; // Plus difficile en mort subite
+    }
+
+    // Plus le match avance, plus le gardien devient difficile
+    double progressionFactor = (team1Shots + team2Shots) / (PenaltySettings.shotsPerTeam * 2);
+    difficulty += progressionFactor * 0.15;
+
+    // Difficulté supplémentaire pour les tirs classiques
+    if (shotEffect == ShotEffect.normal) {
+      difficulty += 0.30; // Gardien plus efficace contre les tirs normaux
+    }
+
+    // Clamper entre 0.4 et 0.95 pour garder un équilibre
+    return difficulty.clamp(0.4, 0.95);
   }
   // Obtenir des statistiques sur l'efficacité d'un type d'effet
   Map<String, dynamic> getEffectStats(String effect) {
