@@ -148,14 +148,7 @@ class _DifficultySelectionScreenState extends State<DifficultySelectionScreen> {
                       alignment: Alignment.center,
                       children: [
                         // Effet de cercle de fond
-                        Container(
-                          width: 250,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white30, width: 2),
-                          ),
-                        ),
+
 
                         // Éléments du carousel
                         SizedBox(
@@ -228,7 +221,7 @@ class _DifficultySelectionScreenState extends State<DifficultySelectionScreen> {
 
                 // Bouton Retour
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 100),
+                  padding: const EdgeInsets.only(bottom: 40),
                   child: TextButton(
                     onPressed: () {
                       AudioManager.playSound('click');
