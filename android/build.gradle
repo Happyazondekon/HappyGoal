@@ -6,8 +6,6 @@ plugins {
 
 }
 
-ext.kotlin_version = '2.1.20' // ou la version que tu as trouvée
-
 allprojects {
     repositories {
         google()
