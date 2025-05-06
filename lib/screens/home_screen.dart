@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'mode_selection_screen.dart';
 import '../widgets/audiosettings_widget.dart';
+import '../utils/analytics_service.dart';
+
 
 
 class PulsatingButton extends StatefulWidget {
@@ -259,6 +261,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showSettingsDialog(BuildContext context) {
+    AnalyticsService.logSettingsView();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -314,6 +317,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showRulesDialog(BuildContext context) {
+    AnalyticsService.logRulesView();
     showDialog(
       context: context,
       builder: (BuildContext context) {

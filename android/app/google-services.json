@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "915936525536",
+    "project_id": "happygoal-7b607",
+    "storage_bucket": "happygoal-7b607.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:915936525536:android:bf3e3988bd479322c5e485",
+        "android_client_info": {
+          "package_name": "com.example.happygoal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlEYIST0uf1ceJgFmVie73H4X2Wmvjb-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
