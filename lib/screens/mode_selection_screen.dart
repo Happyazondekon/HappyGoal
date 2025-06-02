@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/screens/tournament_mode_screen.dart';
 import '../constants.dart';
 import 'team_selection_screen.dart';
 import 'difficulty_selection_screen.dart';
@@ -90,6 +91,24 @@ class ModeSelectionScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => const TeamSelectionScreen(isSoloMode: false),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildModeButton(
+                        context,
+                        title: 'MODE TOURNOI',
+                        subtitle: 'Affrontez 8 équipes IA',
+                        icon: Icons.emoji_events,
+                        onPressed: () {
+                          AudioManager.playSound('click');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TournamentModeScreen(),
                             ),
                           );
                         },

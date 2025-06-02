@@ -8,12 +8,16 @@ import '../models/ai_opponent.dart';
 
 class TeamSelectionScreen extends StatefulWidget {
   final bool isSoloMode;
-  final double? aiIntelligence; // Nouveau paramètre
+  final bool isTournamentMode;
+  final Function(Team)? onTeamSelected;
+  final double? aiIntelligence;
 
   const TeamSelectionScreen({
     Key? key,
     required this.isSoloMode,
-    this.aiIntelligence, // Paramètre optionnel avec valeur par défaut null
+    this.isTournamentMode = false,
+    this.onTeamSelected,
+    this.aiIntelligence,
   }) : super(key: key);
 
   @override
@@ -32,7 +36,12 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
   @override
   void initState() {
     super.initState();
-    _modeTitle = widget.isSoloMode ? 'Mode Solo' : 'Mode Multijoueur';
+    // FIX: Prendre en compte le mode tournoi
+    if (widget.isTournamentMode) {
+      _modeTitle = 'Mode Tournoi';
+    } else {
+      _modeTitle = widget.isSoloMode ? 'Mode Solo' : 'Mode Multijoueur';
+    }
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -68,6 +77,11 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         _controller.forward();
       }
     });
+      if (widget.isTournamentMode) {
+        widget.onTeamSelected?.call(team);
+        Navigator.pop(context);
+        return;
+      }
   }
 
   void _startGame() {
@@ -77,7 +91,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         team2: selectedTeam2,
         currentPhase: GamePhase.playerShooting,
         isSoloMode: widget.isSoloMode,
+        isTournamentMode: widget.isTournamentMode, // FIX: Utiliser la vraie valeur
       );
+
       // Initialiser l'IA avec le niveau de difficulté choisi si disponible
       if (widget.isSoloMode && widget.aiIntelligence != null) {
         gameState.aiOpponent = AIOpponent(intelligence: widget.aiIntelligence!);

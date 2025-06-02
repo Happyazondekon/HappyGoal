@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/screens/tournament_result_screen.dart';
 import 'dart:async';
 import 'dart:math';
-import '../constants.dart' hide ShotDirection; // Utiliser hide pour éviter le conflit
+import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
 import '../models/team.dart';
 import '../widgets/goal_post_widget.dart';
@@ -25,6 +26,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late GameState _gameState;
   late AnimationController _ballAnimationController;
+  // CORRECTION: Initialiser les animations avec des valeurs par défaut
   late Animation<double> _ballXAnimation;
   late Animation<double> _ballYAnimation;
   late AnimationController _goalkeeperController;
@@ -35,18 +37,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _showGoalText = false;
 
   final Random _random = Random();
+
   void _handleAITurn() {
     if (_gameState.isSoloMode &&
         _gameState.currentTeam == _gameState.team2 &&
         _gameState.currentPhase == GamePhase.playerShooting) {
-      // Petit délai pour simuler "l'intelligence" de l'IA
       Future.delayed(const Duration(milliseconds: 1200), () {
         if (!mounted) return;
 
-        // Obtenir la décision de l'IA
         final aiDecision = _gameState.getAIDecision();
 
-        // Effectuer le tir
         _shoot(
           aiDecision['direction'],
           aiDecision['power'],
@@ -80,19 +80,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _setupAnimations();
     _setupListeners();
 
-    // Lancer l'IA directement si c'est son tour
-    if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
-      _handleAITurn();  // L'IA joue automatiquement au début
+    if ((_gameState.isSoloMode || _gameState.isTournamentMode) &&
+        _gameState.currentTeam == _gameState.team2) {
+      _handleAITurn();
     }
   }
 
-
-
-
   void _setupAnimations() {
     _setupGoalkeeperAnimation(ShotDirection.center);
-    _setupBallAnimation();
+    // CORRECTION: Initialiser les animations de ballon avec des valeurs par défaut
+    _initializeBallAnimations();
     _setupGoalTextAnimation();
+  }
+
+  // CORRECTION: Nouvelle méthode pour initialiser les animations de ballon avec des valeurs par défaut
+  void _initializeBallAnimations() {
+    _ballXAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.0,
+    ).animate(_ballAnimationController);
+
+    _ballYAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.0,
+    ).animate(_ballAnimationController);
   }
 
   void _setupListeners() {
@@ -101,8 +112,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         _handleShotResult();
       }
     });
-
-
 
     _goalTextController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -136,67 +145,60 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     ));
   }
 
+  // CORRECTION: Simplifier et sécuriser la méthode de configuration des animations de ballon
   void _setupBallAnimation() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Size screenSize = MediaQuery.of(context).size;
-      double startX = screenSize.width / 2;
-      double startY = screenSize.height - 150;
+    if (!mounted) return;
 
-      double endX;
-      switch (_gameState.selectedDirection) {
-        case ShotDirection.left:
-          endX = screenSize.width / 3 - 20;
-          break;
-        case ShotDirection.right:
-          endX = screenSize.width * 2 / 3 + 20;
-          break;
-        default:
-          endX = screenSize.width / 2;
-      }
+    final Size screenSize = MediaQuery.of(context).size;
+    double startX = screenSize.width / 2;
+    double startY = screenSize.height - 150;
 
+    double endX;
+    switch (_gameState.selectedDirection) {
+      case ShotDirection.left:
+        endX = screenSize.width / 3 - 20;
+        break;
+      case ShotDirection.right:
+        endX = screenSize.width * 2 / 3 + 20;
+        break;
+      default:
+        endX = screenSize.width / 2;
+    }
 
-      // Ajuster la position finale Y en fonction de la puissance
-      // Un tir avec moins de puissance sera plus haut
-      double endY = 100 - (_gameState.shotPower < 50 ? 30 : 0);
+    double endY = 100 - (_gameState.shotPower < 50 ? 30 : 0);
+    int duration = _gameState.shotPower > 70 ? 1000 : 1500;
+    _ballAnimationController.duration = Duration(milliseconds: duration);
 
-      // Durée de l'animation basée sur la puissance
-      int duration = _gameState.shotPower > 70 ? 1000 : 1500;
-      _ballAnimationController.duration = Duration(milliseconds: duration);
+    Curve animationCurve;
+    switch (_gameState.shotEffect) {
+      case 'curve':
+        animationCurve = Curves.easeInOutBack;
+        break;
+      case 'lob':
+        animationCurve = Curves.easeOutCirc;
+        break;
+      case 'knuckle':
+        animationCurve = Curves.elasticOut;
+        break;
+      default:
+        animationCurve = Curves.easeOut;
+        break;
+    }
 
-      // Animation de courbe pour les effets spéciaux
-      Curve animationCurve;
-      switch (_gameState.shotEffect) {
-        case 'curve':
-          animationCurve = Curves.easeInOutBack;
-          break;
-        case 'lob':
-          animationCurve = Curves.easeOutCirc;
-          break;
-        case 'knuckle':
-          animationCurve = Curves.elasticOut;
-          break;
-        default:
-          animationCurve = Curves.easeOut;
-          break;
-      }
+    _ballXAnimation = Tween<double>(
+      begin: startX,
+      end: endX,
+    ).animate(_ballAnimationController);
 
-      setState(() {
-        _ballXAnimation = Tween<double>(
-          begin: startX,
-          end: endX,
-        ).animate(_ballAnimationController);
-
-        _ballYAnimation = Tween<double>(
-          begin: startY,
-          end: endY,
-        ).animate(
-          CurvedAnimation(
-            parent: _ballAnimationController,
-            curve: animationCurve,
-          ),
-        );
-      });
-    });
+    _ballYAnimation = Tween<double>(
+      begin: startY,
+      end: endY,
+    ).animate(
+      CurvedAnimation(
+        parent: _ballAnimationController,
+        curve: animationCurve,
+      ),
+    );
   }
 
   void _setupGoalTextAnimation() {
@@ -224,7 +226,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _setupGoalkeeperAnimation(_gameState.goalkeepeerDirection);
     _setupBallAnimation();
 
-    // Jouer un son différent selon la puissance
     if (_gameState.shotPower > 70) {
       AudioManager.playSound('powerful_kick');
     } else {
@@ -238,32 +239,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _handleShotResult() {
     if (!mounted) return;
 
-    // La chance de marquer est influencée par la puissance et l'effet
     final bool isGoalKeepDirectionMatch = _gameState.selectedDirection == _gameState.goalkeepeerDirection;
 
-    // Base: Si le gardien va dans la mauvaise direction, c'est sûr que c'est but
     bool isGoalScored = !isGoalKeepDirectionMatch;
 
-    // Même si le gardien va dans la bonne direction, un tir spécial ou puissant peut le tromper
     if (isGoalKeepDirectionMatch) {
       double chanceToScore = 0.0;
 
-      // Tir très puissant = 30% de chance de marquer même si le gardien va dans la bonne direction
       if (_gameState.shotPower > 80) chanceToScore += 0.3;
 
-      // Effets spéciaux augmentent la chance de marquer
       if (_gameState.shotEffect == 'curve') chanceToScore += 0.2;
       else if (_gameState.shotEffect == 'knuckle') chanceToScore += 0.25;
 
-      // Vérifie si le tir est marqué malgré la bonne direction du gardien
       if (_random.nextDouble() < chanceToScore) {
         isGoalScored = true;
       }
     }
 
-    // Trop faible puissance = risque de manquer même si le gardien va dans la mauvaise direction
     if (isGoalScored && _gameState.shotPower < 20 && _random.nextDouble() < 0.3) {
-      isGoalScored = false; // Tir trop faible, but manqué
+      isGoalScored = false;
     }
 
     setState(() {
@@ -283,57 +277,131 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     });
 
-    // 🔥 AJOUT pour passer automatiquement au prochain tir après 2 secondes :
-    // 🔥 AJOUT pour passer automatiquement au prochain tir après 2 secondes :
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
-          if (_gameState.checkWinner()) {
-            // Déterminer si l'utilisateur est le gagnant en mode solo
-            final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ResultScreen(
-                  winner: _gameState.getWinner()!,
-                  loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
-                  winnerResults: _gameState.getWinner() == _gameState.team1
-                      ? _gameState.team1Results
-                      : _gameState.team2Results,
-                  loserResults: _gameState.getWinner() == _gameState.team1
-                      ? _gameState.team2Results
-                      : _gameState.team1Results,
-                  isSoloMode: _gameState.isSoloMode,
-                  isUserWinner: isUserWinner,
+          if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
+            if (_gameState.checkWinner()) {
+              _handleTournamentProgress();
+            } else {
+              _resetRound();
+            }
+          } else { // Solo Mode
+            if (_gameState.checkWinner()) {
+              final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ResultScreen(
+                    winner: _gameState.getWinner()!,
+                    loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
+                    winnerResults: _gameState.getWinner() == _gameState.team1 ? _gameState.team1Results : _gameState.team2Results,
+                    loserResults: _gameState.getWinner() == _gameState.team1 ? _gameState.team2Results : _gameState.team1Results,
+                    isSoloMode: _gameState.isSoloMode,
+                    isUserWinner: isUserWinner,
+                  ),
                 ),
-              ),
-            );
-          } else {
-            _resetRound();
+              );
+            } else {
+              _resetRound();
+            }
           }
         });
       }
     });
   }
 
+
+  void _handleTournamentProgress() {
+    final isUserWinner = _gameState.getWinner() == _gameState.team1;
+
+    print('🏆 Fin de match: ${isUserWinner ? "Victoire" : "Défaite"}');
+    _gameState.tournamentState!.printTournamentStatus();
+
+    _gameState.tournamentState!.advanceToNextRound(isUserWinner);
+
+    if (_gameState.tournamentState!.currentPhase == TournamentPhase.finished) {
+      print('🏁 Affichage de l\'écran de fin de tournoi');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TournamentResultScreen(
+            userTeam: _gameState.team1!,
+            userWins: _gameState.tournamentState!.userWins,
+            aiWins: _gameState.tournamentState!.aiWins,
+            isWinner: isUserWinner && _gameState.tournamentState!.userWins > 0,
+          ),
+        ),
+      );
+    } else {
+      print('➡️ Passage au match suivant');
+
+      _gameState.team2 = _gameState.tournamentState!.currentOpponent;
+
+      _gameState.team1Results.clear();
+      _gameState.team2Results.clear();
+      _gameState.roundNumber = 1;
+      _gameState.currentTeam = _gameState.team1;
+      _gameState.currentPhase = GamePhase.playerShooting;
+      _gameState.isGoalScored = false;
+
+      _ballAnimationController.reset();
+      _goalkeeperController.reset();
+      _isShooting = false;
+
+      // CORRECTION: Réinitialiser les animations de ballon pour le nouveau match
+      _initializeBallAnimations();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🥅 ${_gameState.tournamentState!.getPhaseName()}\n${_gameState.team1!.name} vs ${_gameState.team2!.name}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.blue,
+        ),
+      );
+
+      AudioManager.playSound('whistle');
+
+      setState(() {});
+
+      print('🔄 Interface mise à jour pour le nouveau match');
+    }
+  }
+
   void _resetRound() {
     _ballAnimationController.reset();
     _goalkeeperController.reset();
-    _gameState.shouldStartNewRound();
-    _gameState.switchTeam();
-    _gameState.currentPhase = GamePhase.playerShooting;
-    _gameState.isGoalScored = false;
-    _isShooting = false;
-    AudioManager.playSound('whistle');
 
-    // Vérifier si c'est l'IA qui doit jouer
-    _handleAITurn();  // L'IA joue automatiquement après chaque round
+    setState(() {
+      if (_gameState.isTournamentMode) {
+        _gameState.currentPhase = GamePhase.playerShooting;
+        _gameState.isGoalScored = false;
+        _isShooting = false;
+
+        if (_gameState.currentTeam == _gameState.team2) {
+          _handleAITurn();
+        }
+      } else {
+        _gameState.shouldStartNewRound();
+        _gameState.switchTeam();
+        _gameState.currentPhase = GamePhase.playerShooting;
+        _gameState.isGoalScored = false;
+        _isShooting = false;
+
+        if (_gameState.currentTeam == _gameState.team2 && _gameState.isSoloMode) {
+          _handleAITurn();
+        }
+      }
+    });
+
+    AudioManager.playSound('whistle');
   }
 
-
-
-  // Méthode pour obtenir la couleur de l'équipe adverse
   Color _getOpponentTeamColor() {
     if (_gameState.currentTeam == _gameState.team1) {
       return _gameState.team2!.color;
@@ -345,14 +413,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   String _getStatusText() {
     switch (_gameState.currentPhase) {
       case GamePhase.playerShooting:
-        if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+        if ((_gameState.isSoloMode || _gameState.isTournamentMode) &&
+            _gameState.currentTeam == _gameState.team2) {
           return "L'IA réfléchit...";
         }
         return "Au tour de ${_gameState.currentTeam!.name} - Choisissez une direction";
       case GamePhase.goalkeeeperSaving:
         return "Le gardien plonge...";
       case GamePhase.goalScored:
-      // 🔥 Ici, personnalisation du message selon effet et puissance
         if (_gameState.shotEffect == ShotEffect.lob) {
           return "But sur LOB ! 🎯";
         } else if (_gameState.shotEffect == ShotEffect.curve) {
@@ -365,7 +433,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           return "But pour ${_gameState.currentTeam!.name} !";
         }
       case GamePhase.goalSaved:
-      // 🔥 Ici, on précise aussi si la balle était faible ou si c'était un lob raté
         if (_gameState.shotPower < 20) {
           return "Tir trop faible ! 😢";
         } else if (_gameState.shotEffect == ShotEffect.lob) {
@@ -381,6 +448,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         return "";
     }
   }
+
   String _getResultText() {
     if (_gameState.isGoalScored) {
       if (_gameState.shotEffect == ShotEffect.lob) {
@@ -437,7 +505,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           child: SafeArea(
             child: Column(
               children: [
-                // Score Board
+                // Afficher la phase du tournoi si en mode tournoi
+                if (_gameState.isTournamentMode && _gameState.tournamentState != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    margin: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _gameState.tournamentState!.getPhaseName(),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+
+                // Score Board (existant)
                 ScoreBoardWidget(
                   team1: _gameState.team1!,
                   team2: _gameState.team2!,
@@ -708,7 +795,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 // Indicateur pour le tour de l'IA
-                if (_gameState.isSoloMode &&
+                if ((_gameState.isSoloMode || _gameState.isTournamentMode) && // FIX
                     _gameState.currentTeam == _gameState.team2 &&
                     _gameState.currentPhase == GamePhase.playerShooting)
                   Padding(
@@ -727,7 +814,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                 // Shot Controls
                 if (_gameState.currentPhase == GamePhase.playerShooting &&
-                    !(_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2))
+                    (_gameState.currentTeam == _gameState.team1 ||
+                        (!_gameState.isSoloMode && !_gameState.isTournamentMode))) // FIX
                   ShotControllerWidget(
                     onShoot: (direction, power, effect) => _shoot(direction, power, effect),
                   ),

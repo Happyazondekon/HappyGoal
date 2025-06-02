@@ -10,6 +10,184 @@ enum GamePhase {
   goalSaved,
   gameOver,
 }
+enum TournamentPhase {
+  notStarted,
+  roundOf16,
+  quarterFinals,
+  semiFinals,
+  finalMatch,
+  finished
+}
+
+class TournamentState {
+  final List<Team> allTeams;
+  List<Team> remainingTeams;
+  TournamentPhase currentPhase;
+  Team? userTeam;
+  Team? currentOpponent;
+  int userWins = 0;
+  int aiWins = 0;
+  int currentMatchInPhase = 0;
+
+  TournamentState({
+    required this.allTeams,
+    required this.userTeam,
+  })  : remainingTeams = List.from(allTeams)..remove(userTeam),
+        currentPhase = TournamentPhase.notStarted;
+
+  void startTournament() {
+    // Enlever l'équipe utilisateur de la liste des adversaires
+    remainingTeams = List.from(allTeams)..remove(userTeam);
+    remainingTeams.shuffle();
+
+    // Commencer par les huitièmes de finale (8 adversaires)
+    currentPhase = TournamentPhase.roundOf16;
+    currentMatchInPhase = 1;
+    currentOpponent = remainingTeams.first;
+
+    print('🏆 Début du tournoi - ${remainingTeams.length} adversaires');
+    print('🥅 Premier adversaire: ${currentOpponent?.name}');
+  }
+
+  void advanceToNextRound(bool userWon) {
+    print('📝 Résultat du match: ${userWon ? "Victoire" : "Défaite"} contre ${currentOpponent?.name}');
+
+    if (userWon) {
+      userWins++;
+      print('✅ Victoires utilisateur: $userWins');
+    } else {
+      aiWins++;
+      print('❌ L\'utilisateur a perdu - Tournoi terminé');
+      currentPhase = TournamentPhase.finished;
+      return;
+    }
+
+    // Enlever l'adversaire battu
+    remainingTeams.remove(currentOpponent);
+    currentMatchInPhase++;
+
+    print('🔄 Adversaires restants: ${remainingTeams.length}');
+
+    // Vérifier si on doit passer à la phase suivante
+    if (_shouldAdvanceToNextPhase()) {
+      _advancePhase();
+    }
+
+    // Vérifier si le tournoi est terminé
+    if (remainingTeams.isEmpty || currentPhase == TournamentPhase.finished) {
+      print('🏆 TOURNOI TERMINÉ !');
+      currentPhase = TournamentPhase.finished;
+      return;
+    }
+
+    // Définir le prochain adversaire
+    currentOpponent = remainingTeams.first;
+    print('⚽ Prochain adversaire: ${currentOpponent?.name} (${getPhaseName()})');
+  }
+  bool _shouldAdvanceToNextPhase() {
+    switch (currentPhase) {
+      case TournamentPhase.roundOf16:
+        return currentMatchInPhase > _getMatchesInPhase(TournamentPhase.roundOf16);
+      case TournamentPhase.quarterFinals:
+        return currentMatchInPhase > _getMatchesInPhase(TournamentPhase.quarterFinals);
+      case TournamentPhase.semiFinals:
+        return currentMatchInPhase > _getMatchesInPhase(TournamentPhase.semiFinals);
+      case TournamentPhase.finalMatch:
+        return true; // Après la finale, c'est fini
+      default:
+        return false;
+    }
+  }
+
+  int _getMatchesInPhase(TournamentPhase phase) {
+    switch (phase) {
+      case TournamentPhase.roundOf16:
+        return 1; // 1 match pour passer aux quarts
+      case TournamentPhase.quarterFinals:
+        return 1; // 1 match pour passer aux demis
+      case TournamentPhase.semiFinals:
+        return 1; // 1 match pour passer en finale
+      case TournamentPhase.finalMatch:
+        return 1; // 1 match final
+      default:
+        return 0;
+    }
+  }
+
+  void _advancePhase() {
+    currentMatchInPhase = 1; // Reset du compteur de matchs
+
+    switch (currentPhase) {
+      case TournamentPhase.roundOf16:
+        currentPhase = TournamentPhase.quarterFinals;
+        print('🏅 PASSAGE AUX QUARTS DE FINALE !');
+        break;
+      case TournamentPhase.quarterFinals:
+        currentPhase = TournamentPhase.semiFinals;
+        print('🏅 PASSAGE AUX DEMI-FINALES !');
+        break;
+      case TournamentPhase.semiFinals:
+        currentPhase = TournamentPhase.finalMatch;
+        print('🏅 PASSAGE EN FINALE !');
+        break;
+      case TournamentPhase.finalMatch:
+        currentPhase = TournamentPhase.finished;
+        print('🏆 TOURNOI TERMINÉ !');
+        break;
+      default:
+        break;
+    }
+  }
+
+  String getPhaseName() {
+    switch (currentPhase) {
+      case TournamentPhase.roundOf16:
+        return 'Huitièmes de finale';
+      case TournamentPhase.quarterFinals:
+        return 'Quarts de finale';
+      case TournamentPhase.semiFinals:
+        return 'Demi-finales';
+      case TournamentPhase.finalMatch:
+        return 'Finale';
+      case TournamentPhase.finished:
+        return 'Tournoi terminé';
+      default:
+        return 'Tournoi';
+    }
+  }
+
+  String getMatchInfo() {
+    if (currentOpponent == null) return '';
+    return '${userTeam?.name} vs ${currentOpponent?.name}';
+  }
+
+  String getTournamentProgress() {
+    switch (currentPhase) {
+      case TournamentPhase.roundOf16:
+        return 'Match $currentMatchInPhase/1 - Huitièmes';
+      case TournamentPhase.quarterFinals:
+        return 'Match $currentMatchInPhase/1 - Quarts';
+      case TournamentPhase.semiFinals:
+        return 'Match $currentMatchInPhase/1 - Demis';
+      case TournamentPhase.finalMatch:
+        return 'FINALE';
+      default:
+        return getPhaseName();
+    }
+  }
+
+  // Méthode pour débugger l'état du tournoi
+  void printTournamentStatus() {
+    print('=== ÉTAT DU TOURNOI ===');
+    print('Phase: ${getPhaseName()}');
+    print('Match dans la phase: $currentMatchInPhase');
+    print('Victoires utilisateur: $userWins');
+    print('Défaites: $aiWins');
+    print('Adversaires restants: ${remainingTeams.length}');
+    print('Adversaire actuel: ${currentOpponent?.name}');
+    print('======================');
+  }
+}
 
 class ShotDirection {
   static const int left = 0;
@@ -61,6 +239,7 @@ class GameState {
   bool isGoalScored;
   int goalkeepeerDirection;
 
+
   int shotPower;
   String shotEffect;
   double shotPrecision;
@@ -68,6 +247,8 @@ class GameState {
   // ➡️ Nouvelles propriétés pour IA
   bool isSoloMode = false;
   AIOpponent? aiOpponent;
+  TournamentState? tournamentState;
+  bool isTournamentMode = false;
 
   Map<String, int> team1EffectUsage = {};
   Map<String, int> team2EffectUsage = {};
@@ -99,9 +280,9 @@ class GameState {
     this.shotEffect = ShotEffect.normal,
     this.shotPrecision = 1.0,
     this.isSoloMode = false,
-    double? aiIntelligenceLevel, // Nouveau paramètre optionnel
+    double? aiIntelligenceLevel, required bool isTournamentMode, // Nouveau paramètre optionnel
   }) {
-    currentTeam = team1;
+    currentTeam = team1!;
 
     // Initialiser l'IA si en mode solo avec l'intelligence spécifiée
     if (isSoloMode) {

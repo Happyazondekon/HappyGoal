@@ -23,7 +23,10 @@ class AIOpponent {
     // ---- DIRECTION AVANCÉE ----
     int direction;
     double directionChoice = _random.nextDouble();
-
+    // Augmentez progressivement la difficulté
+    double adjustedIntelligence = intelligence;
+    if (_shotsTaken > 20) adjustedIntelligence = min(1.0, intelligence + 0.2);
+    if (_shotsTaken > 40) adjustedIntelligence = min(1.0, intelligence + 0.3);
     // L'IA évite de tirer dans la même direction plusieurs fois de suite
     if (_previousDirection != -1 && _consecutiveSameDirection >= 1 && _random.nextDouble() < intelligence * 0.9) {
       // Choisit délibérément une direction différente
