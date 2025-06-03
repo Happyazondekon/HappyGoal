@@ -280,31 +280,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
-          if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
-            if (_gameState.checkWinner()) {
+          if (_gameState.checkWinner()) {
+            if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
               _handleTournamentProgress();
             } else {
-              _resetRound();
-            }
-          } else { // Solo Mode
-            if (_gameState.checkWinner()) {
+              // Mode normal (existant)
               final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
+
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (_) => ResultScreen(
                     winner: _gameState.getWinner()!,
                     loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
-                    winnerResults: _gameState.getWinner() == _gameState.team1 ? _gameState.team1Results : _gameState.team2Results,
-                    loserResults: _gameState.getWinner() == _gameState.team1 ? _gameState.team2Results : _gameState.team1Results,
+                    winnerResults: _gameState.getWinner() == _gameState.team1
+                        ? _gameState.team1Results
+                        : _gameState.team2Results,
+                    loserResults: _gameState.getWinner() == _gameState.team1
+                        ? _gameState.team2Results
+                        : _gameState.team1Results,
                     isSoloMode: _gameState.isSoloMode,
                     isUserWinner: isUserWinner,
                   ),
                 ),
               );
-            } else {
-              _resetRound();
             }
+          } else {
+            _resetRound();
           }
         });
       }
@@ -312,17 +314,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
+  // Ajoutez cette nouvelle méthode pour gérer la progression du tournoi
   void _handleTournamentProgress() {
     final isUserWinner = _gameState.getWinner() == _gameState.team1;
-
-    print('🏆 Fin de match: ${isUserWinner ? "Victoire" : "Défaite"}');
-    _gameState.tournamentState!.printTournamentStatus();
-
     _gameState.tournamentState!.advanceToNextRound(isUserWinner);
 
     if (_gameState.tournamentState!.currentPhase == TournamentPhase.finished) {
-      print('🏁 Affichage de l\'écran de fin de tournoi');
-
+      // Afficher l'écran de fin de tournoi
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -330,46 +328,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             userTeam: _gameState.team1!,
             userWins: _gameState.tournamentState!.userWins,
             aiWins: _gameState.tournamentState!.aiWins,
-            isWinner: isUserWinner && _gameState.tournamentState!.userWins > 0,
+            isWinner: _gameState.tournamentState!.userWins > _gameState.tournamentState!.aiWins,
           ),
         ),
       );
     } else {
-      print('➡️ Passage au match suivant');
-
+      // Passer au prochain adversaire
       _gameState.team2 = _gameState.tournamentState!.currentOpponent;
+      _gameState.reset();
+      _resetRound();
 
-      _gameState.team1Results.clear();
-      _gameState.team2Results.clear();
-      _gameState.roundNumber = 1;
-      _gameState.currentTeam = _gameState.team1;
-      _gameState.currentPhase = GamePhase.playerShooting;
-      _gameState.isGoalScored = false;
-
-      _ballAnimationController.reset();
-      _goalkeeperController.reset();
-      _isShooting = false;
-
-      // CORRECTION: Réinitialiser les animations de ballon pour le nouveau match
-      _initializeBallAnimations();
-
+      // Afficher un message pour le nouveau match
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '🥅 ${_gameState.tournamentState!.getPhaseName()}\n${_gameState.team1!.name} vs ${_gameState.team2!.name}',
+            'Prochain match: ${_gameState.tournamentState!.getPhaseName()}',
             style: const TextStyle(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
           ),
-          duration: const Duration(seconds: 3),
-          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 2),
         ),
       );
-
-      AudioManager.playSound('whistle');
-
-      setState(() {});
-
-      print('🔄 Interface mise à jour pour le nouveau match');
     }
   }
 
@@ -377,29 +355,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _ballAnimationController.reset();
     _goalkeeperController.reset();
 
-    setState(() {
-      if (_gameState.isTournamentMode) {
-        _gameState.currentPhase = GamePhase.playerShooting;
-        _gameState.isGoalScored = false;
-        _isShooting = false;
+    if (!_gameState.isTournamentMode) {
+      _gameState.shouldStartNewRound();
+    }
 
-        if (_gameState.currentTeam == _gameState.team2) {
-          _handleAITurn();
-        }
-      } else {
-        _gameState.shouldStartNewRound();
-        _gameState.switchTeam();
-        _gameState.currentPhase = GamePhase.playerShooting;
-        _gameState.isGoalScored = false;
-        _isShooting = false;
-
-        if (_gameState.currentTeam == _gameState.team2 && _gameState.isSoloMode) {
-          _handleAITurn();
-        }
-      }
-    });
-
+    _gameState.switchTeam();
+    _gameState.currentPhase = GamePhase.playerShooting;
+    _gameState.isGoalScored = false;
+    _isShooting = false;
     AudioManager.playSound('whistle');
+
+    // Vérifier si c'est l'IA qui doit jouer
+    if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+      _handleAITurn();
+    }
   }
 
   Color _getOpponentTeamColor() {

@@ -280,12 +280,15 @@ class GameState {
     this.shotEffect = ShotEffect.normal,
     this.shotPrecision = 1.0,
     this.isSoloMode = false,
-    double? aiIntelligenceLevel, required bool isTournamentMode, // Nouveau paramètre optionnel
+    double? aiIntelligenceLevel,
+    required bool isTournamentMode, // Nouveau paramètre optionnel
   }) {
-    currentTeam = team1!;
+    this.isSoloMode = isTournamentMode ? true : isSoloMode;  // En mode tournoi, toujours activer l'IA
+    this.isTournamentMode = isTournamentMode;
+    currentTeam = team1;
 
-    // Initialiser l'IA si en mode solo avec l'intelligence spécifiée
-    if (isSoloMode) {
+    // Initialiser l'IA si en mode solo ou tournoi
+    if (this.isSoloMode || this.isTournamentMode) {
       aiOpponent = AIOpponent(intelligence: aiIntelligenceLevel ?? 0.6);
     }
 
