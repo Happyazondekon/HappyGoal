@@ -66,7 +66,7 @@ class Team {
       ),
       Team(
         name: 'Japon',
-        color: Colors.white,
+        color: Colors.greenAccent,
         flagImage: 'assets/images/flags/japan_flag.png',
       ),
       Team(
