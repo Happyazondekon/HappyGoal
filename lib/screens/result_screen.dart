@@ -372,7 +372,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                   Colors.orange,
                   Colors.white,
                 ],
-                shouldLoop: true,
+                shouldLoop: false,
               ),
             ),
         ],

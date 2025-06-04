@@ -1,6 +1,7 @@
 // tournament_result_screen.dart
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:lottie/lottie.dart';
 import '../models/team.dart';
 import 'home_screen.dart';
@@ -236,6 +237,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
           Colors.yellow,
           Colors.red,
         ],
+        shouldLoop: true,
       ),
     );
   }
@@ -278,7 +280,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
             isChampion ? 'CHAMPION!' :
             widget.userWins > widget.aiWins ? 'BONNE PERFORMANCE!' : 'DÉFAITE',
             style: const TextStyle(
-              fontSize: 32,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 3,
@@ -521,7 +523,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 09,
               fontWeight: FontWeight.w600,
               color: Colors.grey[600],
             ),
@@ -535,7 +537,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   Widget _buildActionButtons() {
     return Column(
       children: [
-        // Bouton principal
+        // Bouton principal (inchangé)
         ElevatedButton(
           onPressed: () {
             Navigator.pushAndRemoveUntil(
@@ -576,11 +578,16 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
 
         const SizedBox(height: 15),
 
-        // Bouton secondaire - Rejouer
+        // Bouton secondaire - Nouveau tournoi (modifié)
         OutlinedButton(
           onPressed: () {
-            // Logique pour rejouer le tournoi
-            Navigator.pop(context);
+            // Remplacer la navigation simple par pushReplacement
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TournamentModeScreen(), // Créer une nouvelle instance sans équipe
+              ),
+            );
           },
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Colors.white, width: 2),

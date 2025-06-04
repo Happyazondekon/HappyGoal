@@ -40,13 +40,28 @@ class TournamentState {
     remainingTeams = List.from(allTeams)..remove(userTeam);
     remainingTeams.shuffle();
 
-    // Commencer par les huitièmes de finale (8 adversaires)
+    // Vérifier et ajuster l'adversaire si nécessaire
+    _setNextValidOpponent();
+
+    // Commencer par les huitièmes de finale
     currentPhase = TournamentPhase.roundOf16;
     currentMatchInPhase = 1;
-    currentOpponent = remainingTeams.first;
 
     print('🏆 Début du tournoi - ${remainingTeams.length} adversaires');
     print('🥅 Premier adversaire: ${currentOpponent?.name}');
+  }
+
+// Nouvelle méthode pour définir un adversaire valide
+  void _setNextValidOpponent() {
+    if (remainingTeams.isEmpty) return;
+
+    // Trouver le premier adversaire qui n'est pas l'équipe utilisateur
+    for (var team in remainingTeams) {
+      if (team != userTeam) {
+        currentOpponent = team;
+        break;
+      }
+    }
   }
 
   void advanceToNextRound(bool userWon) {

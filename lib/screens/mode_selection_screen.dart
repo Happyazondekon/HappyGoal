@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import '../constants.dart';
+import 'home_screen.dart';
 import 'team_selection_screen.dart';
 import 'difficulty_selection_screen.dart';
 import '../utils/audio_manager.dart';
@@ -101,7 +102,7 @@ class ModeSelectionScreen extends StatelessWidget {
                       _buildModeButton(
                         context,
                         title: 'MODE TOURNOI',
-                        subtitle: 'Affrontez 8 équipes IA',
+                        subtitle: 'Tentez de gagner le Tournoi Happy',
                         icon: Icons.emoji_events,
                         onPressed: () {
                           AudioManager.playSound('click');
@@ -116,11 +117,15 @@ class ModeSelectionScreen extends StatelessWidget {
 
                       const SizedBox(height: 30),  // Espace réduit
 
-                      // Bouton Retour
                       TextButton.icon(
                         onPressed: () {
                           AudioManager.playSound('click');
-                          Navigator.pop(context);
+                          // Remplacer Navigator.pop par pushAndRemoveUntil pour retourner à l'accueil
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                (route) => false, // Supprimer toutes les routes précédentes
+                          );
                         },
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
                         label: const Text(
