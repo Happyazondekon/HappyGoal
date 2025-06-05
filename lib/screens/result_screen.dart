@@ -10,8 +10,8 @@ class ResultScreen extends StatefulWidget {
   final Team loser;
   final List<bool> winnerResults;
   final List<bool> loserResults;
-  final bool isSoloMode; // Nouveau paramètre pour indiquer le mode de jeu
-  final bool isUserWinner; // Nouveau paramètre pour indiquer si l'utilisateur a gagné
+  final bool isSoloMode;
+  final bool isUserWinner;
 
   const ResultScreen({
     Key? key,
@@ -19,8 +19,8 @@ class ResultScreen extends StatefulWidget {
     required this.loser,
     required this.winnerResults,
     required this.loserResults,
-    this.isSoloMode = false, // Par défaut, on considère que ce n'est pas le mode solo
-    this.isUserWinner = true, // Par défaut, on considère que l'utilisateur a gagné
+    this.isSoloMode = false,
+    this.isUserWinner = true,
   }) : super(key: key);
 
   @override
@@ -32,8 +32,6 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
-
-  // Maximum number of shots to display
   final int _maxShotsToDisplay = 5;
 
   @override
@@ -61,7 +59,6 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
     _animationController.forward();
 
-    // Ne joue les confettis que si l'utilisateur a gagné en mode solo ou en mode multijoueur
     if (!widget.isSoloMode || widget.isUserWinner) {
       _confettiController.play();
     }
@@ -74,284 +71,337 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
-  // Method to get the last N shots from a results list
   List<bool> _getLastShots(List<bool> results) {
-    if (results.length <= _maxShotsToDisplay) {
-      return results;
-    }
+    if (results.length <= _maxShotsToDisplay) return results;
     return results.sublist(results.length - _maxShotsToDisplay);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Déterminer si on est dans un cas de défaite en mode solo
     final bool isDefeat = widget.isSoloMode && !widget.isUserWinner;
-
-    // Couleur de fond en fonction du résultat
-    final Color backgroundColor = isDefeat
-        ? Colors.grey[800]! // Couleur sombre pour la défaite
-        : widget.winner.color;
-
-    // Titre à afficher en fonction du résultat
-    final String resultTitle = isDefeat ? 'DÉFAITE...' : 'VICTOIRE!';
+    final Color primaryColor = isDefeat ? Colors.grey[800]! : widget.winner.color;
+    final String resultTitle = isDefeat ? 'DÉFAITE' : 'VICTOIRE';
 
     return Scaffold(
       body: Stack(
         children: [
-          // Arrière-plan avec dégradé animé
-          AnimatedContainer(
-            duration: const Duration(seconds: 2),
+          // Arrière-plan dégradé moderne
+          Container(
             decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.5,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  backgroundColor.withOpacity(0.8),
+                  primaryColor.withOpacity(0.9),
+                  primaryColor.withOpacity(0.7),
                   AppColors.background.withOpacity(0.9),
                 ],
-                stops: const [0.1, 1.0],
+                stops: const [0.0, 0.5, 1.0],
               ),
             ),
           ),
 
-          // Effets de particules
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _ParticlePainter(),
-            ),
-          ),
+          // Particules flottantes
+          ...List.generate(12, (index) {
+            return Positioned(
+              left: (index * 35.0) % MediaQuery.of(context).size.width,
+              top: (index * 50.0) % MediaQuery.of(context).size.height,
+              child: FloatingParticle(
+                size: 2.0 + (index % 3),
+                color: Colors.white.withOpacity(0.1 + (index % 3) * 0.1),
+                duration: Duration(seconds: 4 + (index % 3)),
+              ),
+            );
+          }),
 
           // Contenu principal
-          Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Titre "VICTOIRE" ou "DÉFAITE" avec animation
-                  ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: FadeTransition(
-                      opacity: _opacityAnimation,
-                      child: Text(
-                        resultTitle,
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 2.0,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(3.0, 3.0),
-                              blurRadius: 6.0,
-                              color: Colors.black54,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Drapeau de l'équipe gagnante avec effet de brillance
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 220,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.winner.color.withOpacity(0.6),
-                              blurRadius: 30,
-                              spreadRadius: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Image.asset(
-                        widget.winner.flagImage,
-                        width: 200,
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Nom de l'équipe gagnante
-                  Text(
-                    widget.winner.name.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      shadows: [
-                        const Shadow(
-                          offset: Offset(2.0, 2.0),
-                          blurRadius: 4.0,
-                          color: Colors.black54,
-                        ),
-                      ],
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = 1
-                        ..color = widget.winner.color.withOpacity(0.8),
-                    ),
-                  ),
-
-                  // Message spécial pour la défaite en mode solo
-                  if (isDefeat)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                      child: Text(
-                        "L'IA a remporté cette séance de tirs au but !",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withOpacity(0.8),
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-
-                  const SizedBox(height: 30),
-
-                  // Carte des scores
-                  ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: FadeTransition(
-                      opacity: _opacityAnimation,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Score
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildTeamCard(widget.winner, true),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.redAccent.withOpacity(0.8),
-                                          Colors.orange.withOpacity(0.8),
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(15),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.redAccent.withOpacity(0.4),
-                                          blurRadius: 10,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
+          SafeArea(
+            child: Column(
+              children: [
+                // Header avec titre
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: TweenAnimationBuilder(
+                      duration: const Duration(milliseconds: 800),
+                      tween: Tween<double>(begin: 0, end: 1),
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: Opacity(
+                            opacity: value,
+                            child: ShaderMask(
+                              shaderCallback: (bounds) => LinearGradient(
+                                colors: [
+                                  Colors.white,
+                                  Color(0xFFE0E0E0),
+                                  Colors.white,
+                                ],
+                              ).createShader(bounds),
+                              child: Text(
+                                resultTitle,
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 2,
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(0, 0),
+                                      blurRadius: 20,
+                                      color: Colors.white,
                                     ),
-                                    child: Text(
-                                      '${widget.winner.score} - ${widget.loser.score}',
-                                      style: const TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
+                                    Shadow(
+                                      offset: Offset(0, 5),
+                                      blurRadius: 15,
+                                      color: Colors.black,
                                     ),
-                                  ),
+                                  ],
                                 ),
-                                _buildTeamCard(widget.loser, false),
-                              ],
+                              ),
                             ),
-
-                            const SizedBox(height: 30),
-
-                            // Statistiques des tirs
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildShotStats(widget.winner, widget.winnerResults),
-                                _buildShotStats(widget.loser, widget.loserResults),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  // Message d'encouragement en cas de défaite
-                  if (isDefeat)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        "Ne vous découragez pas, réessayez !",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white.withOpacity(0.9),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                  // Bouton de retour
-                  AnimatedOpacity(
-                    opacity: 1.0,
-                    duration: const Duration(seconds: 1),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const HomeScreen()),
-                              (route) => false,
+                          ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 8,
-                        shadowColor: widget.winner.color.withOpacity(0.5),
-                      ),
-                      child: Text(
-                        isDefeat ? 'REVANCHE' : 'RETOUR AU MENU',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Contenu central
+                Expanded(
+                  flex: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Drapeau de l'équipe gagnante
+                        TweenAnimationBuilder(
+                          duration: Duration(milliseconds: 600),
+                          tween: Tween<double>(begin: 0, end: 1),
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(50 * (1 - value), 0),
+                              child: Opacity(
+                                opacity: value,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: 220,
+                                      height: 140,
+                                      decoration: BoxDecoration(
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: widget.winner.color.withOpacity(0.6),
+                                            blurRadius: 30,
+                                            spreadRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Image.asset(
+                                      widget.winner.flagImage,
+                                      width: 200,
+                                      height: 120,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Nom de l'équipe gagnante
+                        Text(
+                          widget.winner.name.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            foreground: Paint()
+                              ..style = PaintingStyle.stroke
+                              ..strokeWidth = 1
+                              ..color = widget.winner.color.withOpacity(0.8),
+                            shadows: [
+                              Shadow(
+                                offset: Offset(2.0, 2.0),
+                                blurRadius: 4.0,
+                                color: Colors.black54,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Message spécial pour la défaite
+                        if (isDefeat)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                            child: Text(
+                              "L'IA a remporté cette séance de tirs au but !",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.8),
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 30),
+
+                        // Carte des scores
+                        ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: FadeTransition(
+                            opacity: _opacityAnimation,
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  // Score
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _buildTeamCard(widget.winner, true),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.redAccent.withOpacity(0.8),
+                                                Colors.orange.withOpacity(0.8),
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(15),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.redAccent.withOpacity(0.4),
+                                                blurRadius: 10,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Text(
+                                            '${widget.winner.score} - ${widget.loser.score}',
+                                            style: const TextStyle(
+                                              fontSize: 36,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      _buildTeamCard(widget.loser, false),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 30),
+
+                                  // Statistiques des tirs
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      _buildShotStats(widget.winner, widget.winnerResults),
+                                      _buildShotStats(widget.loser, widget.loserResults),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Boutons
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: TweenAnimationBuilder(
+                      duration: const Duration(milliseconds: 1000),
+                      tween: Tween<double>(begin: 0, end: 1),
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: Opacity(
+                            opacity: value,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                        (route) => false,
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white.withOpacity(0.15),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                    side: BorderSide(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  isDefeat ? 'REVANCHE' : 'RETOUR AU MENU',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
             ),
           ),
 
-          // Confettis - uniquement pour les victoires
+          // Confettis
           if (!isDefeat)
             Align(
               alignment: Alignment.topCenter,
@@ -501,23 +551,65 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   }
 }
 
-class _ParticlePainter extends CustomPainter {
+class FloatingParticle extends StatefulWidget {
+  final double size;
+  final Color color;
+  final Duration duration;
+
+  const FloatingParticle({
+    Key? key,
+    required this.size,
+    required this.color,
+    required this.duration,
+  }) : super(key: key);
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
-      ..style = PaintingStyle.fill;
+  _FloatingParticleState createState() => _FloatingParticleState();
+}
 
-    final random = Random(DateTime.now().millisecond);
+class _FloatingParticleState extends State<FloatingParticle> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
-    for (int i = 0; i < 50; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
-      final radius = random.nextDouble() * 3 + 1;
-      canvas.drawCircle(Offset(x, y), radius, paint);
-    }
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

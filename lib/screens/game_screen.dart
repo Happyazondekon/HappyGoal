@@ -218,7 +218,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final TextStyle goalTextStyle = TextStyle(
       fontSize: responsiveFontSize(48),
       fontWeight: FontWeight.bold,
-      color: Colors.yellowAccent,
+      color: Colors.white,
       shadows: [
         Shadow(
           color: _controller.gameState.currentTeam?.color ?? AppColors.primary, //

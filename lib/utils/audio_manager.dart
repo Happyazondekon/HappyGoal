@@ -30,6 +30,7 @@ class AudioManager {
         'goal',
         'goalkeeper_save',
         'kick',
+        'click',
         'whistle',
       ];
 
