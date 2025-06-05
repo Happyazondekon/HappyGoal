@@ -95,7 +95,7 @@ class _DifficultySelectionScreenState extends State<DifficultySelectionScreen> {
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/stadium_background.jpg'),
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
               ),
             ),
             child: Container(color: Colors.black.withOpacity(0.5)),

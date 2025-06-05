@@ -19,7 +19,7 @@ class ModeSelectionScreen extends StatelessWidget {
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/stadium_background.jpg'),
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
               ),
             ),
             child: BackdropFilter(
@@ -28,7 +28,7 @@ class ModeSelectionScreen extends StatelessWidget {
                 BlendMode.darken,
               ),
               child: Container(
-                color: Colors.transparent,
+                color: Colors.black.withOpacity(0.1),
               ),
             ),
           ),

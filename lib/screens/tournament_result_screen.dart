@@ -207,7 +207,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/stadium_background.jpg'),
-            fit: BoxFit.cover,
+            fit: BoxFit.fill,
             opacity: 0.3,
           ),
         ),

@@ -30,7 +30,7 @@ class ScoreBoardWidget extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF4CAF50),
+            Color(0xFF8BC34A),
             Color(0xFFF5F5F5),
           ],
         ),
@@ -107,7 +107,7 @@ class ScoreBoardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF4CAF50),
+            Color(0xFF8BC34A),
             Color(0xFFF5F5F5),
           ],
         ),
