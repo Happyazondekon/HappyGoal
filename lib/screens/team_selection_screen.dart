@@ -11,14 +11,20 @@ class TeamSelectionScreen extends StatefulWidget {
   final bool isTournamentMode;
   final Function(Team)? onTeamSelected;
   final double? aiIntelligence;
+  final Team? preSelectedTeam1;
+  final Team? preSelectedTeam2;
+  final bool startDirectly;
 
   const TeamSelectionScreen({
     Key? key,
-    required this.isSoloMode,
+    this.isSoloMode = false,
     this.isTournamentMode = false,
-    this.onTeamSelected,
     this.aiIntelligence,
+    this.preSelectedTeam1,
+    this.preSelectedTeam2,
+    this.startDirectly = false, this.onTeamSelected,
   }) : super(key: key);
+
 
   @override
   State<TeamSelectionScreen> createState() => _TeamSelectionScreenState();
@@ -36,6 +42,20 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
   @override
   void initState() {
     super.initState();
+    // Si les équipes sont pré-sélectionnées, les assigner
+    if (widget.preSelectedTeam1 != null) {
+      selectedTeam1 = widget.preSelectedTeam1;
+    }
+    if (widget.preSelectedTeam2 != null) {
+      selectedTeam2 = widget.preSelectedTeam2;
+    }
+
+    // Si on doit démarrer directement, lancer le match
+    if (widget.startDirectly && selectedTeam1 != null && selectedTeam2 != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startGame();
+      });
+    }
     // FIX: Prendre en compte le mode tournoi
     if (widget.isTournamentMode) {
       _modeTitle = 'Mode Tournoi';

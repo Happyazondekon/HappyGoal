@@ -3,6 +3,8 @@ import '../constants.dart';
 import 'mode_selection_screen.dart';
 import '../widgets/audiosettings_widget.dart';
 import '../utils/analytics_service.dart';
+import '../widgets/banner_ad_widget.dart';
+import '../utils/ad_controller.dart';
 
 class PulsatingButton extends StatefulWidget {
   final Widget child;
@@ -130,8 +132,20 @@ class _FloatingParticleState extends State<FloatingParticle>
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialiser le contrôleur de publicités
+    AdController.instance.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -356,6 +370,10 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
+
+                        // Ajoutez l'appel à la méthode ici
+                        const SizedBox(height: 20),
+                        _buildRewardButton(context),
                       ],
                     ),
                   ),
@@ -614,6 +632,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+
                   ),
 
                   // Contenu
@@ -679,7 +698,53 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
-
+  Widget _buildRewardButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: () {
+          AdController.instance.showRewardDialog(
+            context: context,
+            title: 'Bonus quotidien',
+            description: 'Regardez une publicité pour débloquer un bonus spécial !',
+            rewardType: 'daily_bonus',
+            onRewardEarned: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Bonus débloqué ! 🎉'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber.withOpacity(0.9),
+          foregroundColor: Colors.black,
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.card_giftcard, size: 24),
+            const SizedBox(width: 10),
+            Text(
+              AdController.instance.isRewardedAvailable ? 'BONUS DISPONIBLE' : 'BONUS (Bientôt)',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   Widget _buildSectionTitle(String title) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'screens/splash_screen.dart';
 import 'constants.dart';
 import 'utils/audio_manager.dart';
-import 'utils/analytics_service.dart'; // Nous allons créer ce fichier
+import 'utils/analytics_service.dart';
+import 'utils/admob_service.dart'; // Nouveau import
 
 // Instance globale pour l'analytics
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -18,6 +20,17 @@ void main() async {
 
   // Initialisation de l'analytics
   AnalyticsService.initialize(analytics);
+
+  // Initialisation d'AdMob
+  await AdMobService.initialize();
+
+  // Charger les publicités en arrière-plan
+  await AdMobService.instance.loadInterstitialAd();
+  await AdMobService.instance.loadRewardedAd();
+
+  // Récupération automatique des IDs de test
+  final deviceInfo = await MobileAds.instance.getRequestConfiguration();
+  debugPrint('Test Device IDs actuels : ${deviceInfo.testDeviceIds}');
 
   // Préférences d'orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -57,6 +70,8 @@ class _HappyGoalAppState extends State<HappyGoalApp> with WidgetsBindingObserver
     WidgetsBinding.instance.removeObserver(this);
     // Libérer les ressources audio
     AudioManager.dispose();
+    // Libérer les ressources AdMob
+    AdMobService.instance.dispose();
     super.dispose();
   }
 

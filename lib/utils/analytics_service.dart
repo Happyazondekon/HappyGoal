@@ -1,30 +1,33 @@
+// analytics_service.dart
 import 'package:firebase_analytics/firebase_analytics.dart';
 
-/// Service qui gère toutes les interactions avec Firebase Analytics
+/// Service qui gère toutes les interactions avec Firebase Analytics.
+/// Utilise des méthodes statiques pour une utilisation facile dans l'ensemble de l'application.
 class AnalyticsService {
   static late FirebaseAnalytics _analytics;
 
-  /// Initialise le service avec une instance de FirebaseAnalytics
+  /// Initialise le service avec une instance de FirebaseAnalytics.
+  /// Cette méthode doit être appelée au démarrage de l'application.
   static void initialize(FirebaseAnalytics analytics) {
     _analytics = analytics;
   }
 
-  /// Enregistre l'ouverture de l'application
+  /// Enregistre l'ouverture de l'application.
   static Future<void> logAppOpen() async {
     await _analytics.logAppOpen();
   }
 
-  /// Enregistre la mise en arrière-plan de l'application
+  /// Enregistre quand l'application passe en arrière-plan.
   static Future<void> logAppBackground() async {
-    await _analytics.logEvent(name: 'app_background');
+    await _analytics.logEvent(name: 'happygoal_app_background');
   }
 
-  /// Enregistre la remise au premier plan de l'application
+  /// Enregistre quand l'application revient au premier plan.
   static Future<void> logAppForeground() async {
     await _analytics.logEvent(name: 'app_foreground');
   }
 
-  /// Enregistre le début d'une partie
+  /// Enregistre le début d'une partie.
   static Future<void> logGameStart({
     required String gameMode, // 'solo' ou 'multi'
     required String team1Name,
@@ -40,7 +43,7 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre la fin d'une partie
+  /// Enregistre la fin d'une partie.
   static Future<void> logGameEnd({
     required String gameMode,
     required String winnerTeam,
@@ -64,7 +67,7 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre un tir au but
+  /// Enregistre un tir au but.
   static Future<void> logShot({
     required String teamName,
     required String direction, // 'gauche', 'centre', 'droite'
@@ -86,7 +89,7 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre un changement de paramètres audio
+  /// Enregistre un changement de paramètres audio.
   static Future<void> logAudioSettingsChange({
     required bool musicEnabled,
     required bool soundEnabled,
@@ -100,17 +103,17 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre quand l'utilisateur consulte les règles
+  /// Enregistre quand l'utilisateur consulte les règles.
   static Future<void> logRulesView() async {
     await _analytics.logEvent(name: 'rules_view');
   }
 
-  /// Enregistre quand l'utilisateur accède aux paramètres
+  /// Enregistre quand l'utilisateur accède aux paramètres.
   static Future<void> logSettingsView() async {
     await _analytics.logEvent(name: 'settings_view');
   }
 
-  /// Enregistre une erreur non fatale
+  /// Enregistre une erreur non fatale.
   static Future<void> logError(String errorType, String errorMessage) async {
     await _analytics.logEvent(
       name: 'app_error',
@@ -118,6 +121,16 @@ class AnalyticsService {
         'error_type': errorType,
         'error_message': errorMessage,
       },
+    );
+  }
+
+  /// Enregistre un événement publicitaire avec des paramètres optionnels.
+  /// [eventName] le nom de l'événement publicitaire (ex: 'ad_impression', 'ad_click').
+  /// [parameters] un Map de paramètres pour fournir plus de détails.
+  static Future<void> logAdEvent(String eventName, {Map<String, dynamic>? parameters}) async {
+    await _analytics.logEvent(
+      name: eventName,
+      parameters: parameters,
     );
   }
 }

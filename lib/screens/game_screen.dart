@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
+import '../widgets/banner_ad_widget.dart';
 import '../widgets/goal_post_widget.dart';
 import '../widgets/score_board_widget.dart';
 import '../widgets/shot_controller_widget.dart';
 import '../utils/audio_manager.dart';
-
+import '../utils/ad_controller.dart';
 import 'game_controller.dart';
 import 'game_helpers.dart';
 
@@ -60,6 +61,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.dispose(); //
+    AdController.instance.onGameCompleted(context);
     super.dispose();
   }
   Widget _buildBallAnimation(BuildContext context, BoxConstraints gameFieldConstraints) {
@@ -67,13 +69,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       return Container(); //
     }
 
-    final screenWidth = MediaQuery.of(context).size.width; // Peut être utilisé pour des effets globaux
-    // final gameAreaWidth = gameFieldConstraints.maxWidth; // Plus spécifique à la zone de jeu
-    // final gameAreaHeight = gameFieldConstraints.maxHeight; // Plus spécifique à la zone de jeu
+    final screenWidth = MediaQuery.of(context).size.width; // Peut Ãªtre utilisÃ© pour des effets globaux
+    // final gameAreaWidth = gameFieldConstraints.maxWidth; // Plus spÃ©cifique Ã  la zone de jeu
+    // final gameAreaHeight = gameFieldConstraints.maxHeight; // Plus spÃ©cifique Ã  la zone de jeu
 
 
     // Base ball size, can be made responsive to gameAreaWidth or screenWidth
-    double baseBallSize = screenWidth * 0.08; // Ajusté pour être un peu plus petit
+    double baseBallSize = screenWidth * 0.08; // AjustÃ© pour Ãªtre un peu plus petit
     if (baseBallSize > 40) baseBallSize = 40; // Max size
     if (baseBallSize < 25) baseBallSize = 25; // Min size
 
@@ -94,7 +96,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           rotation = _controller.ballAnimationController.value * 2 * pi; //
         }
 
-        // Effet visuel pour knuckle (oscillation aléatoire)
+        // Effet visuel pour knuckle (oscillation alÃ©atoire)
         if (_controller.gameState.shotEffect == 'knuckle' && _controller.ballAnimationController.value > 0.2) { //
           double offsetX = sin(_controller.ballAnimationController.value * 10) * (screenWidth * 0.01); //
           double offsetY = cos(_controller.ballAnimationController.value * 8) * (screenWidth * 0.01); //
@@ -123,8 +125,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           effectWidgets.add( //
             Positioned( //
               left: _controller.ballXAnimation!.value - (screenWidth * 0.04), //
-              // Position de l'ombre relative au bas de la zone de jeu effective, pas écran total
-              // Ceci pourrait nécessiter gameFieldConstraints.maxHeight si la zone de jeu ne commence pas à 0
+              // Position de l'ombre relative au bas de la zone de jeu effective, pas Ã©cran total
+              // Ceci pourrait nÃ©cessiter gameFieldConstraints.maxHeight si la zone de jeu ne commence pas Ã  0
               bottom: gameFieldConstraints.maxHeight * 0.15, // Ajuster cette valeur au besoin
               child: Opacity( //
                 opacity: (1 - _controller.ballAnimationController.value).clamp(0.0, 0.5), //
@@ -141,7 +143,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           );
         }
 
-        // Effet visuel pour tir puissant (trainée de feu)
+        // Effet visuel pour tir puissant (trainÃ©e de feu)
         if (_controller.gameState.shotPower > 80) { //
           for (int i = 1; i <= 5; i++) { //
             double opacity = (1 - i * 0.15).clamp(0.1, 0.7); //
@@ -254,6 +256,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: Column(
               children: [
                 // --- TOP INFO SECTION ---
+
                 ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: topSectionMaxHeight,
@@ -261,7 +264,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: responsivePadding(10)),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min, // Important pour que la Column ne prenne que la hauteur nécessaire
+                      mainAxisSize: MainAxisSize.min, // Important pour que la Column ne prenne que la hauteur nÃ©cessaire
                       children: [
                         SizedBox(height: responsivePadding(5)),
                         if (_controller.gameState.isTournamentMode && _controller.gameState.tournamentState != null) //
@@ -282,6 +285,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               textAlign: TextAlign.center,
                             ),
                           ),
+                        if (!widget.gameState.isTournamentMode)
+                          SizedBox(
+                            height: 50, // hauteur typique dâ€™une banniÃ¨re standard
+                            width: double.infinity,
+                            child: const BannerAdWidget(),
+                          ),
+
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: responsivePadding(5)),
                           child: ScoreBoardWidget( //
@@ -313,6 +323,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               style: subtitleStyle.copyWith(fontSize: responsiveFontSize(14), color: Colors.white, fontWeight: FontWeight.w900),
                             ),
                           ),
+
                         Padding(
                           padding: EdgeInsets.only(bottom: responsivePadding(5)),
                           child: Text(
@@ -335,11 +346,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         final double gameAreaWidth = gameFieldConstraints.maxWidth;
 
                         // Abaisser le but : Augmenter cette valeur pour faire descendre le but.
-                        // Exemple : le haut du but est maintenant à 10% du haut de la zone de jeu.
+                        // Exemple : le haut du but est maintenant Ã  10% du haut de la zone de jeu.
                         final double goalPostTopPosition = gameAreaHeight * 0.0; // Auparavant 0.03
 
-                        // Positionner le gardien par rapport au but abaissé.
-                        // Légèrement en dessous du haut du but pour que sa tête soit près de la barre transversale.
+                        // Positionner le gardien par rapport au but abaissÃ©.
+                        // LÃ©gÃ¨rement en dessous du haut du but pour que sa tÃªte soit prÃ¨s de la barre transversale.
                         final double goalkeeperTopPosition = gameAreaHeight * 0.23; // Auparavant 0.28
 
                         final double goalkeeperSize = min(gameAreaWidth * 0.25, gameAreaHeight * 0.25);
