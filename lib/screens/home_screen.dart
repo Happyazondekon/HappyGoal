@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/screens/tutorial_settings_screen.dart';
 import '../constants.dart';
 import 'mode_selection_screen.dart';
 import '../widgets/audiosettings_widget.dart';
 import '../utils/analytics_service.dart';
 import '../widgets/banner_ad_widget.dart';
 import '../utils/ad_controller.dart';
+import 'package:flutter/foundation.dart';
+import '../utils/tutorial_manager.dart';
+import '../widgets/tutorial_overlay.dart';
+import '../widgets/tutorial_mixin.dart';
 
 class PulsatingButton extends StatefulWidget {
   final Widget child;
@@ -139,13 +144,68 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
+  final GlobalKey _playButtonKey = GlobalKey();
+  final GlobalKey _rulesButtonKey = GlobalKey();
+  final GlobalKey _settingsButtonKey = GlobalKey();
+  final GlobalKey _rewardButtonKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
-    // Initialiser le contrôleur de publicités
+    // Votre code existant...
     AdController.instance.initialize();
+
+    // Ajouter le tutoriel
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showTutorialIfNeeded('home_screen', _createTutorialSteps());
+    });
   }
+  List<TutorialStep> _createTutorialSteps() {
+    return [
+      TutorialStep(
+        title: 'Bienvenue dans HappyGoal!',
+        description: 'Découvrons ensemble les fonctionnalités de votre nouveau jeu de penalties préféré!',
+        targetKey: _playButtonKey,
+        position: TutorialPosition.top,
+        customContent: Column(
+          children: [
+            Image.asset('assets/images/ball.png', width: 50, height: 50),
+            const SizedBox(height: 10),
+            const Text(
+              'Prêt pour des tirs au but épiques?',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+      TutorialStep(
+        title: 'Commencer à jouer',
+        description: 'Appuyez sur JOUER pour accéder aux différents modes de jeu : Solo, Multijoueur et Tournoi.',
+        targetKey: _playButtonKey,
+        position: TutorialPosition.top,
+      ),
+      TutorialStep(
+        title: 'Règles du jeu',
+        description: 'Consultez les règles pour comprendre comment marquer des buts et remporter vos matches!',
+        targetKey: _rulesButtonKey,
+        position: TutorialPosition.top,
+      ),
+      TutorialStep(
+        title: 'Paramètres',
+        description: 'Ajustez les paramètres audio et personnalisez votre expérience de jeu.',
+        targetKey: _settingsButtonKey,
+        position: TutorialPosition.top,
+      ),
+      TutorialStep(
+        title: 'Bonus quotidien',
+        description: 'N\'oubliez pas de récupérer votre bonus quotidien pour débloquer des avantages spéciaux!',
+        targetKey: _rewardButtonKey,
+        position: TutorialPosition.top,
+      ),
+    ];
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -321,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         // Bouton JOUER principal
                         PulsatingButton(
+                          key: _playButtonKey,
                           glowColor: const Color(0xFF4CAF50),
                           child: _buildModernButton(
                             context,
@@ -354,6 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: _buildSecondaryButton(
                                 context,
+                                key: _rulesButtonKey, // Ajouter la clé
                                 icon: Icons.info_outline,
                                 text: 'RÈGLES',
                                 onPressed: () => _showRulesDialog(context),
@@ -363,6 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: _buildSecondaryButton(
                                 context,
+                                key: _settingsButtonKey, // Ajouter la clé
                                 icon: Icons.settings,
                                 text: 'OPTIONS',
                                 onPressed: () => _showSettingsDialog(context),
@@ -373,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         // Ajoutez l'appel à la méthode ici
                         const SizedBox(height: 20),
-                        _buildRewardButton(context),
+                        _buildRewardButton(context, key: _rewardButtonKey),
                       ],
                     ),
                   ),
@@ -440,11 +503,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSecondaryButton(
       BuildContext context, {
+        Key? key,
         required IconData icon,
         required String text,
         required VoidCallback onPressed,
       }) {
     return Container(
+      key: key,
       height: 55,
       child: ElevatedButton(
         onPressed: onPressed,
@@ -463,11 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: Colors.white,
-            ),
+            Icon(icon, size: 20, color: Colors.white),
             const SizedBox(height: 4),
             Text(
               text,
@@ -484,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSettingsDialog(BuildContext context) {
-    AnalyticsService.logSettingsView();
+     AnalyticsService.logSettingsView(); // Laissez cette ligne si vous utilisez un service d'analyse
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -494,80 +555,92 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           elevation: 20,
           backgroundColor: Colors.white,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Color(0xFFF8F8F8)],
+          child: SingleChildScrollView(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Color(0xFFF8F8F8)],
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(25),
-                      topRight: Radius.circular(25),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header du dialogue
+                  Container(
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(25),
+                        topRight: Radius.circular(25),
+                      ),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.green[800]!, // Remplacez AppColors.primary
+                          Colors.green[800]!.withOpacity(0.8), // Remplacez AppColors.primary
+                        ],
+                      ),
                     ),
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withOpacity(0.8),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        SizedBox(width: 15),
+                        Text(
+                          'Paramètres',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.settings,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 15),
-                      const Text(
-                        'Paramètres',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+
+                  // Contenu principal (scrollable)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    child: Column(
+                      children: [
+                        // Paramètres Audio
+                        const AudioSettingsWidget(),
+                        const SizedBox(height: 15),
+                        // Paramètres du Tutoriel
+                        const TutorialSettingsWidget(),
+                        const SizedBox(height: 20),
+                        // Bouton pour fermer le dialogue
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[800]!, // Remplacez AppColors.primary
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 50,
+                              vertical: 15,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            "Fermer",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: AudioSettingsWidget(),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 25, left: 25, right: 25),
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 50,
-                        vertical: 15,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: const Text(
-                      "Fermer",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -698,8 +771,9 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-  Widget _buildRewardButton(BuildContext context) {
+  Widget _buildRewardButton(BuildContext context, {Key? key}) {
     return Container(
+      key: key,
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
@@ -712,7 +786,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onRewardEarned: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Bonus débloqué ! 🎉'),
+                  content: Text('Bonus débloqué !'),
                   backgroundColor: Colors.green,
                   duration: Duration(seconds: 2),
                 ),
@@ -745,7 +819,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  Widget _buildSectionTitle(String title) {
+}
+
+Widget _buildSectionTitle(String title) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -803,7 +879,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
+
 
 class FieldLinesPainter extends CustomPainter {
   @override
