@@ -34,7 +34,8 @@ class TeamSelectionScreen extends StatefulWidget {
 class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTickerProviderStateMixin {
   Team? selectedTeam1;
   Team? selectedTeam2;
-  final List<Team> teams = Team.getPredefinedTeams();
+  late final Map<String, List<Team>> _teamsByContinent;
+  String? _selectedContinent;
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late String _modeTitle;
@@ -42,7 +43,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
   @override
   void initState() {
     super.initState();
-    // Si les équipes sont pré-sélectionnées, les assigner
+    // Grouper les équipes par continent
+    _teamsByContinent = _groupTeamsByContinent(Team.getPredefinedTeams());
+
     if (widget.preSelectedTeam1 != null) {
       selectedTeam1 = widget.preSelectedTeam1;
     }
@@ -50,13 +53,12 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       selectedTeam2 = widget.preSelectedTeam2;
     }
 
-    // Si on doit démarrer directement, lancer le match
     if (widget.startDirectly && selectedTeam1 != null && selectedTeam2 != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _startGame();
       });
     }
-    // FIX: Prendre en compte le mode tournoi
+
     if (widget.isTournamentMode) {
       _modeTitle = 'Mode Tournoi';
     } else {
@@ -74,6 +76,19 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       ),
     );
   }
+
+  // Méthode pour regrouper les équipes par continent
+  Map<String, List<Team>> _groupTeamsByContinent(List<Team> allTeams) {
+    Map<String, List<Team>> map = {};
+    for (var team in allTeams) {
+      if (!map.containsKey(team.continent)) {
+        map[team.continent] = [];
+      }
+      map[team.continent]!.add(team);
+    }
+    return map;
+  }
+
 
   @override
   void dispose() {
@@ -97,24 +112,23 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         _controller.forward();
       }
     });
-      if (widget.isTournamentMode) {
-        widget.onTeamSelected?.call(team);
-        Navigator.pop(context);
-        return;
-      }
+    if (widget.isTournamentMode) {
+      widget.onTeamSelected?.call(team);
+      Navigator.pop(context);
+      return;
+    }
   }
 
   void _startGame() {
     if (selectedTeam1 != null && selectedTeam2 != null) {
       final gameState = GameState(
-        team1: selectedTeam1,
-        team2: selectedTeam2,
+        team1: selectedTeam1!,
+        team2: selectedTeam2!,
         currentPhase: GamePhase.playerShooting,
         isSoloMode: widget.isSoloMode,
-        isTournamentMode: widget.isTournamentMode, // FIX: Utiliser la vraie valeur
+        isTournamentMode: widget.isTournamentMode,
       );
 
-      // Initialiser l'IA avec le niveau de difficulté choisi si disponible
       if (widget.isSoloMode && widget.aiIntelligence != null) {
         gameState.aiOpponent = AIOpponent(intelligence: widget.aiIntelligence!);
       }
@@ -137,7 +151,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Sélection des équipes'),
+        title: Text(_selectedContinent ?? 'Sélection des équipes'),
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
@@ -148,6 +162,16 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             bottom: Radius.circular(20),
           ),
         ),
+        leading: _selectedContinent != null
+            ? IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            setState(() {
+              _selectedContinent = null;
+            });
+          },
+        )
+            : null,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -162,8 +186,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       body: Column(
         children: [
           const SizedBox(height: 30),
-
-          // Texte d'aide en mode solo
           if (widget.isSoloMode)
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -183,8 +205,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                 ),
               ),
             ),
-
-          // Affichage des équipes sélectionnées
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -209,32 +229,14 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             },
           ),
           const SizedBox(height: 20),
-          // Grille des équipes disponibles
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: teams.length,
-                itemBuilder: (context, index) {
-                  final team = teams[index];
-                  final bool isSelected = team == selectedTeam1 || team == selectedTeam2;
-                  // Une équipe est désactivée seulement si elle n'est pas sélectionnée et qu'une autre équipe est en cours de sélection
-                  final bool isDisabled = !isSelected &&
-                      ((selectedTeam1 != null && selectedTeam2 != null) ||
-                          (selectedTeam1 == null && selectedTeam2 == null && index >= 0));
-
-                  return _buildTeamCard(team, isSelected, isDisabled);
-                },
-              ),
+              child: _selectedContinent == null
+                  ? _buildContinentList()
+                  : _buildTeamsGridView(_teamsByContinent[_selectedContinent]!),
             ),
           ),
-          // Bouton de démarrage
           Padding(
             padding: const EdgeInsets.all(20),
             child: AnimatedOpacity(
@@ -265,6 +267,81 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
           ),
         ],
       ),
+    );
+  }
+
+  // Widget pour afficher la liste des continents
+  Widget _buildContinentList() {
+    final continents = _teamsByContinent.keys.toList();
+    return ListView.builder(
+      itemCount: continents.length,
+      itemBuilder: (context, index) {
+        final continent = continents[index];
+        final continentTeams = _teamsByContinent[continent]!;
+        // Déterminer la première équipe du continent pour l'image
+        final displayTeam = continentTeams.isNotEmpty ? continentTeams.first : null;
+
+        return Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _selectedContinent = continent;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  if (displayTeam != null)
+                    Image.asset(
+                      displayTeam.flagImage,
+                      height: 50,
+                      width: 80,
+                      fit: BoxFit.contain,
+                    ),
+                  const SizedBox(width: 20),
+                  Text(
+                    continent,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Widget pour afficher la grille des équipes d'un continent
+  Widget _buildTeamsGridView(List<Team> teams) {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: teams.length,
+      itemBuilder: (context, index) {
+        final team = teams[index];
+        final bool isSelected = team == selectedTeam1 || team == selectedTeam2;
+        final bool isDisabled = !isSelected &&
+            (selectedTeam1 != null && selectedTeam2 != null);
+
+        return _buildTeamCard(team, isSelected, isDisabled);
+      },
     );
   }
 
@@ -384,7 +461,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => _handleTeamSelection(team), // Toujours cliquable
+          onTap: () => _handleTeamSelection(team),
           child: Opacity(
             opacity: isDisabled && !isSelected ? 0.5 : 1.0,
             child: Column(
