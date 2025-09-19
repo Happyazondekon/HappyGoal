@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
 
+
 class GameHelpers {
   static Color getOpponentTeamColor(GameState gameState) {
     if (gameState.currentTeam == gameState.team1) {
@@ -21,11 +22,7 @@ class GameHelpers {
     }
   }
 
-  static bool shouldShowAIIndicator(GameState gameState) {
-    return (gameState.isSoloMode || gameState.isTournamentMode) &&
-        gameState.currentTeam == gameState.team2 &&
-        gameState.currentPhase == GamePhase.playerShooting;
-  }
+
 
   static bool shouldShowShotControls(GameState gameState) {
     return gameState.currentPhase == GamePhase.playerShooting &&
@@ -37,4 +34,16 @@ class GameHelpers {
     return gameState.currentPhase == GamePhase.goalScored ||
         gameState.currentPhase == GamePhase.goalSaved;
   }
+
+  static bool shouldShowGoalkeeperControls(GameState gameState) {
+    return gameState.currentPhase == GamePhase.humanGoalkeeping;
+  }
+
+  static bool shouldShowAIIndicator(GameState gameState) {
+    return (gameState.isSoloMode || gameState.isTournamentMode) &&
+        gameState.currentTeam == gameState.team2 &&
+        (gameState.currentPhase == GamePhase.playerShooting ||
+            gameState.currentPhase == GamePhase.humanGoalkeeping);
+  }
 }
+

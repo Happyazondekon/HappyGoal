@@ -6,6 +6,7 @@ enum GamePhase {
   teamSelection,
   playerShooting,
   goalkeeeperSaving,
+  humanGoalkeeping,
   goalScored,
   goalSaved,
   gameOver,

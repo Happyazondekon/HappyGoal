@@ -5,6 +5,7 @@ import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
 import '../widgets/banner_ad_widget.dart';
 import '../widgets/goal_post_widget.dart';
+import '../widgets/goalkeeper_controller_widget.dart';
 import '../widgets/score_board_widget.dart';
 import '../widgets/shot_controller_widget.dart';
 import '../utils/audio_manager.dart';
@@ -175,6 +176,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         description: 'Communiquez avec votre adversaire, bluffez, et amusez-vous ! Le meilleur tireur l\'emportera.',
         targetKey: _shotControllerKey,
         position: TutorialPosition.top,
+      ),
+      TutorialStep(
+        title: 'Contrôlez aussi le gardien !',
+        description: 'Quand l\'IA tire, vous pouvez contrôler votre gardien pour arrêter ses tirs. Anticipez et plongez !',
+        targetKey: _shotControllerKey,
+        position: TutorialPosition.top,
+        customContent: const Text(
+          'Défendez vos cages avec stratégie ! 🥅',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     ];
   }
@@ -564,13 +575,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(height: responsivePadding(10)),
-                        if ((_controller.gameState.isSoloMode || _controller.gameState.isTournamentMode) &&
-                            _controller.gameState.currentTeam == _controller.gameState.team2 &&
-                            _controller.gameState.currentPhase == GamePhase.playerShooting)
+                        if (GameHelpers.shouldShowGoalkeeperControls(_controller.gameState))
+                          Padding(
+                            padding: EdgeInsets.only(bottom: responsivePadding(10)),
+                            child: GoalkeeperControllerWidget(
+                              onDive: (direction) => _controller.setGoalkeeperDirection(direction),
+                            ),
+                          ),
+
+                        if (GameHelpers.shouldShowAIIndicator(_controller.gameState))
                           Padding(
                             padding: EdgeInsets.only(bottom: responsivePadding(10)),
                             child: Text(
-                              "Tour de l'IA - Patientez...",
+                              _controller.gameState.currentPhase == GamePhase.humanGoalkeeping
+                                  ? "L'IA va tirer - Choisissez votre plongée !"
+                                  : "Tour de l'IA - Patientez...",
                               style: titleStyle.copyWith(fontSize: responsiveFontSize(16)),
                               textAlign: TextAlign.center,
                             ),

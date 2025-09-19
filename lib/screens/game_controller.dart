@@ -188,19 +188,81 @@ class GameController {
     ));
   }
 
+  Timer? _goalkeeperTimeout;
+
   void handleAITurn() {
     if (_gameState.isSoloMode &&
         _gameState.currentTeam == _gameState.team2 &&
         _gameState.currentPhase == GamePhase.playerShooting) {
-      Future.delayed(const Duration(milliseconds: 1200), () {
+
+      // Passer en mode gardien humain
+      _gameState.currentPhase = GamePhase.humanGoalkeeping;
+      onStateChanged?.call();
+
+      Future.delayed(const Duration(milliseconds: 1500), () {
         final aiDecision = _gameState.getAIDecision();
 
-        shoot(
-          aiDecision['direction'],
-          aiDecision['power'],
-          aiDecision['effect'],
-        );
+        // L'IA tire mais le gardien n'est pas encore positionné
+        _executeAIShot(aiDecision);
+
+        // NOUVEAU: Mettre en place un délai d'attente pour le choix du gardien
+        _goalkeeperTimeout = Timer(const Duration(seconds: 3), () {
+          // Si la phase est toujours 'goalkeeeperSaving', le joueur n'a pas réagi
+          if (_gameState.currentPhase == GamePhase.goalkeeeperSaving) {
+            // Choix automatique d'une direction aléatoire ou par défaut (ici, on prend le centre)
+            setGoalkeeperDirection(ShotDirection.center); // Utiliser une direction par défaut ou aléatoire
+          }
+          _goalkeeperTimeout?.cancel(); // Annuler pour être sûr
+        });
       });
+    }
+  }
+
+  void _executeAIShot(Map<String, dynamic> aiDecision) {
+    // Marquer qu'on est en train de tirer AVANT de configurer les animations
+    _isShooting = true;
+
+    _gameState.selectedDirection = aiDecision['direction'];
+    _gameState.shotPower = aiDecision['power'];
+    _gameState.shotEffect = aiDecision['effect'];
+    _gameState.currentPhase = GamePhase.goalkeeeperSaving;
+
+    // Le gardien sera positionné par le joueur humain via setGoalkeeperDirection()
+    // Ne pas définir _gameState.goalkeepeerDirection ici car c'est le joueur qui choisit
+
+    _setupBallAnimation();
+
+    if (_gameState.shotPower > 70) {
+      AudioManager.playSound('powerful_kick');
+    } else {
+      AudioManager.playSound('kick');
+    }
+
+    // NE PAS lancer l'animation du ballon tout de suite
+    // Elle sera lancée quand le joueur choisira sa direction de gardien
+
+    onStateChanged?.call();
+  }
+
+// Nouvelle méthode pour le contrôle du gardien
+  void setGoalkeeperDirection(int direction) {
+    // Annuler le timer si le joueur agit
+    _goalkeeperTimeout?.cancel();
+
+    // Permettre le contrôle du gardien dans les deux phases
+    if (_gameState.currentPhase == GamePhase.humanGoalkeeping ||
+        _gameState.currentPhase == GamePhase.goalkeeeperSaving) {
+
+      _gameState.goalkeepeerDirection = direction;
+      _gameState.currentPhase = GamePhase.goalkeeeperSaving;
+
+      _setupGoalkeeperAnimation(direction);
+
+      // Lancer les animations ensemble
+      _goalkeeperController.forward();
+      _ballAnimationController.forward(from: 0.0);
+
+      onStateChanged?.call();
     }
   }
 
@@ -386,5 +448,6 @@ class GameController {
     _ballAnimationController.dispose();
     _goalkeeperController.dispose();
     _goalTextController.dispose();
+    _goalkeeperTimeout?.cancel();
   }
 }
