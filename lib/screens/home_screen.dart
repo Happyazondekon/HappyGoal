@@ -791,7 +791,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                   duration: Duration(seconds: 2),
                 ),
               );
-            },
+            }, rewardAmount: 1, onAdFailed: () {  },
           );
         },
         style: ElevatedButton.styleFrom(

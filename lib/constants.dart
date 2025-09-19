@@ -7,6 +7,8 @@ class AppColors {
   static const Color fieldGreen = Color(0xFF4CAF50);
   static const Color team1 = Color(0xFF1E88E5);
   static const Color team2 = Color(0xFF1E88E5);
+
+  static var success;
 }
 
 class GameSettings {

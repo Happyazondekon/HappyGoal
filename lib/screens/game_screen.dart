@@ -14,6 +14,7 @@ import '../widgets/tutorial_mixin.dart';
 import '../widgets/tutorial_overlay.dart';
 import 'game_controller.dart';
 import 'game_helpers.dart';
+import '../widgets/rewind_reward_widget.dart';
 
 
 
@@ -46,6 +47,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   void initState() {
     super.initState();
     AudioManager.playSound('whistle');
+    AdController.instance.onGameStarted();
 
     _controller = GameController(
       gameState: widget.gameState,
@@ -423,17 +425,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        if (!widget.gameState.isTournamentMode)
-                          SizedBox(
-                            height: 50,
-                            width: double.infinity,
-                            child: const BannerAdWidget(),
-                          ),
+
+                        // WIDGET DE RÉCOMPENSE (RewindRewardWidget)
+                        RewindRewardWidget(
+                          gameState: _controller.gameState,
+                          onStateChanged: () => setState(() {}),
+                          gameController: _controller, // Passer la référence
+                        ),
 
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: responsivePadding(5)),
                           child: ScoreBoardWidget(
-                            // Ajoutez la clé ici
+                            // Clé pour le tutoriel
                             key: _scoreBoardKey,
                             team1: _controller.gameState.team1!,
                             team2: _controller.gameState.team2!,
@@ -496,7 +499,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           children: [
                             Positioned(
                               top: goalPostTopPosition,
-                              // Ajoutez la clé ici
+                              // Clé pour le tutoriel
                               child: GoalPostWidget(key: _goalPostKey),
                             ),
                             Positioned(
@@ -526,7 +529,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                             _buildBallAnimation(context, gameFieldConstraints),
                             Positioned(
                               bottom: playerBottomPosition,
-                              // Ajoutez la clé ici
+                              // Clé pour le tutoriel
                               child: Container(
                                 key: _playerKey,
                                 width: playerSize,
@@ -600,7 +603,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           Padding(
                             padding: EdgeInsets.only(bottom: responsivePadding(10)),
                             child: ShotControllerWidget(
-                              // Ajoutez la clé ici
+                              // Clé pour le tutoriel
                               key: _shotControllerKey,
                               onShoot: (direction, power, effect) => _controller.shoot(direction, power, effect),
                             ),
@@ -629,7 +632,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                             ),
                           ),
 
-                        // Ajoutez un bouton de debug pour le tutoriel si vous le souhaitez
+                        // Bouton de debug pour le tutoriel (si en mode debug)
                         if (kDebugMode)
                           FloatingActionButton.small(
                             onPressed: () {

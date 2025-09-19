@@ -467,11 +467,6 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
     // Associer l'état du tournoi à l'état de jeu
     gameState.tournamentState = tournamentState;
 
-    // Debug: afficher l'état initial
-    print('🏆 Lancement du tournoi - Phase: ${tournamentState.currentPhase}');
-    print('👤 Équipe utilisateur: ${selectedTeam?.name}');
-    print('🤖 Premier adversaire: ${tournamentState.currentOpponent?.name}');
-    tournamentState.printTournamentStatus();
 
     Navigator.push(
       context,

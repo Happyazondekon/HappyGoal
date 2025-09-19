@@ -1,16 +1,18 @@
+// game_state.dart - VERSION CORRIGÉE
 import 'team.dart';
-import 'ai_opponent.dart'; // Ajout pour utiliser l'IA
+import 'ai_opponent.dart';
 
 enum GamePhase {
   notStarted,
   teamSelection,
   playerShooting,
-  goalkeeeperSaving,
+  goalkeepeerSaving,
   humanGoalkeeping,
   goalScored,
   goalSaved,
   gameOver,
 }
+
 enum TournamentPhase {
   notStarted,
   roundOf16,
@@ -37,14 +39,9 @@ class TournamentState {
         currentPhase = TournamentPhase.notStarted;
 
   void startTournament() {
-    // Enlever l'équipe utilisateur de la liste des adversaires
     remainingTeams = List.from(allTeams)..remove(userTeam);
     remainingTeams.shuffle();
-
-    // Vérifier et ajuster l'adversaire si nécessaire
     _setNextValidOpponent();
-
-    // Commencer par les huitièmes de finale
     currentPhase = TournamentPhase.roundOf16;
     currentMatchInPhase = 1;
 
@@ -52,11 +49,9 @@ class TournamentState {
     print('🥅 Premier adversaire: ${currentOpponent?.name}');
   }
 
-// Nouvelle méthode pour définir un adversaire valide
   void _setNextValidOpponent() {
     if (remainingTeams.isEmpty) return;
 
-    // Trouver le premier adversaire qui n'est pas l'équipe utilisateur
     for (var team in remainingTeams) {
       if (team != userTeam) {
         currentOpponent = team;
@@ -78,28 +73,25 @@ class TournamentState {
       return;
     }
 
-    // Enlever l'adversaire battu
     remainingTeams.remove(currentOpponent);
     currentMatchInPhase++;
 
     print('🔄 Adversaires restants: ${remainingTeams.length}');
 
-    // Vérifier si on doit passer à la phase suivante
     if (_shouldAdvanceToNextPhase()) {
       _advancePhase();
     }
 
-    // Vérifier si le tournoi est terminé
     if (remainingTeams.isEmpty || currentPhase == TournamentPhase.finished) {
       print('🏆 TOURNOI TERMINÉ !');
       currentPhase = TournamentPhase.finished;
       return;
     }
 
-    // Définir le prochain adversaire
     currentOpponent = remainingTeams.first;
     print('⚽ Prochain adversaire: ${currentOpponent?.name} (${getPhaseName()})');
   }
+
   bool _shouldAdvanceToNextPhase() {
     switch (currentPhase) {
       case TournamentPhase.roundOf16:
@@ -109,7 +101,7 @@ class TournamentState {
       case TournamentPhase.semiFinals:
         return currentMatchInPhase > _getMatchesInPhase(TournamentPhase.semiFinals);
       case TournamentPhase.finalMatch:
-        return true; // Après la finale, c'est fini
+        return true;
       default:
         return false;
     }
@@ -118,33 +110,33 @@ class TournamentState {
   int _getMatchesInPhase(TournamentPhase phase) {
     switch (phase) {
       case TournamentPhase.roundOf16:
-        return 1; // 1 match pour passer aux quarts
+        return 1;
       case TournamentPhase.quarterFinals:
-        return 1; // 1 match pour passer aux demis
+        return 1;
       case TournamentPhase.semiFinals:
-        return 1; // 1 match pour passer en finale
+        return 1;
       case TournamentPhase.finalMatch:
-        return 1; // 1 match final
+        return 1;
       default:
         return 0;
     }
   }
 
   void _advancePhase() {
-    currentMatchInPhase = 1; // Reset du compteur de matchs
+    currentMatchInPhase = 1;
 
     switch (currentPhase) {
       case TournamentPhase.roundOf16:
         currentPhase = TournamentPhase.quarterFinals;
-        print('🏅 PASSAGE AUX QUARTS DE FINALE !');
+        print('🥉 PASSAGE AUX QUARTS DE FINALE !');
         break;
       case TournamentPhase.quarterFinals:
         currentPhase = TournamentPhase.semiFinals;
-        print('🏅 PASSAGE AUX DEMI-FINALES !');
+        print('🥉 PASSAGE AUX DEMI-FINALES !');
         break;
       case TournamentPhase.semiFinals:
         currentPhase = TournamentPhase.finalMatch;
-        print('🏅 PASSAGE EN FINALE !');
+        print('🥉 PASSAGE EN FINALE !');
         break;
       case TournamentPhase.finalMatch:
         currentPhase = TournamentPhase.finished;
@@ -191,18 +183,6 @@ class TournamentState {
         return getPhaseName();
     }
   }
-
-  // Méthode pour débugger l'état du tournoi
-  void printTournamentStatus() {
-    print('=== ÉTAT DU TOURNOI ===');
-    print('Phase: ${getPhaseName()}');
-    print('Match dans la phase: $currentMatchInPhase');
-    print('Victoires utilisateur: $userWins');
-    print('Défaites: $aiWins');
-    print('Adversaires restants: ${remainingTeams.length}');
-    print('Adversaire actuel: ${currentOpponent?.name}');
-    print('======================');
-  }
 }
 
 class ShotDirection {
@@ -243,6 +223,41 @@ class SuddenDeathSettings {
   static const int shotsPerRound = 1;
 }
 
+// CORRECTION: Version simplifiée de GameStateSnapshot
+class GameStateSnapshot {
+  final int team1Score;
+  final int team2Score;
+  final List<bool> team1Results;
+  final List<bool> team2Results;
+  final List<bool> team1SuddenDeathResults;
+  final List<bool> team2SuddenDeathResults;
+  final int team1Shots;
+  final int team2Shots;
+  final Team? currentTeam;
+  final GamePhase currentPhase;
+  final int roundNumber;
+  final bool isSuddenDeathActive;
+  final List<ShotData> team1ShotData;
+  final List<ShotData> team2ShotData;
+
+  GameStateSnapshot({
+    required this.team1Score,
+    required this.team2Score,
+    required this.team1Results,
+    required this.team2Results,
+    required this.team1SuddenDeathResults,
+    required this.team2SuddenDeathResults,
+    required this.team1Shots,
+    required this.team2Shots,
+    required this.currentTeam,
+    required this.currentPhase,
+    required this.roundNumber,
+    required this.isSuddenDeathActive,
+    required this.team1ShotData,
+    required this.team2ShotData,
+  });
+}
+
 class GameState {
   Team? team1;
   Team? team2;
@@ -255,12 +270,11 @@ class GameState {
   bool isGoalScored;
   int goalkeepeerDirection;
 
-
   int shotPower;
   String shotEffect;
   double shotPrecision;
 
-  // ➡️ Nouvelles propriétés pour IA
+  // Nouvelles propriétés pour IA
   bool isSoloMode = false;
   AIOpponent? aiOpponent;
   TournamentState? tournamentState;
@@ -282,6 +296,90 @@ class GameState {
   List<ShotData> team1ShotData = [];
   List<ShotData> team2ShotData = [];
 
+  // CORRECTION: Système de rembobinage simplifié
+  GameStateSnapshot? _lastSnapshot;
+  bool _canRewind = false;
+
+  // CORRECTION: Getter simplifié pour le rembobinage
+  bool get canRewind => _canRewind && _lastSnapshot != null;
+
+  // CORRECTION: Sauvegarder l'état avant un tir - TOUJOURS
+  void saveStateBeforeShot() {
+    print("💾 GameState: Sauvegarde de l'état avant le tir");
+
+    _lastSnapshot = GameStateSnapshot(
+      team1Score: team1?.score ?? 0,
+      team2Score: team2?.score ?? 0,
+      team1Results: List.from(team1Results),
+      team2Results: List.from(team2Results),
+      team1SuddenDeathResults: List.from(team1SuddenDeathResults),
+      team2SuddenDeathResults: List.from(team2SuddenDeathResults),
+      team1Shots: team1Shots,
+      team2Shots: team2Shots,
+      currentTeam: currentTeam,
+      currentPhase: currentPhase,
+      roundNumber: roundNumber,
+      isSuddenDeathActive: isSuddenDeathActive,
+      team1ShotData: List.from(team1ShotData),
+      team2ShotData: List.from(team2ShotData),
+    );
+
+    _canRewind = true;
+    print("✅ GameState: État sauvegardé, rembobinage disponible");
+  }
+
+  // CORRECTION: Restaurer l'état précédent - logique simplifiée
+  bool rewindToLastShot() {
+    print("🔄 GameState: Tentative de restauration...");
+
+    if (!canRewind || _lastSnapshot == null) {
+      print("❌ GameState: Impossible de rembobiner (pas de sauvegarde)");
+      return false;
+    }
+
+    // Restaurer tous les états depuis la sauvegarde
+    team1?.resetScore();
+    team2?.resetScore();
+
+    // Restaurer les scores depuis la sauvegarde
+    for (int i = 0; i < _lastSnapshot!.team1Results.length; i++) {
+      if (_lastSnapshot!.team1Results[i]) {
+        team1?.incrementScore();
+      }
+    }
+    for (int i = 0; i < _lastSnapshot!.team2Results.length; i++) {
+      if (_lastSnapshot!.team2Results[i]) {
+        team2?.incrementScore();
+      }
+    }
+
+    team1Results = List.from(_lastSnapshot!.team1Results);
+    team2Results = List.from(_lastSnapshot!.team2Results);
+    team1SuddenDeathResults = List.from(_lastSnapshot!.team1SuddenDeathResults);
+    team2SuddenDeathResults = List.from(_lastSnapshot!.team2SuddenDeathResults);
+    team1Shots = _lastSnapshot!.team1Shots;
+    team2Shots = _lastSnapshot!.team2Shots;
+    currentTeam = _lastSnapshot!.currentTeam;
+    currentPhase = _lastSnapshot!.currentPhase;
+    roundNumber = _lastSnapshot!.roundNumber;
+    isSuddenDeathActive = _lastSnapshot!.isSuddenDeathActive;
+    team1ShotData = List.from(_lastSnapshot!.team1ShotData);
+    team2ShotData = List.from(_lastSnapshot!.team2ShotData);
+
+    // Invalider la sauvegarde après utilisation
+    invalidateSnapshot();
+
+    print("✅ GameState: État restauré avec succès");
+    return true;
+  }
+
+  // Invalider la sauvegarde
+  void invalidateSnapshot() {
+    _canRewind = false;
+    _lastSnapshot = null;
+    print("🗑️ GameState: Sauvegarde invalidée");
+  }
+
   GameState({
     this.team1,
     this.team2,
@@ -297,13 +395,12 @@ class GameState {
     this.shotPrecision = 1.0,
     this.isSoloMode = false,
     double? aiIntelligenceLevel,
-    required bool isTournamentMode, // Nouveau paramètre optionnel
+    required bool isTournamentMode,
   }) {
-    this.isSoloMode = isTournamentMode ? true : isSoloMode;  // En mode tournoi, toujours activer l'IA
+    this.isSoloMode = isTournamentMode ? true : isSoloMode;
     this.isTournamentMode = isTournamentMode;
     currentTeam = team1;
 
-    // Initialiser l'IA si en mode solo ou tournoi
     if (this.isSoloMode || this.isTournamentMode) {
       aiOpponent = AIOpponent(intelligence: aiIntelligenceLevel ?? 0.6);
     }
@@ -313,7 +410,9 @@ class GameState {
       team2EffectUsage[effect] = 0;
     }
   }
+
   double? get aiIntelligenceLevel => aiOpponent?.intelligence;
+
   void switchTeam() {
     currentTeam = (currentTeam == team1) ? team2 : team1;
   }
@@ -324,7 +423,7 @@ class GameState {
       power: shotPower,
       effect: shotEffect,
       precision: shotPrecision,
-      goalkeeeperDirection: goalkeepeerDirection,
+      goalkeepeerDirection: goalkeepeerDirection,
       isGoal: isGoal,
     );
 
@@ -367,7 +466,6 @@ class GameState {
       int team1Remaining = PenaltySettings.shotsPerTeam - team1Shots;
       int team2Remaining = PenaltySettings.shotsPerTeam - team2Shots;
 
-      // Victoire anticipée si une équipe ne peut plus être rattrapée
       if (team1!.score > team2!.score + team2Remaining) return true;
       if (team2!.score > team1!.score + team1Remaining) return true;
     }
@@ -375,7 +473,7 @@ class GameState {
     if (team1Shots == PenaltySettings.shotsPerTeam &&
         team2Shots == PenaltySettings.shotsPerTeam) {
       if (team1!.score != team2!.score) {
-        return true; // Vainqueur après tirs complets
+        return true;
       } else {
         if (!isSuddenDeathActive) {
           isSuddenDeathActive = true;
@@ -383,7 +481,6 @@ class GameState {
       }
     }
 
-    // Vérification en mort subite
     if (isSuddenDeathActive) {
       int suddenDeathRound = team1SuddenDeathResults.length;
       if (team2SuddenDeathResults.length == suddenDeathRound && suddenDeathRound > 0) {
@@ -444,90 +541,71 @@ class GameState {
     return false;
   }
 
-  // Méthode pour calculer la chance de marquer un but en fonction des paramètres du tir
   double calculateScoringChance() {
-    // Base chance réduite pour augmenter la difficulté
-    double chance = 0.4; // Avant: 0.5
+    double chance = 0.4;
 
-    // Si le gardien va dans la mauvaise direction, avantage réduit
     if (selectedDirection != goalkeepeerDirection) {
-      chance += 0.35; // Avant: 0.4
+      chance += 0.35;
     } else {
-      // Si le gardien va dans la bonne direction, c'est encore plus difficile
-      chance -= 0.35; // Avant: 0.3
+      chance -= 0.35;
     }
 
-    // Les effets peuvent augmenter les chances de marquer mais avec un bonus réduit
     switch (shotEffect) {
-      case ShotEffect.curve: chance += 0.12; break; // Avant: 0.15
-      case ShotEffect.knuckle: chance += 0.15; break; // Avant: 0.2
-      case ShotEffect.lob: chance += 0.08; break; // Avant: 0.1
+      case ShotEffect.curve: chance += 0.12; break;
+      case ShotEffect.knuckle: chance += 0.15; break;
+      case ShotEffect.lob: chance += 0.08; break;
     }
+
     if (shotPower > 95) {
-      // NOUVELLE CONDITION: Pénalité sévère pour les tirs à très haute puissance
-      chance -= 0.7; // Grande pénalité pour rendre ces tirs très difficiles
+      chance -= 0.7;
     }
-    // La puissance a un impact ajusté
-    if (shotPower > 85) { // Seuil plus élevé (avant: 80)
-      chance += 0.08; // Réduit (avant: 0.1)
-    } else if (shotPower < 40) { // Seuil plus élevé (avant: 30)
-      chance -= 0.25; // Pénalité accrue (avant: 0.2)
+
+    if (shotPower > 85) {
+      chance += 0.08;
+    } else if (shotPower < 40) {
+      chance -= 0.25;
     } else if (shotPower < 60) {
-      // Nouvelle condition: les tirs moyens sont aussi moins efficaces
       chance -= 0.1;
     }
 
-    // La précision influence encore plus
-    // Avec une fonction exponentielle pour pénaliser davantage les tirs moins précis
     chance *= (shotPrecision * shotPrecision);
 
-    // Limiter entre 0.03 (chance réduite) et 0.9 (toujours un risque accru)
-    return chance.clamp(0.03, 0.9); // Avant: 0.05 à 0.95
+    return chance.clamp(0.03, 0.9);
   }
 
-
-  // 2. Améliorer calculateShotDeviation() pour plus de variations
   Map<String, double> calculateShotDeviation() {
-    // Facteur de déviation de base augmenté
-    double deviationFactor = 1.2 - shotPrecision; // Avant: 1.0 - shotPrecision
+    double deviationFactor = 1.2 - shotPrecision;
     double xDeviation = 0.0;
     double yDeviation = 0.0;
 
     if (shotPrecision < 1.0) {
-      // Ajout d'un peu plus d'aléatoire pour augmenter la difficulté
       xDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 120) / 50.0 - 1.2;
       yDeviation = deviationFactor * (DateTime.now().millisecondsSinceEpoch % 90) / 35.0 - 1.2;
     }
 
-    // Augmenter l'impact de la puissance sur la déviation
-    if (shotPower > 75) { // Seuil réduit (avant: 80)
-      xDeviation *= 1.8; // Augmenté (avant: 1.5)
-      yDeviation *= 1.5; // Augmenté (avant: 1.2)
+    if (shotPower > 75) {
+      xDeviation *= 1.8;
+      yDeviation *= 1.5;
     } else if (shotPower > 60) {
-      // Nouvelle condition: même les tirs moyennement puissants ont une déviation
       xDeviation *= 1.3;
       yDeviation *= 1.2;
     }
 
-    // Tirs faibles encore plus variables
-    if (shotPower < 30) { // Seuil augmenté (avant: 20)
-      xDeviation *= 1.5; // Augmenté (avant: 1.3)
-      yDeviation *= 1.3; // Augmenté (avant: 1.1)
+    if (shotPower < 30) {
+      xDeviation *= 1.5;
+      yDeviation *= 1.3;
     }
 
-    // Ajout d'une variable aléatoire supplémentaire pour créer des situations inattendues
     if (DateTime.now().millisecondsSinceEpoch % 10 == 0) {
-      // 10% de chance que le tir dévie encore plus
       xDeviation *= 1.5;
       yDeviation *= 1.5;
     }
 
     return {
-      'x': xDeviation * 70, // Étendu davantage (avant: 60)
-      'y': yDeviation * 50, // Étendu davantage (avant: 40)
+      'x': xDeviation * 70,
+      'y': yDeviation * 50,
     };
   }
-
 
   void reset() {
     team1?.resetScore();
@@ -546,7 +624,6 @@ class GameState {
     team1ShotData.clear();
     team2ShotData.clear();
 
-    // Réinitialiser les statistiques
     for (String effect in ShotEffect.getAllEffects()) {
       team1EffectUsage[effect] = 0;
       team2EffectUsage[effect] = 0;
@@ -558,8 +635,11 @@ class GameState {
 
     isSuddenDeathActive = false;
     currentPhase = GamePhase.teamSelection;
+
+    // Réinitialisation de l'état de rembobinage
+    invalidateSnapshot();
   }
-// 3. Modifier getAIDecision pour utiliser la prédiction des mouvements du gardien
+
   Map<String, dynamic> getAIDecision() {
     if (!isSoloMode || aiOpponent == null) {
       return {
@@ -569,47 +649,38 @@ class GameState {
       };
     }
 
-    // Récupérer l'historique des mouvements du gardien
     List<int> goalkeeperHistory = [];
 
-    // Pour l'équipe 2 (IA), nous examinons les tirs précédents de l'équipe 1
     for (var shot in team1ShotData) {
-      goalkeeperHistory.add(shot.goalkeeeperDirection);
+      goalkeeperHistory.add(shot.goalkeepeerDirection);
     }
 
-    // Utiliser les données pour une décision plus intelligente
     var decision = aiOpponent!.takeShot();
 
-    // Enregistrer le résultat du dernier tir pour adapter la stratégie
     if (team2ShotData.isNotEmpty) {
       aiOpponent!.setLastShotResult(team2ShotData.last.isGoal);
     }
 
     return decision;
   }
-  // 4. Ajouter une nouvelle méthode pour calculer la difficulté du gardien de but
-  double calculateGoalkeeperDifficulty() {
-    // Difficulté de base plus élevée
-    double difficulty = 0.6; // Base difficulty - plus élevée qu'avant
 
-    // Ajuster en fonction de la situation de jeu
+  double calculateGoalkeeperDifficulty() {
+    double difficulty = 0.6;
+
     if (isSuddenDeathActive) {
-      difficulty += 0.20; // Plus difficile en mort subite
+      difficulty += 0.20;
     }
 
-    // Plus le match avance, plus le gardien devient difficile
     double progressionFactor = (team1Shots + team2Shots) / (PenaltySettings.shotsPerTeam * 2);
     difficulty += progressionFactor * 0.15;
 
-    // Difficulté supplémentaire pour les tirs classiques
     if (shotEffect == ShotEffect.normal) {
-      difficulty += 0.30; // Gardien plus efficace contre les tirs normaux
+      difficulty += 0.30;
     }
 
-    // Clamper entre 0.4 et 0.95 pour garder un équilibre
     return difficulty.clamp(0.4, 0.95);
   }
-  // Obtenir des statistiques sur l'efficacité d'un type d'effet
+
   Map<String, dynamic> getEffectStats(String effect) {
     int team1Count = team1EffectUsage[effect] ?? 0;
     int team2Count = team2EffectUsage[effect] ?? 0;
@@ -617,7 +688,6 @@ class GameState {
     int team1Goals = 0;
     int team2Goals = 0;
 
-    // Compter les buts marqués avec cet effet
     for (var shot in team1ShotData) {
       if (shot.effect == effect && shot.isGoal) {
         team1Goals++;
@@ -641,13 +711,12 @@ class GameState {
   }
 }
 
-// Classe pour stocker les données détaillées d'un tir
 class ShotData {
   final int direction;
   final int power;
   final String effect;
   final double precision;
-  final int goalkeeeperDirection;
+  final int goalkeepeerDirection;
   final bool isGoal;
 
   ShotData({
@@ -655,7 +724,8 @@ class ShotData {
     required this.power,
     required this.effect,
     required this.precision,
-    required this.goalkeeeperDirection,
+    required this.goalkeepeerDirection,
     required this.isGoal,
   });
+
 }

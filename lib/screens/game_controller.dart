@@ -1,3 +1,4 @@
+// game_controller.dart - VERSION CORRIGÉE
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_result_screen.dart';
 import 'dart:async';
@@ -5,6 +6,7 @@ import 'dart:math';
 import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
 import '../utils/audio_manager.dart';
+import '../utils/ad_controller.dart';
 import 'result_screen.dart';
 
 class GameController {
@@ -195,40 +197,32 @@ class GameController {
         _gameState.currentTeam == _gameState.team2 &&
         _gameState.currentPhase == GamePhase.playerShooting) {
 
-      // Passer en mode gardien humain
       _gameState.currentPhase = GamePhase.humanGoalkeeping;
       onStateChanged?.call();
 
       Future.delayed(const Duration(milliseconds: 1500), () {
         final aiDecision = _gameState.getAIDecision();
-
-        // L'IA tire mais le gardien n'est pas encore positionné
         _executeAIShot(aiDecision);
 
-        // NOUVEAU: Mettre en place un délai d'attente pour le choix du gardien
         _goalkeeperTimeout = Timer(const Duration(seconds: 3), () {
-          // Si la phase est toujours 'goalkeeeperSaving', le joueur n'a pas réagi
-          if (_gameState.currentPhase == GamePhase.goalkeeeperSaving) {
-            // Choix automatique d'une direction aléatoire ou par défaut (ici, on prend le centre)
-            setGoalkeeperDirection(ShotDirection.center); // Utiliser une direction par défaut ou aléatoire
+          if (_gameState.currentPhase == GamePhase.goalkeepeerSaving) {
+            setGoalkeeperDirection(ShotDirection.center);
           }
-          _goalkeeperTimeout?.cancel(); // Annuler pour être sûr
+          _goalkeeperTimeout?.cancel();
         });
       });
     }
   }
 
   void _executeAIShot(Map<String, dynamic> aiDecision) {
-    // Marquer qu'on est en train de tirer AVANT de configurer les animations
-    _isShooting = true;
+    // CORRECTION: Simplifier la sauvegarde d'état
+    _saveGameStateBeforeShot();
 
+    _isShooting = true;
     _gameState.selectedDirection = aiDecision['direction'];
     _gameState.shotPower = aiDecision['power'];
     _gameState.shotEffect = aiDecision['effect'];
-    _gameState.currentPhase = GamePhase.goalkeeeperSaving;
-
-    // Le gardien sera positionné par le joueur humain via setGoalkeeperDirection()
-    // Ne pas définir _gameState.goalkeepeerDirection ici car c'est le joueur qui choisit
+    _gameState.currentPhase = GamePhase.goalkeepeerSaving;
 
     _setupBallAnimation();
 
@@ -238,27 +232,19 @@ class GameController {
       AudioManager.playSound('kick');
     }
 
-    // NE PAS lancer l'animation du ballon tout de suite
-    // Elle sera lancée quand le joueur choisira sa direction de gardien
-
     onStateChanged?.call();
   }
 
-// Nouvelle méthode pour le contrôle du gardien
   void setGoalkeeperDirection(int direction) {
-    // Annuler le timer si le joueur agit
     _goalkeeperTimeout?.cancel();
 
-    // Permettre le contrôle du gardien dans les deux phases
     if (_gameState.currentPhase == GamePhase.humanGoalkeeping ||
-        _gameState.currentPhase == GamePhase.goalkeeeperSaving) {
+        _gameState.currentPhase == GamePhase.goalkeepeerSaving) {
 
       _gameState.goalkeepeerDirection = direction;
-      _gameState.currentPhase = GamePhase.goalkeeeperSaving;
+      _gameState.currentPhase = GamePhase.goalkeepeerSaving;
 
       _setupGoalkeeperAnimation(direction);
-
-      // Lancer les animations ensemble
       _goalkeeperController.forward();
       _ballAnimationController.forward(from: 0.0);
 
@@ -269,11 +255,14 @@ class GameController {
   void shoot(int direction, int power, String effect) {
     if (_isShooting) return;
 
+    // CORRECTION: Simplifier la sauvegarde d'état
+    _saveGameStateBeforeShot();
+
     _isShooting = true;
     _gameState.selectedDirection = direction;
     _gameState.shotPower = power;
     _gameState.shotEffect = effect;
-    _gameState.currentPhase = GamePhase.goalkeeeperSaving;
+    _gameState.currentPhase = GamePhase.goalkeepeerSaving;
     _gameState.goalkeepeerDirection = _random.nextInt(3);
 
     _setupGoalkeeperAnimation(_gameState.goalkeepeerDirection);
@@ -289,6 +278,240 @@ class GameController {
     _ballAnimationController.forward(from: 0.0);
 
     onStateChanged?.call();
+  }
+
+  // NOUVELLE MÉTHODE: Simplifier la sauvegarde d'état
+  void _saveGameStateBeforeShot() {
+    // Toujours sauvegarder l'état avant un tir pour permettre le rembobinage
+    _gameState.saveStateBeforeShot();
+    print("💾 État sauvegardé avant le tir");
+  }
+
+  // NOUVELLE MÉTHODE: Vérifier si le rembobinage est disponible
+  bool _canShowRewindPopup() {
+    // Conditions pour afficher le popup de rembobinage :
+    // 1. Le tir a été raté
+    // 2. L'AdController permet l'utilisation d'un rembobinage
+    // 3. GameState permet le rembobinage
+    return !_gameState.isGoalScored &&
+        AdController.instance.canUseRewind() &&
+        _gameState.canRewind;
+  }
+
+  Future<bool> rewindLastShot() async {
+    print("🔄 Tentative de rembobinage...");
+
+    // Vérifier si AdController permet le rembobinage
+    if (!AdController.instance.canUseRewind()) {
+      print("❌ AdController refuse le rembobinage");
+      return false;
+    }
+
+    // Décrémenter le compteur de rembobinages dans AdController
+    if (!(await AdController.instance.decrementRewindCount())) {
+      print("❌ Impossible de décrémenter le compteur de rembobinages");
+      return false;
+    }
+
+    // Restaurer l'état du jeu
+    bool success = _gameState.rewindToLastShot();
+
+    if (success) {
+      print("✅ Rembobinage réussi");
+
+      // Réinitialiser les animations
+      _ballAnimationController.reset();
+      _goalkeeperController.reset();
+      _goalTextController.reset();
+
+      // Réinitialiser les états d'animation
+      _isShooting = false;
+      _showGoalText = false;
+
+      // Annuler tout timer en cours
+      _goalkeeperTimeout?.cancel();
+
+      // Jouer un son de rembobinage
+      try {
+        AudioManager.playSound('rewind');
+      } catch (e) {
+        AudioManager.playSound('whistle');
+      }
+
+      onStateChanged?.call();
+    } else {
+      print("❌ Échec du rembobinage GameState");
+      // Si GameState échoue, remettre le compteur AdController
+      await AdController.instance.incrementRewindCount();
+    }
+
+    return success;
+  }
+
+  // MÉTHODE SIMPLIFIÉE: Afficher popup de rembobinage
+  void _showRewindPopup() {
+    if (context == null || !mounted(context!)) return;
+
+    print("🎯 Affichage du popup de rembobinage");
+
+    showDialog(
+      context: context!,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.replay, color: Colors.orange, size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Tir raté !',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.red[700],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.sports_soccer,
+              size: 50,
+              color: Colors.grey[600],
+            ),
+            SizedBox(height: 15),
+            Text(
+              'Voulez-vous utiliser un rembobinage pour rejouer ce tir ?',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.replay, color: Colors.orange, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Rembobinages: ${AdController.instance.currentRewindCount}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange[800],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _continueAfterShotResult();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[600],
+            ),
+            child: Text('Continuer'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+
+              bool success = await rewindLastShot();
+
+              if (!mounted(context!)) return;
+
+              if (success) {
+                ScaffoldMessenger.of(context!).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text('Tir rembobiné ! Vous pouvez rejouer.'),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context!).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.error, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text('Impossible de rembobiner.'),
+                      ],
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                _continueAfterShotResult();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.replay, size: 18),
+                SizedBox(width: 5),
+                Text('Rembobiner'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _continueAfterShotResult() {
+    Timer(const Duration(seconds: 2), () {
+      // Invalider la sauvegarde après le délai d'attente
+      _gameState.invalidateSnapshot();
+
+      if (_gameState.checkWinner()) {
+        if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
+          _handleTournamentProgress();
+        } else {
+          final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
+
+          final resultScreen = ResultScreen(
+            winner: _gameState.getWinner()!,
+            loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
+            winnerResults: _gameState.getWinner() == _gameState.team1
+                ? _gameState.team1Results
+                : _gameState.team2Results,
+            loserResults: _gameState.getWinner() == _gameState.team1
+                ? _gameState.team2Results
+                : _gameState.team1Results,
+            isSoloMode: _gameState.isSoloMode,
+            isUserWinner: isUserWinner,
+          );
+
+          onNavigate?.call(resultScreen);
+        }
+      } else {
+        resetRound();
+      }
+    });
   }
 
   void _handleShotResult() {
@@ -330,31 +553,21 @@ class GameController {
 
     onStateChanged?.call();
 
-    Timer(const Duration(seconds: 2), () {
-      if (_gameState.checkWinner()) {
-        if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
-          _handleTournamentProgress();
-        } else {
-          // Mode normal (existant)
-          final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
+    // CORRECTION PRINCIPALE: Logique simplifiée pour le popup de rembobinage
+    Timer(const Duration(seconds: 1), () {
+      if (!mounted(context!)) return;
 
-          final resultScreen = ResultScreen(
-            winner: _gameState.getWinner()!,
-            loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
-            winnerResults: _gameState.getWinner() == _gameState.team1
-                ? _gameState.team1Results
-                : _gameState.team2Results,
-            loserResults: _gameState.getWinner() == _gameState.team1
-                ? _gameState.team2Results
-                : _gameState.team1Results,
-            isSoloMode: _gameState.isSoloMode,
-            isUserWinner: isUserWinner,
-          );
+      print("🎯 Vérification des conditions de rembobinage:");
+      print("- Tir raté: ${!_gameState.isGoalScored}");
+      print("- AdController peut rembobiner: ${AdController.instance.canUseRewind()}");
+      print("- GameState peut rembobiner: ${_gameState.canRewind}");
 
-          onNavigate?.call(resultScreen);
-        }
+      if (_canShowRewindPopup()) {
+        print("✅ Toutes les conditions sont remplies - Affichage du popup");
+        _showRewindPopup();
       } else {
-        resetRound();
+        print("❌ Conditions non remplies - Continuation normale");
+        _continueAfterShotResult();
       }
     });
   }
@@ -373,12 +586,10 @@ class GameController {
 
       onNavigate?.call(tournamentResultScreen);
     } else {
-      // Passer au prochain adversaire
       _gameState.team2 = _gameState.tournamentState!.currentOpponent;
       _gameState.reset();
       resetRound();
 
-      // Afficher un message pour le nouveau match
       if (context != null) {
         ScaffoldMessenger.of(context!).showSnackBar(
           SnackBar(
@@ -405,6 +616,10 @@ class GameController {
     _gameState.currentPhase = GamePhase.playerShooting;
     _gameState.isGoalScored = false;
     _isShooting = false;
+
+    // Invalider la sauvegarde lors du changement de tour
+    _gameState.invalidateSnapshot();
+
     AudioManager.playSound('whistle');
 
     onStateChanged?.call();
@@ -415,7 +630,6 @@ class GameController {
     }
   }
 
-  // Add the missing getResultText method
   String getResultText() {
     if (_gameState.isGoalScored) {
       if (_gameState.shotEffect == 'lob') {
@@ -442,6 +656,10 @@ class GameController {
         return "ARRÊT DU GARDIEN!";
       }
     }
+  }
+
+  bool mounted(BuildContext context) {
+    return context.mounted;
   }
 
   void dispose() {
