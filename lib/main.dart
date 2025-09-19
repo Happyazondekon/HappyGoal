@@ -27,6 +27,7 @@ void main() async {
   // Charger les publicités en arrière-plan
   await AdMobService.instance.loadInterstitialAd();
   await AdMobService.instance.loadRewardedAd();
+  await AdMobService.instance.loadRewardedInterstitialAd();
 
   // Récupération automatique des IDs de test
   final deviceInfo = await MobileAds.instance.getRequestConfiguration();

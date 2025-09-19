@@ -12,9 +12,9 @@ class AdMobService {
   static const String _testBannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
   static const String _testInterstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
   static const String _testRewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
-
+  static const String _testRewardedInterstitialAdUnitId = 'ca-app-pub-3940256099942544/5354046377'; // Test ID for Rewarded Interstitial
   // Vos vrais IDs AdMob (Android / iOS)
-  static const String _androidBannerAdUnitId = 'ca-app-pub-2066223330804112/8794013956';
+  static const String _androidBannerAdUnitId = 'ca-app-pub-2066223330804112/2584748694';
   static const String _iosBannerAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX';
 
   static const String _androidInterstitialAdUnitId = 'ca-app-pub-2066223330804112/4298528883';
@@ -23,13 +23,19 @@ class AdMobService {
   static const String _androidRewardedAdUnitId = 'ca-app-pub-2066223330804112/7730561334';
   static const String _iosRewardedAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX';
 
+  static const String _androidRewardedInterstitialAdUnitId = 'ca-app-pub-2066223330804112/6715565396'; // Votre ID fourni
+  static const String _iosRewardedInterstitialAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX'; // À remplacer par votre vrai ID iOS
+
+
   // États des publicités
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
+  RewardedInterstitialAd? _rewardedInterstitialAd;
 
   bool _isInterstitialAdLoaded = false;
   bool _isRewardedAdLoaded = false;
+  bool _isRewardedInterstitialAdLoaded = false;
 
   // Initialisation de Google Mobile Ads
   static Future<void> initialize({List<String>? testDeviceIds}) async {
@@ -61,6 +67,11 @@ class AdMobService {
   String get rewardedAdUnitId {
     if (kDebugMode) return _testRewardedAdUnitId;
     return Platform.isAndroid ? _androidRewardedAdUnitId : _iosRewardedAdUnitId;
+  }
+
+  String get rewardedInterstitialAdUnitId {
+    if (kDebugMode) return _testRewardedInterstitialAdUnitId;
+    return Platform.isAndroid ? _androidRewardedInterstitialAdUnitId : _iosRewardedInterstitialAdUnitId;
   }
 
   // -------------------------
@@ -186,13 +197,63 @@ class AdMobService {
       loadRewardedAd();
     }
   }
+  // -------------------------
+// Interstitielle Récompensée
+// -------------------------
+  Future<void> loadRewardedInterstitialAd() async {
+    await RewardedInterstitialAd.load(
+      adUnitId: rewardedInterstitialAdUnitId,
+      request: const AdRequest(),
+      rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedInterstitialAd = ad;
+          _isRewardedInterstitialAdLoaded = true;
+          debugPrint('Rewarded Interstitial chargée');
+        },
+        onAdFailedToLoad: (error) {
+          _isRewardedInterstitialAdLoaded = false;
+          debugPrint('Erreur chargement Rewarded Interstitial: $error');
+        },
+      ),
+    );
+  }
+
+  void showRewardedInterstitialAd({
+    required Function(AdWithoutView ad, RewardItem reward) onUserEarnedReward,
+    VoidCallback? onAdClosed,
+  }) {
+    if (_rewardedInterstitialAd != null && _isRewardedInterstitialAdLoaded) {
+      _rewardedInterstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) => debugPrint('Rewarded Interstitial affichée'),
+        onAdDismissedFullScreenContent: (ad) {
+          debugPrint('Rewarded Interstitial fermée');
+          ad.dispose();
+          _rewardedInterstitialAd = null;
+          _isRewardedInterstitialAdLoaded = false;
+          onAdClosed?.call();
+          loadRewardedInterstitialAd(); // Recharger après fermeture
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          debugPrint('Erreur affichage Rewarded Interstitial: $error');
+          ad.dispose();
+          _rewardedInterstitialAd = null;
+          _isRewardedInterstitialAdLoaded = false;
+          onAdClosed?.call();
+        },
+      );
+      _rewardedInterstitialAd!.show(onUserEarnedReward: onUserEarnedReward);
+    } else {
+      onAdClosed?.call();
+      loadRewardedInterstitialAd(); // Tenter de charger
+    }
+  }
 
   // -------------------------
   // Vérification état ads
   // -------------------------
   bool get isInterstitialReady => _isInterstitialAdLoaded && _interstitialAd != null;
   bool get isRewardedReady => _isRewardedAdLoaded && _rewardedAd != null;
-
+  bool get isRewardedInterstitialReady => _isRewardedInterstitialAdLoaded && _rewardedInterstitialAd != null;
   // -------------------------
   // Dispose
   // -------------------------
@@ -200,5 +261,6 @@ class AdMobService {
     _bannerAd?.dispose();
     _interstitialAd?.dispose();
     _rewardedAd?.dispose();
+    _rewardedInterstitialAd?.dispose();
   }
 }
