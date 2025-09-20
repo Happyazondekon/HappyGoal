@@ -21,239 +21,220 @@ class RewindRewardWidget extends StatefulWidget {
   State<RewindRewardWidget> createState() => _RewindRewardWidgetState();
 }
 
-class _RewindRewardWidgetState extends State<RewindRewardWidget> {
+class _RewindRewardWidgetState extends State<RewindRewardWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // CORRECTION : Accès à la propriété statique via la classe
     const maxRewinds = AdController.MAX_REWINDS_PER_GAME;
-
     final totalRewindCount = AdController.instance.currentRewindCount;
     final remainingForGame = AdController.instance.remainingRewindsForGame;
-    // CORRECTION : Utilisation de la constante statique corrigée
-    final usedInGame = maxRewinds - remainingForGame;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        // Dégradé vert moderne comme dans mode_selection_screen
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            Colors.purple.withOpacity(0.8),
-            Colors.deepPurple.withOpacity(0.9),
+            Color(0xFF1B6B3A),  // Vert moyen
+            Color(0xFF2E8B4B),  // Vert clair
+            Color(0xFF0D4A2D),  // Vert foncé
           ],
+          stops: [0.0, 0.5, 1.0],
         ),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Ligne principale avec icône et informations
-          Row(
-            children: [
-              const Icon(Icons.replay, color: Colors.white, size: 24),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Rembobinages: $totalRewindCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: remainingForGame > 0
-                                ? Colors.green.withOpacity(0.7)
-                                : Colors.red.withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$remainingForGame/$maxRewinds restants', // CORRECTION
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+          // Icône avec effet de lueur
+          AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.25 * _pulseAnimation.value),
+                      blurRadius: 6 * _pulseAnimation.value,
+                      offset: const Offset(0, 0),
                     ),
-                    if (usedInGame > 0)
-                      Text(
-                        'Utilisés ce match: $usedInGame',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                        ),
-                      ),
                   ],
                 ),
-              ),
-              _buildActionButton(),
-            ],
+                child: const Icon(
+                  Icons.replay,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              );
+            },
           ),
 
-          // Barre de progression pour les rembobinages du match
-          if (totalRewindCount > 0) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text(
-                  'Ce match: ',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      // CORRECTION : Utilisation de la constante statique corrigée
-                      widthFactor: remainingForGame / maxRewinds,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: remainingForGame > 0 ? Colors.green : Colors.red,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '$remainingForGame',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
+          const SizedBox(width: 8),
+
+          // Compteur principal
+          Text(
+            '$totalRewindCount',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              letterSpacing: 0.3,
+              shadows: [
+                Shadow(
+                  color: Colors.black26,
+                  blurRadius: 3,
+                  offset: Offset(1, 1),
                 ),
               ],
             ),
-          ],
+          ),
+
+          const SizedBox(width: 6),
+
+          // Badge de status moderne
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: remainingForGame > 0
+                  ? const Color(0xFF4CAF50).withOpacity(0.8)
+                  : const Color(0xFFFF5722).withOpacity(0.8),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (remainingForGame > 0 ? Colors.green : Colors.red)
+                      .withOpacity(0.25),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Text(
+              '$remainingForGame',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          // Icône d'action compacte
+          _buildCompactActionIcon(totalRewindCount, remainingForGame),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton() {
-    final totalRewindCount = AdController.instance.currentRewindCount;
-    final remainingForGame = AdController.instance.remainingRewindsForGame;
+  Widget _buildCompactActionIcon(int totalRewindCount, int remainingForGame) {
+    Widget iconWidget;
+    Color iconColor;
+    VoidCallback? onTap;
 
     if (totalRewindCount > 0 && remainingForGame > 0) {
-      // L'utilisateur a des rembobinages disponibles
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.purple.withOpacity(0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.check_circle, color: Colors.green, size: 16),
-            SizedBox(width: 5),
-            Text(
-              'Prêt',
-              style: TextStyle(
-                color: Colors.purple,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
+      iconWidget = const Icon(Icons.check_circle, size: 14);
+      iconColor = const Color(0xFF4CAF50);
     } else if (totalRewindCount > 0 && remainingForGame == 0) {
-      // L'utilisateur a des rembobinages mais a atteint la limite pour ce match
-      return ElevatedButton(
-        onPressed: _showLimitReachedDialog,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orange,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.warning, size: 14),
-            SizedBox(width: 4),
-            Text(
-              'Limite',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-            ),
-          ],
-        ),
-      );
+      iconWidget = const Icon(Icons.warning, size: 14);
+      iconColor = const Color(0xFFFF9800);
+      onTap = _showLimitReachedDialog;
     } else {
-      // L'utilisateur n'a pas de rembobinages
-      return ElevatedButton(
-        onPressed: _showEarnRewindDialog,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      iconWidget = const Icon(Icons.add_circle, size: 14);
+      iconColor = const Color(0xFFFFD700);
+      onTap = _showEarnRewardDialog;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: iconColor.withOpacity(0.2),
+          border: Border.all(
+            color: iconColor.withOpacity(0.4),
+            width: 1,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.add, size: 14),
-            SizedBox(width: 4),
-            Text(
-              'Gagner',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-            ),
-          ],
+        child: IconTheme(
+          data: IconThemeData(color: iconColor),
+          child: iconWidget,
         ),
-      );
-    }
+      ),
+    );
   }
 
   void _showLimitReachedDialog() {
-    // CORRECTION : Accès à la propriété statique via la classe
     const maxRewinds = AdController.MAX_REWINDS_PER_GAME;
     final usedInGame = maxRewinds - AdController.instance.remainingRewindsForGame;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFF1B6B3A),
         title: Row(
           children: const [
-            Icon(Icons.warning, color: Colors.orange, size: 28),
+            Icon(Icons.warning, color: Color(0xFFFF9800), size: 28),
             SizedBox(width: 10),
-            Text('Limite atteinte'),
+            Text(
+              'Limite atteinte',
+              style: TextStyle(color: Colors.white),
+            ),
           ],
         ),
         content: Column(
@@ -262,54 +243,62 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget> {
           children: [
             const Text(
               'Vous avez utilisé tous vos rembobinages autorisés pour ce match.',
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info, color: Colors.orange[800], size: 20),
+                      Icon(Icons.info, color: Colors.white.withOpacity(0.8), size: 20),
                       const SizedBox(width: 8),
                       Text(
                         'Informations:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange[800],
+                          color: Colors.white.withOpacity(0.9),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text('• Maximum $maxRewinds rembobinages par match'), // CORRECTION
-                  Text('• Utilisés: $usedInGame/$maxRewinds'), // CORRECTION
-                  Text('• Rembobinages totaux: ${AdController.instance.currentRewindCount}'),
+                  Text('• Maximum $maxRewinds rembobinages par match',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  Text('• Utilisés: $usedInGame/$maxRewinds',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  Text('• Rembobinages totaux: ${AdController.instance.currentRewindCount}',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
                 ],
               ),
             ),
             const SizedBox(height: 10),
-            const Text('Vos rembobinages se réinitialiseront au prochain match !'),
+            Text(
+              'Vos rembobinages se réinitialiseront au prochain match !',
+              style: TextStyle(color: Colors.white.withOpacity(0.9)),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Compris'),
+            child: const Text('Compris', style: TextStyle(color: Colors.white)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _showEarnRewindDialog();
+              _showEarnRewardDialog();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+            ),
             child: const Text(
               'Gagner plus',
               style: TextStyle(color: Colors.white),
@@ -320,7 +309,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget> {
     );
   }
 
-  void _showEarnRewindDialog() {
+  void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
       title: 'Gagner un rembobinage',
@@ -341,7 +330,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget> {
                   Text('Rembobinage gagné !'),
                 ],
               ),
-              backgroundColor: Colors.green,
+              backgroundColor: Color(0xFF4CAF50),
             ),
           );
         }
@@ -357,7 +346,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget> {
                   Text('Publicité non disponible'),
                 ],
               ),
-              backgroundColor: Colors.orange,
+              backgroundColor: Color(0xFFFF9800),
             ),
           );
         }

@@ -200,40 +200,28 @@ class GameController {
       _gameState.currentPhase = GamePhase.humanGoalkeeping;
       onStateChanged?.call();
 
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        final aiDecision = _gameState.getAIDecision();
-        _executeAIShot(aiDecision);
+      // Obtenir la décision de l'IA immédiatement
+      final aiDecision = _gameState.getAIDecision();
 
-        _goalkeeperTimeout = Timer(const Duration(seconds: 3), () {
-          if (_gameState.currentPhase == GamePhase.goalkeepeerSaving) {
-            setGoalkeeperDirection(ShotDirection.center);
-          }
-          _goalkeeperTimeout?.cancel();
-        });
+      // Configurer le tir de l'IA
+      _gameState.selectedDirection = aiDecision['direction'];
+      _gameState.shotPower = aiDecision['power'];
+      _gameState.shotEffect = aiDecision['effect'];
+
+      // MODIFICATION: Timer de 3 secondes pour que l'utilisateur choisisse la direction du gardien
+      _goalkeeperTimeout = Timer(const Duration(seconds: 3), () {
+        // Si l'utilisateur n'a pas choisi, le gardien reste au centre par défaut
+        if (_gameState.currentPhase == GamePhase.humanGoalkeeping) {
+          print("⏰ Timeout du gardien - Direction par défaut: centre");
+          setGoalkeeperDirection(ShotDirection.center);
+        }
+        _goalkeeperTimeout?.cancel();
       });
     }
   }
 
-  void _executeAIShot(Map<String, dynamic> aiDecision) {
-    // CORRECTION: Simplifier la sauvegarde d'état
-    _saveGameStateBeforeShot();
 
-    _isShooting = true;
-    _gameState.selectedDirection = aiDecision['direction'];
-    _gameState.shotPower = aiDecision['power'];
-    _gameState.shotEffect = aiDecision['effect'];
-    _gameState.currentPhase = GamePhase.goalkeepeerSaving;
 
-    _setupBallAnimation();
-
-    if (_gameState.shotPower > 70) {
-      AudioManager.playSound('powerful_kick');
-    } else {
-      AudioManager.playSound('kick');
-    }
-
-    onStateChanged?.call();
-  }
 
   void setGoalkeeperDirection(int direction) {
     _goalkeeperTimeout?.cancel();
@@ -241,10 +229,23 @@ class GameController {
     if (_gameState.currentPhase == GamePhase.humanGoalkeeping ||
         _gameState.currentPhase == GamePhase.goalkeepeerSaving) {
 
+      // Sauvegarder l'état avant le tir de l'IA
+      _saveGameStateBeforeShot();
+
       _gameState.goalkeepeerDirection = direction;
       _gameState.currentPhase = GamePhase.goalkeepeerSaving;
 
       _setupGoalkeeperAnimation(direction);
+      _setupBallAnimation();
+
+      // Jouer le son de tir en fonction de la puissance
+      if (_gameState.shotPower > 70) {
+        AudioManager.playSound('powerful_kick');
+      } else {
+        AudioManager.playSound('kick');
+      }
+
+      _isShooting = true;
       _goalkeeperController.forward();
       _ballAnimationController.forward(from: 0.0);
 
@@ -289,10 +290,23 @@ class GameController {
 
   // NOUVELLE MÉTHODE: Vérifier si le rembobinage est disponible
   bool _canShowRewindPopup() {
+    // NOUVELLE CONDITION: Ne pas afficher le popup si c'est le tour de l'IA
+    if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+      print("❌ Pas de popup de rembobinage - C'est le tour de l'IA");
+      return false;
+    }
+
+    // NOUVELLE CONDITION: Ne pas afficher le popup en mode tournoi si c'est l'IA
+    if (_gameState.isTournamentMode && _gameState.currentTeam == _gameState.team2) {
+      print("❌ Pas de popup de rembobinage - C'est le tour de l'IA en tournoi");
+      return false;
+    }
+
     // Conditions pour afficher le popup de rembobinage :
     // 1. Le tir a été raté
     // 2. L'AdController permet l'utilisation d'un rembobinage
     // 3. GameState permet le rembobinage
+    // 4. Ce n'est PAS le tour de l'IA (nouvelles conditions ajoutées ci-dessus)
     return !_gameState.isGoalScored &&
         AdController.instance.canUseRewind() &&
         _gameState.canRewind;
@@ -359,121 +373,380 @@ class GameController {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.replay, color: Colors.orange, size: 28),
-            SizedBox(width: 10),
-            Text(
-              'Tir raté !',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.red[700],
-              ),
+        backgroundColor: const Color(0xFF1B6B3A),
+        contentPadding: const EdgeInsets.all(0),
+        titlePadding: const EdgeInsets.all(0),
+        title: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1B6B3A),  // Vert moyen
+                Color(0xFF2E8B4B),  // Vert clair
+                Color(0xFF0D4A2D),  // Vert foncé
+              ],
+              stops: [0.0, 0.5, 1.0],
             ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.sports_soccer,
-              size: 50,
-              color: Colors.grey[600],
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            SizedBox(height: 15),
-            Text(
-              'Voulez-vous utiliser un rembobinage pour rejouer ce tir ?',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.replay, color: Colors.orange, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Rembobinages: ${AdController.instance.currentRewindCount}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 0),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: const Icon(
+                  Icons.replay,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          Colors.white,
+                          Color(0xFFE0E0E0),
+                        ],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'TIR RATÉ !',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1.0,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              blurRadius: 3,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Seconde chance disponible',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        content: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
             ),
-          ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icône football moderne avec effet
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.1),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.sports_soccer,
+                  size: 30,
+                  color: Colors.white70,
+                ),
+              ),
+
+              const SizedBox(width: 14),
+
+              // Texte principal
+              Text(
+                'Voulez-vous utiliser un rembobinage pour rejouer ce tir ?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.9),
+                  height: 1.3,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Badge des rembobinages disponibles
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF4CAF50),
+                      Color(0xFF2E7D32),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withOpacity(0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.2),
+                      ),
+                      child: const Icon(
+                        Icons.replay,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Rembobinages: ${AdController.instance.currentRewindCount}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 13,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              _continueAfterShotResult();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.grey[600],
-            ),
-            child: Text('Continuer'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-
-              bool success = await rewindLastShot();
-
-              if (!mounted(context!)) return;
-
-              if (success) {
-                ScaffoldMessenger.of(context!).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 10),
-                        Text('Tir rembobiné ! Vous pouvez rejouer.'),
-                      ],
-                    ),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context!).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.error, color: Colors.white),
-                        SizedBox(width: 10),
-                        Text('Impossible de rembobiner.'),
-                      ],
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                _continueAfterShotResult();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.replay, size: 18),
-                SizedBox(width: 5),
-                Text('Rembobiner'),
+                // Bouton Continuer
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        _continueAfterShotResult();
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        foregroundColor: Colors.white70,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: const Text(
+                        'Continuer',
+                        style: TextStyle(
+                          fontSize: 07,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Bouton Rembobiner
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        bool success = await rewindLastShot();
+
+                        if (!mounted(context!)) return;
+
+                        if (success) {
+                          ScaffoldMessenger.of(context!).showSnackBar(
+                            SnackBar(
+                              content: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.white, size: 20),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Tir rembobiné ! Vous pouvez rejouer.',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              backgroundColor: const Color(0xFF4CAF50),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(12),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context!).showSnackBar(
+                            SnackBar(
+                              content: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.error, color: Colors.white, size: 20),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Impossible de rembobiner.',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              backgroundColor: const Color(0xFFFF5722),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(12),
+                            ),
+                          );
+                          _continueAfterShotResult();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF9800),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.replay, size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Rembobiner',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

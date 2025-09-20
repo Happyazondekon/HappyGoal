@@ -42,6 +42,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   final GlobalKey _shotControllerKey = GlobalKey();
   final GlobalKey _scoreBoardKey = GlobalKey();
   final GlobalKey _playerKey = GlobalKey();
+  final GlobalKey _rewindKey = GlobalKey();
+  final GlobalKey _goalkeeperControllerKey = GlobalKey();
 
   @override
   void initState() {
@@ -93,7 +95,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
   // --- NOUVELLES MÉTHODES POUR LE TUTORIEL ---
-
   /// Crée les étapes du tutoriel pour les modes solo et tournoi.
   List<TutorialStep> _createGameplayTutorialSteps() {
     return [
@@ -118,24 +119,42 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           ],
         ),
       ),
+      // --- NOUVELLE ÉTAPE : REMBOBINAGE ---
+      TutorialStep(
+        title: 'Rembobiner et Récompense ↩️',
+        description: 'C\'est votre filet de sécurité ! Si vous ratez un tir, utilisez un **Rembobinage** pour revenir en arrière et tenter à nouveau. Le petit badge indique ce qu\'il vous reste pour ce match.',
+        targetKey: _rewindKey,
+        position: TutorialPosition.bottom,
+        customContent: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTipRow(Icons.ad_units, 'Gagnez plus en regardant une pub.'),
+            _buildTipRow(Icons.history, 'Utilisez-le judicieusement, la limite est par match.'),
+          ],
+        ),
+      ),
+      // --- ÉTAPE EXISTANTE (Tableau de score) ---
       TutorialStep(
         title: 'Le tableau de score',
         description: 'Suivez ici les scores des deux équipes et voyez qui tire actuellement.',
         targetKey: _scoreBoardKey,
         position: TutorialPosition.bottom,
       ),
+      // --- ÉTAPE EXISTANTE (Buts adverses) ---
       TutorialStep(
         title: 'Les buts adverses',
         description: 'Voici les cages que vous devez viser. Le gardien va essayer d\'arrêter vos tirs !',
         targetKey: _goalPostKey,
         position: TutorialPosition.bottom,
       ),
+      // --- ÉTAPE EXISTANTE (Joueur) ---
       TutorialStep(
         title: 'Votre joueur',
         description: 'C\'est votre tireur ! Il va exécuter le penalty selon vos instructions.',
         targetKey: _playerKey,
         position: TutorialPosition.top,
       ),
+      // --- ÉTAPE EXISTANTE (Contrôles de tir) ---
       TutorialStep(
         title: 'Contrôles de tir',
         description: 'Utilisez ces boutons pour choisir la direction, la puissance et l\'effet de votre tir. Expérimentez pour trouver la combinaison gagnante !',
@@ -155,9 +174,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           ],
         ),
       ),
+
     ];
   }
 
+  /// Crée les étapes du tutoriel pour le mode multijoueur.
   /// Crée les étapes du tutoriel pour le mode multijoueur.
   List<TutorialStep> _createMultiplayerTutorialSteps() {
     return [
@@ -179,16 +200,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         targetKey: _shotControllerKey,
         position: TutorialPosition.top,
       ),
+      // --- NOUVELLE ÉTAPE : REMBOBINAGE ---
       TutorialStep(
-        title: 'Contrôlez aussi le gardien !',
-        description: 'Quand l\'IA tire, vous pouvez contrôler votre gardien pour arrêter ses tirs. Anticipez et plongez !',
-        targetKey: _shotControllerKey,
-        position: TutorialPosition.top,
-        customContent: const Text(
-          'Défendez vos cages avec stratégie ! 🥅',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: 'Rembobiner et Récompense ↩️',
+        description: 'Utilisez un **Rembobinage** pour annuler un tir raté et rejouer votre tour (s\'il vous en reste pour ce match).',
+        targetKey: _rewindKey,
+        position: TutorialPosition.bottom,
+        customContent: _buildTipRow(Icons.ad_units, 'Disponible aussi en mode multijoueur !'),
       ),
+
     ];
   }
 
@@ -428,6 +448,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
                         // WIDGET DE RÉCOMPENSE (RewindRewardWidget)
                         RewindRewardWidget(
+                          key: _rewindKey,
                           gameState: _controller.gameState,
                           onStateChanged: () => setState(() {}),
                           gameController: _controller, // Passer la référence
@@ -582,6 +603,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           Padding(
                             padding: EdgeInsets.only(bottom: responsivePadding(10)),
                             child: GoalkeeperControllerWidget(
+                              key: _goalkeeperControllerKey,
                               onDive: (direction) => _controller.setGoalkeeperDirection(direction),
                             ),
                           ),
