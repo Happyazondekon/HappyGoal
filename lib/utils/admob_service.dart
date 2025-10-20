@@ -14,16 +14,16 @@ class AdMobService {
   static const String _testRewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
   static const String _testRewardedInterstitialAdUnitId = 'ca-app-pub-3940256099942544/5354046377'; // Test ID for Rewarded Interstitial
   // Vos vrais IDs AdMob (Android / iOS)
-  static const String _androidBannerAdUnitId = 'ca-app-pub-2066223330804112/2584748694';
+  static const String _androidBannerAdUnitId = 'ca-app-pub-2066223330804112/5463391928';
   static const String _iosBannerAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX';
 
-  static const String _androidInterstitialAdUnitId = 'ca-app-pub-2066223330804112/4298528883';
+  static const String _androidInterstitialAdUnitId = 'ca-app-pub-2066223330804112/8210449543';
   static const String _iosInterstitialAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX';
 
-  static const String _androidRewardedAdUnitId = 'ca-app-pub-2066223330804112/7730561334';
+  static const String _androidRewardedAdUnitId = 'ca-app-pub-2066223330804112/7088939562';
   static const String _iosRewardedAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX';
 
-  static const String _androidRewardedInterstitialAdUnitId = 'ca-app-pub-2066223330804112/6715565396'; // Votre ID fourni
+  static const String _androidRewardedInterstitialAdUnitId = 'ca-app-pub-2066223330804112/8185371142'; // Votre ID fourni
   static const String _iosRewardedInterstitialAdUnitId = 'ca-app-pub-2066223330804112/XXXXXXXXXX'; // À remplacer par votre vrai ID iOS
 
 
