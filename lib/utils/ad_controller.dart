@@ -8,6 +8,10 @@ import 'analytics_service.dart';
 class AdController {
   static AdController? _instance;
   static AdController get instance => _instance ??= AdController._();
+  static const int REWIND_COST = 30;
+  static const int REWARD_COINS = 05;
+
+  int _coinCount = 0;
 
   // ⭐️ LOGIQUE REMBOBINAGE
   int _rewindCount = 0;
@@ -30,6 +34,7 @@ class AdController {
   Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
     _gamesSinceLastInterstitial = _prefs?.getInt('games_since_interstitial') ?? 0;
+    _coinCount = _prefs?.getInt('coin_count') ?? 0; // Nouveau
 
     // ⭐️ LOGIQUE REMBOBINAGE: Chargement
     _rewindCount = _prefs?.getInt('rewind_count') ?? 0;
@@ -43,6 +48,24 @@ class AdController {
   // Appelé au début d'un match
   void onGameStarted() {
     resetGameRewindLimit();
+  }
+
+  // Nouvelle méthode pour ajouter des coins
+  Future<void> addCoins(int amount) async {
+    _coinCount += amount;
+    await _prefs?.setInt('coin_count', _coinCount);
+  }
+
+  // Nouvelle méthode pour acheter des rembobinages
+  Future<bool> buyRewind() async {
+    if (_coinCount >= REWIND_COST) {
+      _coinCount -= REWIND_COST;
+      _rewindCount++;
+      await _prefs?.setInt('coin_count', _coinCount);
+      await _prefs?.setInt('rewind_count', _rewindCount);
+      return true;
+    }
+    return false;
   }
 
   // Appelé à la fin d'un match
@@ -120,7 +143,7 @@ class AdController {
     return difference.inMinutes >= _minutesBetweenRewarded;
   }
 
-  // Afficher publicité rewarded avec récompense
+  // Modifiez la méthode showRewardedAd pour donner des coins
   void showRewardedAd({
     required BuildContext context,
     required String rewardType,
@@ -139,6 +162,11 @@ class AdController {
         _lastRewardedAdTime = DateTime.now();
         _prefs?.setString('last_rewarded_time', _lastRewardedAdTime!.toIso8601String());
 
+        // Donner des coins au lieu d'un rembobinage direct
+        if (rewardType == 'coins') {
+          addCoins(REWARD_COINS);
+        }
+
         AnalyticsService.logAdEvent('rewarded_earned', parameters: {
           'reward_type': rewardType,
           'reward_amount': reward.amount,
@@ -151,6 +179,108 @@ class AdController {
       },
     );
   }
+
+  // Nouvelle méthode pour afficher le dialogue d'achat de rembobinages
+  void showBuyRewindDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFF1B6B3A),
+        title: Row(
+          children: const [
+            Icon(Icons.shopping_cart, color: Color(0xFFFFD700), size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Acheter',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Voulez-vous acheter un rembobinage pour $REWIND_COST coins?',
+              style: const TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            const SizedBox(height: 15),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Vos coins:', style: TextStyle(color: Colors.white)),
+                  Text('$_coinCount',
+                      style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            onPressed: _coinCount >= REWIND_COST ? () {
+              Navigator.of(context).pop();
+              _processRewindPurchase(context);
+            } : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+            ),
+            child: const Text(
+              'Acheter',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Remplacez la méthode _processRewindPurchase par ceci :
+  void _processRewindPurchase(BuildContext context) {
+    // Utilisez then() pour gérer le Future<bool>
+    buyRewind().then((success) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 10),
+                Text('Rembobinage acheté !'),
+              ],
+            ),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 10),
+                Text('Pas assez de coins !'),
+              ],
+            ),
+            backgroundColor: Color(0xFFFF5722),
+          ),
+        );
+      }
+    });
+  }
+
 
   // Forcer l'affichage d'une publicité interstitielle (ex: avant un mode important)
   void forceShowInterstitial(BuildContext context, {VoidCallback? onClosed}) {
@@ -388,10 +518,15 @@ class AdController {
   // Getters pour l'état
   int get gamesSinceLastInterstitial => _gamesSinceLastInterstitial;
   bool get isRewardedAvailable => canShowRewardedAd();
+  int get currentCoinCount => _coinCount;
+  int get rewindCost => REWIND_COST;
+  int get rewardCoins => REWARD_COINS;
   // ⭐️ LOGIQUE REMBOBINAGE: Getter public
   int get currentRewindCount => _rewindCount;
   // ⭐️ LOGIQUE REMBOBINAGE: Getter pour savoir combien de rembobinages restent pour ce match (NOUVEAU)
   int get remainingRewindsForGame {
     return (MAX_REWINDS_PER_GAME - _usedRewindsInCurrentGame).clamp(0, _rewindCount);
+
   }
 }
+

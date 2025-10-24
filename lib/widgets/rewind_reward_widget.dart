@@ -53,19 +53,19 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
     const maxRewinds = AdController.MAX_REWINDS_PER_GAME;
     final totalRewindCount = AdController.instance.currentRewindCount;
     final remainingForGame = AdController.instance.remainingRewindsForGame;
+    final coinCount = AdController.instance.currentCoinCount;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        // Dégradé vert moderne comme dans mode_selection_screen
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF1B6B3A),  // Vert moyen
-            Color(0xFF2E8B4B),  // Vert clair
-            Color(0xFF0D4A2D),  // Vert foncé
+            Color(0xFF1B6B3A),
+            Color(0xFF2E8B4B),
+            Color(0xFF0D4A2D),
           ],
           stops: [0.0, 0.5, 1.0],
         ),
@@ -90,7 +90,51 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icône avec effet de lueur
+          // Icône coins
+          GestureDetector(
+            onTap: () => _showCoinInfoDialog(),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFFD700).withOpacity(0.2),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withOpacity(0.4),
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.monetization_on,
+                color: Color(0xFFFFD700),
+                size: 14,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 6),
+
+          // Compteur de coins
+          Text(
+            '$coinCount',
+            style: const TextStyle(
+              color: Color(0xFFFFD700),
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Séparateur
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.white.withOpacity(0.3),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Icône rembobinage avec effet de lueur
           AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, child) {
@@ -119,7 +163,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
 
           const SizedBox(width: 8),
 
-          // Compteur principal
+          // Compteur principal rembobinages
           Text(
             '$totalRewindCount',
             style: const TextStyle(
@@ -312,25 +356,23 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
-      title: 'Gagner un rembobinage',
-      description: 'Regardez une publicité pour gagner un rembobinage supplémentaire !',
-      rewardType: 'rewind',
-      rewardAmount: 1,
-      onRewardEarned: () async {
-        await AdController.instance.incrementRewindCount();
+      title: 'Gagner des Coins',
+      description: 'Regardez une publicité pour gagner ${AdController.instance.rewardCoins} coins !',
+      rewardType: 'coins', // Changé de 'rewind' à 'coins'
+      rewardAmount: AdController.instance.rewardCoins,
+      onRewardEarned: () {
         widget.onStateChanged();
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Row(
                 children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text('Rembobinage gagné !'),
+                  const Icon(Icons.monetization_on, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text('+${AdController.instance.rewardCoins} coins gagnés !'),
                 ],
               ),
-              backgroundColor: Color(0xFF4CAF50),
+              backgroundColor: const Color(0xFFFFD700),
             ),
           );
         }
@@ -351,6 +393,106 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
           );
         }
       },
+    );
+  }
+
+  // Nouvelle méthode pour afficher les informations sur les coins
+  void _showCoinInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFF1B6B3A),
+        title: Row(
+          children: const [
+            Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Système de Coins',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Comment gagner et utiliser vos coins:',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            const SizedBox(height: 15),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoItem('🎥 Regarder une pub', '+${AdController.instance.rewardCoins} coins'),
+                  _buildInfoItem('🔄 Acheter un rembobinage', '${AdController.instance.rewindCost} coins'),
+                  _buildInfoItem('📊 Votre solde', '${AdController.instance.currentCoinCount} coins'),
+                  _buildInfoItem('🔄 Rembobinages disponibles', '${AdController.instance.currentRewindCount}'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showEarnRewardDialog();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+            ),
+            child: const Text(
+              'Gagner des Coins',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          if (AdController.instance.currentCoinCount >= AdController.instance.rewindCost)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                AdController.instance.showBuyRewindDialog(context);
+                widget.onStateChanged();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+              ),
+              child: const Text(
+                'Acheter Rembobinage',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(color: Colors.white.withOpacity(0.9))),
+          Text(value,
+              style: const TextStyle(
+                  color: Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold
+              )),
+        ],
+      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../models/team.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
+import '../utils/ad_controller.dart'; // Import ajouté pour gérer les coins
 
 class ResultScreen extends StatefulWidget {
   final Team winner;
@@ -43,6 +44,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   late Animation<double> _buttonAnimation;
 
   final int _maxShotsToDisplay = 5;
+  bool _coinsAwarded = false; // Nouvelle variable pour éviter les doublons
 
   @override
   void initState() {
@@ -103,6 +105,49 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       Future.delayed(const Duration(milliseconds: 600), () {
         _confettiController.play();
       });
+    }
+
+    // 🎁 DONNER LES COINS SI VICTOIRE
+    if ((!widget.isSoloMode || widget.isUserWinner) && !_coinsAwarded) {
+      _awardVictoryCoins();
+    }
+  }
+
+  // 🎁 NOUVELLE MÉTHODE: Donner les coins pour la victoire
+  void _awardVictoryCoins() async {
+    await AdController.instance.addCoins(3);
+    _coinsAwarded = true;
+
+    // Afficher une notification après un court délai
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(Icons.emoji_events, color: Colors.white, size: 24),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '🎉 VICTOIRE! +3 COINS GAGNÉS!',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFFD700),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: const EdgeInsets.all(15),
+        ),
+      );
     }
   }
 
@@ -219,10 +264,10 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           // Main content
           SafeArea(
             child: SingleChildScrollView(
-              // Ajout de Center pour centrer le contenu verticalement si l'Ã©cran est grand
+              // Ajout de Center pour centrer le contenu verticalement si l'écran est grand
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600), // Limite la largeur pour les grands Ã©crans
+                  constraints: const BoxConstraints(maxWidth: 600), // Limite la largeur pour les grands écrans
                   child: Column(
                     children: [
                       // Animated title section
@@ -230,14 +275,14 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                         position: _slideAnimation,
                         child: Center(
                           child: Padding(
-                            // RÃ©duction des padding pour moins de marge
+                            // Réduction des padding pour moins de marge
                             padding: const EdgeInsets.only(top: 20, bottom: 15),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 // Glow effect behind title
                                 Container(
-                                  // RÃ©duction des padding
+                                  // Réduction des padding
                                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(30),
@@ -246,8 +291,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                         color: isDefeat
                                             ? Colors.grey.withOpacity(0.3)
                                             : primaryColor.withOpacity(0.4),
-                                        blurRadius: 20, // RÃ©duction du flou
-                                        spreadRadius: 10, // RÃ©duction de l'Ã©talement
+                                        blurRadius: 20, // Réduction du flou
+                                        spreadRadius: 10, // Réduction de l'étalement
                                       ),
                                     ],
                                   ),
@@ -261,7 +306,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                     child: Text(
                                       resultTitle,
                                       style: const TextStyle(
-                                        fontSize: 42, // Taille du titre rÃ©duite
+                                        fontSize: 42, // Taille du titre réduite
                                         fontWeight: FontWeight.w900,
                                         color: Colors.white,
                                         letterSpacing: 3,
@@ -271,13 +316,13 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   ),
                                 ),
 
-                                const SizedBox(height: 10), // Espace rÃ©duit
+                                const SizedBox(height: 10), // Espace réduit
 
                                 // Subtitle with context
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding rÃ©duit
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding réduit
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20), // Rayon rÃ©duit
+                                    borderRadius: BorderRadius.circular(20), // Rayon réduit
                                     color: Colors.black.withOpacity(0.2),
                                     border: Border.all(
                                       color: Colors.white.withOpacity(0.3),
@@ -289,13 +334,42 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                         ? "L'IA a remporté cette séance"
                                         : "Félicitations pour cette victoire !",
                                     style: TextStyle(
-                                      fontSize: 14, // Taille du texte rÃ©duite
+                                      fontSize: 14, // Taille du texte réduite
                                       color: Colors.white.withOpacity(0.9),
                                       fontWeight: FontWeight.w500,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
                                 ),
+
+                                // 🎁 Affichage des coins gagnés pour la victoire
+                                if (!isDefeat) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700).withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.4)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 16),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          '+3 COINS',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFFFD700),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -304,7 +378,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
                       // Team and score section
                       Padding(
-                        // RÃ©duction du padding
+                        // Réduction du padding
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ScaleTransition(
                           scale: _scaleAnimation,
@@ -318,12 +392,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   boxShadow: [
                                     BoxShadow(
                                       color: primaryColor.withOpacity(0.6),
-                                      blurRadius: 25, // RÃ©duction du flou
-                                      spreadRadius: 10, // RÃ©duction de l'Ã©talement
+                                      blurRadius: 25, // Réduction du flou
+                                      spreadRadius: 10, // Réduction de l'étalement
                                     ),
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 15, // RÃ©duction du flou
+                                      blurRadius: 15, // Réduction du flou
                                       offset: const Offset(0, 8),
                                     ),
                                   ],
@@ -332,18 +406,18 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   borderRadius: BorderRadius.circular(20),
                                   child: Image.asset(
                                     widget.winner.flagImage,
-                                    width: 180, // Taille de l'image rÃ©duite
-                                    height: 120, // Taille de l'image rÃ©duite
+                                    width: 180, // Taille de l'image réduite
+                                    height: 120, // Taille de l'image réduite
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
 
-                              const SizedBox(height: 15), // Espace rÃ©duit
+                              const SizedBox(height: 15), // Espace réduit
 
                               // Winner name with style
                               Container(
-                                // Padding rÃ©duit
+                                // Padding réduit
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(25),
@@ -361,7 +435,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                 child: Text(
                                   widget.winner.name.toUpperCase(),
                                   style: TextStyle(
-                                    fontSize: 24, // Taille du texte rÃ©duite
+                                    fontSize: 24, // Taille du texte réduite
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     letterSpacing: 2,
@@ -377,14 +451,14 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                 ),
                               ),
 
-                              const SizedBox(height: 20), // Espace rÃ©duit
+                              const SizedBox(height: 20), // Espace réduit
 
                               // Enhanced score card
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.all(15), // Padding rÃ©duit
+                                padding: const EdgeInsets.all(15), // Padding réduit
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20), // Rayon rÃ©duit
+                                  borderRadius: BorderRadius.circular(20), // Rayon réduit
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -400,7 +474,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 15, // RÃ©duction du flou
+                                      blurRadius: 15, // Réduction du flou
                                       offset: const Offset(0, 10),
                                     ),
                                   ],
@@ -415,25 +489,25 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
                                         // Score display with glow
                                         Container(
-                                          margin: const EdgeInsets.symmetric(horizontal: 10), // Marge rÃ©duite
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Padding rÃ©duit
+                                          margin: const EdgeInsets.symmetric(horizontal: 10), // Marge réduite
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Padding réduit
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(15), // Rayon rÃ©duit
+                                            borderRadius: BorderRadius.circular(15), // Rayon réduit
                                             gradient: const LinearGradient(
                                               colors: [Color(0xFFFF6B35), Color(0xFFF7931E)],
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: const Color(0xFFFF6B35).withOpacity(0.5),
-                                                blurRadius: 10, // RÃ©duction du flou
-                                                spreadRadius: 3, // RÃ©duction de l'Ã©talement
+                                                blurRadius: 10, // Réduction du flou
+                                                spreadRadius: 3, // Réduction de l'étalement
                                               ),
                                             ],
                                           ),
                                           child: Text(
                                             '${widget.winner.score} - ${widget.loser.score}',
                                             style: const TextStyle(
-                                              fontSize: 32, // Taille du texte rÃ©duite
+                                              fontSize: 32, // Taille du texte réduite
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
                                               shadows: [
@@ -451,7 +525,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                       ],
                                     ),
 
-                                    const SizedBox(height: 15), // Espace rÃ©duit
+                                    const SizedBox(height: 15), // Espace réduit
 
                                     // Shot statistics
                                     Row(
@@ -476,7 +550,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                           return Transform.scale(
                             scale: _buttonAnimation.value,
                             child: Padding(
-                              // Padding rÃ©duit
+                              // Padding réduit
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -493,7 +567,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                             onPressed: _navigateToTeamSelection,
                                           ),
                                         ),
-                                        const SizedBox(width: 10), // Espace rÃ©duit
+                                        const SizedBox(width: 10), // Espace réduit
                                         Expanded(
                                           child: _buildActionButton(
                                             text: 'RETOUR AU MENU',
@@ -516,7 +590,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                             onPressed: _navigateToTeamSelection,
                                           ),
                                         ),
-                                        const SizedBox(width: 10), // Espace rÃ©duit
+                                        const SizedBox(width: 10), // Espace réduit
                                         Expanded(
                                           child: _buildActionButton(
                                             text: 'RETOUR AU MENU',
@@ -578,13 +652,13 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     required VoidCallback onPressed,
   }) {
     return Container(
-      height: 50, // Hauteur du bouton rÃ©duite
+      height: 50, // Hauteur du bouton réduite
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25), // Rayon rÃ©duit
+        borderRadius: BorderRadius.circular(25), // Rayon réduit
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
-            blurRadius: 10, // RÃ©duction du flou
+            blurRadius: 10, // Réduction du flou
             offset: const Offset(0, 6),
           ),
         ],
@@ -595,16 +669,16 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           backgroundColor: color,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25), // Rayon rÃ©duit
+            borderRadius: BorderRadius.circular(25), // Rayon réduit
           ),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12), // Padding rÃ©duit
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12), // Padding réduit
         ),
-        icon: Icon(icon, size: 20), // Taille de l'icÃ´ne rÃ©duite
+        icon: Icon(icon, size: 20), // Taille de l'icône réduite
         label: Text(
           text,
           style: const TextStyle(
-            fontSize: 10, // Taille du texte rÃ©duite
+            fontSize: 10, // Taille du texte réduite
             fontWeight: FontWeight.bold,
             letterSpacing: 0.8,
           ),
@@ -618,45 +692,45 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       child: Column(
         children: [
           Container(
-            width: 70, // Taille rÃ©duite
-            height: 50, // Taille rÃ©duite
+            width: 70, // Taille réduite
+            height: 50, // Taille réduite
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10), // Rayon rÃ©duit
+              borderRadius: BorderRadius.circular(10), // Rayon réduit
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: isWinner
                       ? team.color.withOpacity(0.6)
                       : Colors.grey.withOpacity(0.4),
-                  blurRadius: 10, // RÃ©duction du flou
-                  spreadRadius: 2, // RÃ©duction de l'Ã©talement
+                  blurRadius: 10, // Réduction du flou
+                  spreadRadius: 2, // Réduction de l'étalement
                 ),
                 const BoxShadow(
                   color: Colors.black26,
-                  blurRadius: 6, // RÃ©duction du flou
+                  blurRadius: 6, // Réduction du flou
                   offset: Offset(0, 3),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(10), // Rayon rÃ©duit
+              borderRadius: BorderRadius.circular(10), // Rayon réduit
               child: Image.asset(
                 team.flagImage,
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          const SizedBox(height: 8), // Espace rÃ©duit
+          const SizedBox(height: 8), // Espace réduit
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Padding rÃ©duit
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Padding réduit
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12), // Rayon rÃ©duit
+              borderRadius: BorderRadius.circular(12), // Rayon réduit
               color: Colors.black.withOpacity(0.2),
             ),
             child: Text(
               team.name,
               style: TextStyle(
-                fontSize: 12, // Taille du texte rÃ©duite
+                fontSize: 12, // Taille du texte réduite
                 color: Colors.white,
                 fontWeight: isWinner ? FontWeight.bold : FontWeight.w500,
                 shadows: const [
@@ -684,7 +758,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
     return Flexible(
       child: Container(
-        padding: const EdgeInsets.all(10), // Padding rÃ©duit
+        padding: const EdgeInsets.all(10), // Padding réduit
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           color: Colors.black.withOpacity(0.2),
@@ -698,17 +772,17 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             Text(
               'TIRS AU BUT',
               style: TextStyle(
-                fontSize: 12, // Taille du texte rÃ©duite
+                fontSize: 12, // Taille du texte réduite
                 fontWeight: FontWeight.bold,
                 color: team.color,
                 letterSpacing: 1.2,
               ),
             ),
-            const SizedBox(height: 6), // Espace rÃ©duit
+            const SizedBox(height: 6), // Espace réduit
             Text(
               '$goals / $total',
               style: const TextStyle(
-                fontSize: 18, // Taille du texte rÃ©duite
+                fontSize: 18, // Taille du texte réduite
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 shadows: [
@@ -720,22 +794,22 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 ],
               ),
             ),
-            const SizedBox(height: 10), // Espace rÃ©duit
+            const SizedBox(height: 10), // Espace réduit
             if (hasMoreShots)
               Padding(
-                padding: const EdgeInsets.only(bottom: 6), // Padding rÃ©duit
+                padding: const EdgeInsets.only(bottom: 6), // Padding réduit
                 child: Text(
                   '(Derniers $_maxShotsToDisplay tirs)',
                   style: TextStyle(
-                    fontSize: 10, // Taille du texte rÃ©duite
+                    fontSize: 10, // Taille du texte réduite
                     color: Colors.white.withOpacity(0.7),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
             Wrap(
-              spacing: 4, // Espace rÃ©duit
-              runSpacing: 4, // Espace rÃ©duit
+              spacing: 4, // Espace réduit
+              runSpacing: 4, // Espace réduit
               alignment: WrapAlignment.center,
               children: displayResults.map((isGoal) => _buildEnhancedShotIndicator(isGoal)).toList(),
             ),
@@ -747,8 +821,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
   Widget _buildEnhancedShotIndicator(bool isGoal) {
     return Container(
-      width: 22, // Taille rÃ©duite
-      height: 22, // Taille rÃ©duite
+      width: 22, // Taille réduite
+      height: 22, // Taille réduite
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isGoal
@@ -756,12 +830,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               : [const Color(0xFFE53935), const Color(0xFFC62828)],
         ),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1.5), // Ã‰paisseur rÃ©duite
+        border: Border.all(color: Colors.white, width: 1.5), // Épaisseur réduite
         boxShadow: [
           BoxShadow(
             color: (isGoal ? Colors.green : Colors.red).withOpacity(0.4),
-            blurRadius: 4, // RÃ©duction du flou
-            spreadRadius: 1, // RÃ©duction de l'Ã©talement
+            blurRadius: 4, // Réduction du flou
+            spreadRadius: 1, // Réduction de l'étalement
           ),
         ],
       ),
@@ -769,7 +843,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         child: Icon(
           isGoal ? Icons.check : Icons.close,
           color: Colors.white,
-          size: 14, // Taille de l'icÃ´ne rÃ©duite
+          size: 14, // Taille de l'icône réduite
           shadows: const [
             Shadow(
               offset: Offset(1, 1),

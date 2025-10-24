@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 import '../models/team.dart';
 import 'home_screen.dart';
 import '../constants.dart';
+import '../utils/ad_controller.dart';
 
 class TournamentResultScreen extends StatefulWidget {
   final Team userTeam;
@@ -35,6 +36,8 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   late Animation<double> _scaleAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
+
+  bool _coinsAwarded = false;
 
   @override
   void initState() {
@@ -86,6 +89,49 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
 
     // Démarrer les animations
     _startAnimations();
+
+    // 🎁 DONNER LES COINS SI CHAMPION (4 VICTOIRES)
+    if (widget.userWins == 4 && !_coinsAwarded) {
+      _awardTournamentCoins();
+    }
+  }
+
+  // 🎁 NOUVELLE MÉTHODE: Donner les coins pour la victoire du tournoi
+  void _awardTournamentCoins() async {
+    await AdController.instance.addCoins(30);
+    _coinsAwarded = true;
+
+    // Afficher une notification après un court délai
+    await Future.delayed(const Duration(milliseconds: 2000));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(Icons.emoji_events, color: Colors.white, size: 28),
+              SizedBox(width: 15),
+              Expanded(
+                child: Text(
+                  '🎉 CHAMPION! +30 COINS GAGNÉS!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFFD700),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: const EdgeInsets.all(20),
+        ),
+      );
+    }
   }
 
   void _startAnimations() async {
@@ -304,6 +350,34 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               fontWeight: FontWeight.w500,
             ),
           ),
+          // 🎁 AFFICHAGE DES COINS GAGNÉS SI CHAMPION
+          if (isChampion) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.monetization_on, color: Colors.white, size: 24),
+                  SizedBox(width: 8),
+                  Text(
+                    '+30 COINS',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
