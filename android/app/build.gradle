@@ -25,6 +25,8 @@ android {
     ndkVersion = "29.0.13113456"
 
     compileOptions {
+        // AJOUT: Activer le core library desugaring
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -39,6 +41,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // AJOUT: MultiDex pour le desugaring
+        multiDexEnabled true
     }
     signingConfigs {
         config {
@@ -53,11 +58,14 @@ android {
         release {
             signingConfig = signingConfigs.config
 
-
             // Important: ces deux valeurs doivent être cohérentes
             // Soit les deux à true, soit les deux à false
             minifyEnabled = false
             shrinkResources = false // Doit être false si minifyEnabled est false
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+            )
         }
     }
 
@@ -80,6 +88,12 @@ flutter {
 }
 
 dependencies {
+    // AJOUT: Core Library Desugaring (doit être avant les autres dépendances)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
+    // AJOUT: MultiDex support
+    implementation 'androidx.multidex:multidex:2.0.1'
+
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
 

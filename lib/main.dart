@@ -8,6 +8,7 @@ import 'constants.dart';
 import 'utils/audio_manager.dart';
 import 'utils/analytics_service.dart';
 import 'utils/admob_service.dart'; // Nouveau import
+import 'notification_service.dart'; // Ajout de l'import du service de notifications
 
 // Instance globale pour l'analytics
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -23,6 +24,12 @@ void main() async {
 
   // Initialisation d'AdMob
   await AdMobService.initialize();
+
+  // Initialisation du service de notifications
+  await NotificationService().initialize();
+
+  // Programmer les notifications récurrentes
+  await NotificationService().scheduleRecurringNotifications();
 
   // Charger les publicités en arrière-plan
   await AdMobService.instance.loadInterstitialAd();
@@ -63,6 +70,19 @@ class _HappyGoalAppState extends State<HappyGoalApp> with WidgetsBindingObserver
 
     // Enregistrer l'ouverture de l'application
     AnalyticsService.logAppOpen();
+
+    // Vérifier et reprogrammer les notifications au démarrage
+    _initializeNotifications();
+  }
+
+  // Méthode pour initialiser les notifications
+  void _initializeNotifications() async {
+    try {
+      await NotificationService().checkAndRescheduleNotifications();
+      print('Notifications initialisées avec succès');
+    } catch (e) {
+      print('Erreur lors de l\'initialisation des notifications: $e');
+    }
   }
 
   @override
@@ -92,6 +112,9 @@ class _HappyGoalAppState extends State<HappyGoalApp> with WidgetsBindingObserver
       case AppLifecycleState.resumed:
       // Redémarrer la musique quand l'app revient au premier plan
         AudioManager.playBackgroundMusic();
+
+        // Vérifier et reprogrammer les notifications quand l'app revient au premier plan
+        NotificationService().checkAndRescheduleNotifications();
 
         // Log de l'événement de reprise
         AnalyticsService.logAppForeground();

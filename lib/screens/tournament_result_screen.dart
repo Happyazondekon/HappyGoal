@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:lottie/lottie.dart';
 import '../models/team.dart';
+import '../notification_service.dart';
 import 'home_screen.dart';
 import '../constants.dart';
 import '../utils/ad_controller.dart';
@@ -90,6 +91,9 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
     // Démarrer les animations
     _startAnimations();
 
+    // AJOUT: Sauvegarder l'équipe pour les notifications
+    _saveUserTeamForNotifications();
+
     // 🎁 DONNER LES COINS SI CHAMPION (4 VICTOIRES)
     if (widget.userWins == 4 && !_coinsAwarded) {
       _awardTournamentCoins();
@@ -100,6 +104,10 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   void _awardTournamentCoins() async {
     await AdController.instance.addCoins(30);
     _coinsAwarded = true;
+    // AJOUT: Gérer les notifications pour la victoire du tournoi
+    if (widget.userWins == 4) { // Seulement si champion (4 victoires)
+      _handleTournamentWin();
+    }
 
     // Afficher une notification après un court délai
     await Future.delayed(const Duration(milliseconds: 2000));
@@ -539,6 +547,40 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
       ),
     );
   }
+
+  // AJOUT: Méthode pour gérer les notifications de victoire de tournoi
+  void _handleTournamentWin() async {
+    try {
+      // Sauvegarder l'équipe de l'utilisateur pour les notifications personnalisées
+      await NotificationService().saveUserTeam(widget.userTeam.name);
+
+      // Incrémenter le compteur de tournois gagnés
+      await NotificationService().incrementTournamentWins();
+
+      // Envoyer une notification immédiate de félicitations
+      await NotificationService().sendTournamentWinNotification();
+
+      // Reprogrammer les notifications récurrentes avec les nouvelles informations
+      await NotificationService().scheduleRecurringNotifications();
+
+      print('🎉 Notification de victoire de tournoi traitée pour ${widget.userTeam.name}');
+    } catch (e) {
+      print('❌ Erreur lors du traitement de la victoire de tournoi: $e');
+    }
+  }
+
+  // AJOUT: Méthode pour sauvegarder l'équipe même si pas champion
+  void _saveUserTeamForNotifications() async {
+    try {
+      // Sauvegarder l'équipe de l'utilisateur même s'il n'est pas champion
+      // pour les notifications futures personnalisées
+      await NotificationService().saveUserTeam(widget.userTeam.name);
+      print('🏷️ Équipe utilisateur sauvegardée pour notifications: ${widget.userTeam.name}');
+    } catch (e) {
+      print('❌ Erreur lors de la sauvegarde de l\'équipe: $e');
+    }
+  }
+
 
   Widget _buildMatchStats() {
     return Row(
