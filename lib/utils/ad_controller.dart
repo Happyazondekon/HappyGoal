@@ -296,7 +296,11 @@ class AdController {
       onClosed?.call();
     }
   }
-
+// Dans AdController class, ajoutez cette méthode
+  int getUsedRewindCount() {
+    // Retourne le nombre de rembobinages utilisés pendant cette session de jeu
+    return _usedRewindsInCurrentGame;
+  }
   // Dialog pour informer du cooldown de la pub rewarded
   void _showRewardedCooldownDialog(BuildContext context) {
     if (_lastRewardedAdTime == null) return;

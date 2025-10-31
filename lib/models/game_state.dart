@@ -729,3 +729,93 @@ class ShotData {
   });
 
 }
+// Ajoutez cette classe dans game_state.dart
+class TournamentStats {
+  int tournamentsWon = 0;
+  int tournamentsPlayed = 0;
+  int totalRewindsUsed = 0;
+  int totalGoalsScored = 0;
+  int totalShotsTaken = 0;
+  int totalMatchesWon = 0;
+  Map<String, int> rewindUsagePerTournament = {};
+  DateTime? lastTournamentDate;
+
+  TournamentStats();
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tournamentsWon': tournamentsWon,
+      'tournamentsPlayed': tournamentsPlayed,
+      'totalRewindsUsed': totalRewindsUsed,
+      'totalGoalsScored': totalGoalsScored,
+      'totalShotsTaken': totalShotsTaken,
+      'totalMatchesWon': totalMatchesWon,
+      'rewindUsagePerTournament': rewindUsagePerTournament,
+      'lastTournamentDate': lastTournamentDate?.toIso8601String(),
+    };
+  }
+
+  factory TournamentStats.fromJson(Map<String, dynamic> json) {
+    final stats = TournamentStats();
+    stats.tournamentsWon = json['tournamentsWon'] ?? 0;
+    stats.tournamentsPlayed = json['tournamentsPlayed'] ?? 0;
+    stats.totalRewindsUsed = json['totalRewindsUsed'] ?? 0;
+    stats.totalGoalsScored = json['totalGoalsScored'] ?? 0;
+    stats.totalShotsTaken = json['totalShotsTaken'] ?? 0;
+    stats.totalMatchesWon = json['totalMatchesWon'] ?? 0;
+    stats.rewindUsagePerTournament = Map<String, int>.from(json['rewindUsagePerTournament'] ?? {});
+    if (json['lastTournamentDate'] != null) {
+      stats.lastTournamentDate = DateTime.parse(json['lastTournamentDate']);
+    }
+    return stats;
+  }
+
+  double get winRate {
+    return tournamentsPlayed > 0 ? tournamentsWon / tournamentsPlayed : 0.0;
+  }
+
+  double get averageRewindsPerTournament {
+    return tournamentsPlayed > 0 ? totalRewindsUsed / tournamentsPlayed : 0.0;
+  }
+
+  double get averageGoalsPerTournament {
+    return tournamentsPlayed > 0 ? totalGoalsScored / tournamentsPlayed : 0.0;
+  }
+
+  void recordTournamentWin(int rewindCount, int goalsScored, int shotsTaken, int matchesWon) {
+    tournamentsPlayed++;
+    tournamentsWon++;
+    totalRewindsUsed += rewindCount;
+    totalGoalsScored += goalsScored;
+    totalShotsTaken += shotsTaken;
+    totalMatchesWon += matchesWon;
+
+    final tournamentId = 'tournament_${DateTime.now().millisecondsSinceEpoch}';
+    rewindUsagePerTournament[tournamentId] = rewindCount;
+    lastTournamentDate = DateTime.now();
+  }
+
+  void recordTournamentLoss(int rewindCount, int goalsScored, int shotsTaken, int matchesWon) {
+    tournamentsPlayed++;
+    totalRewindsUsed += rewindCount;
+    totalGoalsScored += goalsScored;
+    totalShotsTaken += shotsTaken;
+    totalMatchesWon += matchesWon;
+
+    final tournamentId = 'tournament_${DateTime.now().millisecondsSinceEpoch}';
+    rewindUsagePerTournament[tournamentId] = rewindCount;
+    lastTournamentDate = DateTime.now();
+  }
+
+  String getFormattedWinRate() {
+    return '${(winRate * 100).toStringAsFixed(1)}%';
+  }
+
+  String getFormattedAverageRewinds() {
+    return averageRewindsPerTournament.toStringAsFixed(1);
+  }
+
+  String getFormattedAverageGoals() {
+    return averageGoalsPerTournament.toStringAsFixed(1);
+  }
+}

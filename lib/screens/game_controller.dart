@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:math';
 import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
+import '../stats_service.dart';
 import '../utils/audio_manager.dart';
 import '../utils/ad_controller.dart';
 import 'result_screen.dart';
@@ -845,16 +846,42 @@ class GameController {
     });
   }
 
-  void _handleTournamentProgress() {
+  void _handleTournamentProgress() async { // Ajout de async
     final isUserWinner = _gameState.getWinner() == _gameState.team1;
     _gameState.tournamentState!.advanceToNextRound(isUserWinner);
 
     if (_gameState.tournamentState!.currentPhase == TournamentPhase.finished) {
+      // RÉCUPÉRER LES VRAIES STATISTIQUES DEPUIS LE STOCKAGE
+      final statsService = StatsService();
+      final tournamentStats = await statsService.loadTournamentStats(); // await ajouté
+      final totalRewindCount = AdController.instance.getUsedRewindCount();
+      final totalGoalsScored = _calculateTotalGoalsScored();
+      final totalShotsTaken = _calculateTotalShotsTaken();
+      final totalMatchesWon = _gameState.tournamentState!.userWins;
+
+      print('🏆 FIN DU TOURNOI - Statistiques:');
+      print('- Victoire: $isUserWinner');
+      print('- Rewinds utilisés: $totalRewindCount');
+      print('- Buts marqués: $totalGoalsScored');
+      print('- Tirs effectués: $totalShotsTaken');
+      print('- Matchs gagnés: $totalMatchesWon');
+      print('- Stats avant enregistrement: ${tournamentStats.tournamentsPlayed} tournois joués');
+
       final tournamentResultScreen = TournamentResultScreen(
         userTeam: _gameState.team1!,
         userWins: _gameState.tournamentState!.userWins,
         aiWins: _gameState.tournamentState!.aiWins,
-        isWinner: _gameState.tournamentState!.userWins > _gameState.tournamentState!.aiWins,
+        isWinner: isUserWinner,
+        tournamentStats: tournamentStats,
+        saveStatsCallback: () async {
+          // Sauvegarde asynchrone avec le service
+          await statsService.saveTournamentStats(tournamentStats);
+          print('💾 Statistiques sauvegardées: ${tournamentStats.tournamentsPlayed} tournois');
+        },
+        totalRewindCount: totalRewindCount,
+        totalGoalsScored: totalGoalsScored,
+        totalShotsTaken: totalShotsTaken,
+        totalMatchesWon: totalMatchesWon,
       );
 
       onNavigate?.call(tournamentResultScreen);
@@ -876,6 +903,28 @@ class GameController {
       }
     }
   }
+
+
+
+
+
+// AJOUTEZ CES MÉTHODES DANS GameController POUR CALCULER LES STATISTIQUES
+  int _calculateTotalGoalsScored() {
+    int goals = 0;
+    for (var result in _gameState.team1Results) {
+      if (result) goals++;
+    }
+    for (var result in _gameState.team1SuddenDeathResults) {
+      if (result) goals++;
+    }
+    return goals;
+  }
+
+  int _calculateTotalShotsTaken() {
+    return _gameState.team1Results.length + _gameState.team1SuddenDeathResults.length;
+  }
+
+
 
   void resetRound() {
     _ballAnimationController.reset();

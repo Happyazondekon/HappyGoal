@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:lottie/lottie.dart';
+import '../models/game_state.dart';
 import '../models/team.dart';
 import '../notification_service.dart';
 import 'home_screen.dart';
@@ -14,6 +15,13 @@ class TournamentResultScreen extends StatefulWidget {
   final int userWins;
   final int aiWins;
   final bool isWinner;
+// Nouveaux champs requis pour l'enregistrement des statistiques
+  final TournamentStats tournamentStats;
+  final VoidCallback saveStatsCallback;
+  final int totalRewindCount;
+  final int totalGoalsScored;
+  final int totalShotsTaken;
+  final int totalMatchesWon;
 
   const TournamentResultScreen({
     Key? key,
@@ -21,6 +29,13 @@ class TournamentResultScreen extends StatefulWidget {
     required this.userWins,
     required this.aiWins,
     required this.isWinner,
+    // Ajoutez les nouveaux champs requis
+    required this.tournamentStats,
+    required this.saveStatsCallback,
+    required this.totalRewindCount,
+    required this.totalGoalsScored,
+    required this.totalShotsTaken,
+    required this.totalMatchesWon,
   }) : super(key: key);
 
   @override
@@ -44,6 +59,8 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   void initState() {
     super.initState();
 
+    // Appel de la méthode pour enregistrer les statistiques
+    _recordTournamentResult();
     // Contrôleur pour les confettis
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
 
@@ -100,6 +117,43 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
     }
   }
 
+  // Implémentation de la méthode demandée
+  // Implémentation de la méthode demandée
+  void _recordTournamentResult() {
+    final stats = widget.tournamentStats;
+    final rewindCount = widget.totalRewindCount;
+    final goalsScored = widget.totalGoalsScored;
+    final shotsTaken = widget.totalShotsTaken;
+    final matchesWon = widget.totalMatchesWon;
+
+    // Le 'won' est basé sur le champ isWinner
+    final bool won = widget.isWinner;
+
+    print('📊 Enregistrement résultat tournoi:');
+    print('- Victoire: $won');
+    print('- Rewinds utilisés: $rewindCount');
+    print('- Buts marqués: $goalsScored');
+    print('- Tirs effectués: $shotsTaken');
+    print('- Matchs gagnés: $matchesWon');
+
+    if (won) {
+      stats.recordTournamentWin(rewindCount, goalsScored, shotsTaken, matchesWon);
+      print('✅ Tournoi VICTORIEUX enregistré');
+    } else {
+      stats.recordTournamentLoss(rewindCount, goalsScored, shotsTaken, matchesWon);
+      print('❌ Tournoi PERDU enregistré');
+    }
+
+    // Appel de la méthode de sauvegarde fournie
+    widget.saveStatsCallback();
+
+    // DEBUG: Afficher les stats après enregistrement
+    print('📈 Stats après enregistrement:');
+    print('- Tournois joués: ${stats.tournamentsPlayed}');
+    print('- Tournois gagnés: ${stats.tournamentsWon}');
+    print('- Total rewinds: ${stats.totalRewindsUsed}');
+    print('- Total buts: ${stats.totalGoalsScored}');
+  }
   // 🎁 NOUVELLE MÉTHODE: Donner les coins pour la victoire du tournoi
   void _awardTournamentCoins() async {
     await AdController.instance.addCoins(30);

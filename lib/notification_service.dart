@@ -67,7 +67,7 @@ class NotificationService {
 
       // Configuration Android
       const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/img');
 
       // Configuration iOS
       const DarwinInitializationSettings initializationSettingsIOS =
@@ -211,7 +211,7 @@ class NotificationService {
 
       // Créer des notifications à différents moments de la journée
       final notificationTimes = [
-        DateTime(now.year, now.month, now.day, 11, 03),   // 9h00
+        DateTime(now.year, now.month, now.day, 11, 43),   // 9h00
         DateTime(now.year, now.month, now.day, 12, 0),  // 12h00
         DateTime(now.year, now.month, now.day, 15, 0),  // 15h00
         DateTime(now.year, now.month, now.day, 18, 0),  // 18h00
@@ -294,7 +294,7 @@ class NotificationService {
         channelDescription: 'Notifications pour les rappels de jeu et les tournois',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@mipmap/img',
         color: Color(0xFF34A853),
         enableLights: true,
         enableVibration: true,
@@ -442,7 +442,7 @@ class NotificationService {
         channelDescription: 'Notifications pour les réussites et tournois gagnés',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@mipmap/img',
         color: Color(0xFFFFD700),
         enableLights: true,
         enableVibration: true,
