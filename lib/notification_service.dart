@@ -211,7 +211,7 @@ class NotificationService {
 
       // Créer des notifications à différents moments de la journée
       final notificationTimes = [
-        DateTime(now.year, now.month, now.day, 9, 0),   // 9h00
+        DateTime(now.year, now.month, now.day, 11, 03),   // 9h00
         DateTime(now.year, now.month, now.day, 12, 0),  // 12h00
         DateTime(now.year, now.month, now.day, 15, 0),  // 15h00
         DateTime(now.year, now.month, now.day, 18, 0),  // 18h00
