@@ -8,7 +8,7 @@ import 'analytics_service.dart';
 class AdController {
   static AdController? _instance;
   static AdController get instance => _instance ??= AdController._();
-  static const int REWIND_COST = 30;
+  static const int REWIND_COST = 15;
   static const int REWARD_COINS = 05;
 
   int _coinCount = 0;
@@ -23,8 +23,8 @@ class AdController {
   AdController._();
 
   // Configuration des fréquences de publicités
-  static const int _gamesUntilInterstitial = 3;
-  static const int _minutesBetweenRewarded = 5;
+  static const int _gamesUntilInterstitial = 2;
+  static const int _minutesBetweenRewarded = 2;
 
   int _gamesSinceLastInterstitial = 0;
   DateTime? _lastRewardedAdTime;
