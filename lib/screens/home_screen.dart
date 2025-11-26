@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tutorial_settings_screen.dart';
 import '../constants.dart';
+import '../widgets/tutorial_overlay.dart';
 import 'mode_selection_screen.dart';
 import '../widgets/audiosettings_widget.dart';
 import '../utils/analytics_service.dart';
-import '../widgets/banner_ad_widget.dart';
 import '../utils/ad_controller.dart';
 import 'package:flutter/foundation.dart';
-import '../utils/tutorial_manager.dart';
-import '../widgets/tutorial_overlay.dart';
 import '../widgets/tutorial_mixin.dart';
-import 'package:share_plus/share_plus.dart'; // Import pour le partage
-import 'package:url_launcher/url_launcher.dart'; // Import pour ouvrir l'URL
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../widgets/coin_shop_dialog.dart'; // ⭐ NOUVEAU : Import de la boutique
+
+// --- WIDGETS D'ANIMATION (Modifiés pour Noël) ---
 
 class PulsatingButton extends StatefulWidget {
   final Widget child;
@@ -79,12 +80,13 @@ class _PulsatingButtonState extends State<PulsatingButton>
   }
 }
 
-class FloatingParticle extends StatefulWidget {
+// Transformé en flocon de neige (tombe vers le bas)
+class SnowParticle extends StatefulWidget {
   final double size;
   final Color color;
   final Duration duration;
 
-  const FloatingParticle({
+  const SnowParticle({
     Key? key,
     this.size = 4.0,
     this.color = Colors.white,
@@ -92,10 +94,10 @@ class FloatingParticle extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FloatingParticleState createState() => _FloatingParticleState();
+  _SnowParticleState createState() => _SnowParticleState();
 }
 
-class _FloatingParticleState extends State<FloatingParticle>
+class _SnowParticleState extends State<SnowParticle>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _animation;
@@ -108,12 +110,13 @@ class _FloatingParticleState extends State<FloatingParticle>
       vsync: this,
     )..repeat();
 
+    // La neige tombe (de -0.2 à 1.2 pour traverser l'écran)
     _animation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: const Offset(0, -1),
+      begin: const Offset(0, -0.2),
+      end: const Offset(0, 1.2),
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOut,
+      curve: Curves.linear, // Chute constante
     ));
   }
 
@@ -131,13 +134,22 @@ class _FloatingParticleState extends State<FloatingParticle>
         width: widget.size,
         height: widget.size,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: widget.color,
+            shape: BoxShape.circle,
+            color: widget.color,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.8),
+                blurRadius: 2,
+                spreadRadius: 1,
+              )
+            ]
         ),
       ),
     );
   }
 }
+
+// --- ECRAN PRINCIPAL ---
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -151,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   final GlobalKey _rulesButtonKey = GlobalKey();
   final GlobalKey _settingsButtonKey = GlobalKey();
   final GlobalKey _rewardButtonKey = GlobalKey();
-  final GlobalKey _inviteButtonKey = GlobalKey(); // Nouvelle clé pour le bouton d'invitation
+  final GlobalKey _inviteButtonKey = GlobalKey();
   final GlobalKey _coinBalanceKey = GlobalKey();
 
   @override
@@ -159,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     super.initState();
     AdController.instance.initialize();
 
-    // Ajouter le tutoriel
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showTutorialIfNeeded('home_screen', _createTutorialSteps());
     });
@@ -168,92 +179,51 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   List<TutorialStep> _createTutorialSteps() {
     return [
       TutorialStep(
-        title: 'Bienvenue dans HappyGoal!',
-        description: 'Découvrons ensemble les fonctionnalités de votre nouveau jeu de penalties préféré!',
+        title: 'Joyeux Noël sur HappyGoal ! 🎄',
+        description: 'Découvrez notre édition festive ! Prêt pour des tirs au but sous la neige ?',
         targetKey: _playButtonKey,
         position: TutorialPosition.top,
         customContent: Column(
           children: [
-            Image.asset('assets/images/ball.png', width: 50, height: 50),
+            const Icon(Icons.snowboarding, size: 50, color: Colors.blue), // Icône festive
             const SizedBox(height: 10),
             const Text(
-              'Prêt pour des tirs au but épiques?',
+              'Prêt à marquer ?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
       ),
       TutorialStep(
-        title: 'Vos coins',
-        description: 'Ici vous pouvez voir votre solde de coins. Utilisez-les pour acheter des rembobinages!',
+        title: 'Boutique de Noël 🎁',
+        description: 'Vos coins sont ici. Touchez pour ouvrir la boutique et faire le plein !',
         targetKey: _coinBalanceKey,
         position: TutorialPosition.bottom,
       ),
       TutorialStep(
-        title: 'Commencer à jouer',
-        description: 'Appuyez sur JOUER pour accéder aux différents modes de jeu : Solo, Multijoueur et Tournoi.',
-        targetKey: _playButtonKey,
-        position: TutorialPosition.top,
-      ),
-      TutorialStep(
-        title: 'Règles du jeu',
-        description: 'Consultez les règles pour comprendre comment marquer des buts et remporter vos matches!',
-        targetKey: _rulesButtonKey,
-        position: TutorialPosition.top,
-      ),
-      TutorialStep(
-        title: 'Paramètres',
-        description: 'Ajustez les paramètres audio et personnalisez votre expérience de jeu.',
-        targetKey: _settingsButtonKey,
-        position: TutorialPosition.top,
-      ),
-      TutorialStep(
-        title: 'Inviter des amis',
-        description: 'Partagez le jeu avec vos amis et n\'oubliez pas de nous noter sur le Play Store!',
-        targetKey: _inviteButtonKey,
-        position: TutorialPosition.top,
-      ),
-      TutorialStep(
-        title: 'Bonus quotidien',
-        description: 'N\'oubliez pas de récupérer votre bonus quotidien pour débloquer des avantages spéciaux!',
+        title: 'Cadeau Quotidien',
+        description: 'Récupérez votre cadeau de Noël (coins gratuits) ici !',
         targetKey: _rewardButtonKey,
         position: TutorialPosition.top,
       ),
     ];
   }
 
-  // Nouvelle méthode pour inviter des amis
   void _inviteFriends() {
     AnalyticsService.logAdEvent('invite_friends');
-
     final String shareText =
-        '🎯 Découvre HappyGoal - Le jeu de penalties ultime ! ⚽\n\n'
-        'Affronte tes amis dans des séances de tirs au but épiques !\n'
-        '✅ Mode Solo contre IA\n'
-        '✅ Mode Multijoueur\n'
-        '✅ Tournois passionnants\n'
-        '✅ Graphiques magnifiques\n\n'
-        'Télécharge le jeu maintenant :\n'
-        'https://play.google.com/store/apps/details?id=com.heyhappy.happygoal\n\n'
-        'Et n\'oublie pas de nous noter ⭐⭐⭐⭐⭐ sur le Play Store !';
-
-    Share.share(shareText, subject: 'Rejoins-moi sur HappyGoal !');
+        '🎄 Spécial Noël sur HappyGoal ! ⚽\n\n'
+        'Viens tirer des penalties sous la neige et défie-moi !\n'
+        '🎁 Bonus de fêtes actifs\n'
+        'Télécharge maintenant : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
+    Share.share(shareText, subject: 'HappyGoal: Édition de Noël 🎅');
   }
 
-  // Nouvelle méthode pour ouvrir la page de notation
   void _rateApp() async {
     AnalyticsService.logAdEvent('rate_app');
     final String url = 'https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
-
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Impossible d\'ouvrir le Play Store'),
-          backgroundColor: Colors.orange,
-        ),
-      );
     }
   }
 
@@ -265,166 +235,154 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     return Scaffold(
       body: Stack(
         children: [
-          // Arrière-plan dégradé moderne
+          // 1. Arrière-plan Noël (Dégradé Vert Sapin -> Rouge Noël)
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0D4A2D),  // Vert foncé
-                  Color(0xFF1B6B3A),  // Vert moyen
-                  Color(0xFF2E8B4B),  // Vert clair
+                  Color(0xFF0F3622),  // Vert sapin très foncé (Nuit)
+                  Color(0xFF1B5E20),  // Vert sapin
+                  Color(0xFF8F2525),  // Rouge foncé bas (Sol/Fête)
                 ],
-                stops: [0.0, 0.5, 1.0],
+                stops: [0.0, 0.6, 1.0],
               ),
             ),
           ),
 
-          // Particules flottantes
-          ...List.generate(15, (index) {
+          // 2. Neige qui tombe (Particules)
+          ...List.generate(30, (index) {
             return Positioned(
-              left: (index * 25.0) % screenWidth,
-              top: (index * 37.0) % screenHeight,
-              child: FloatingParticle(
-                size: 2.0 + (index % 3),
-                color: Colors.white.withOpacity(0.1 + (index % 3) * 0.1),
-                duration: Duration(seconds: 3 + (index % 4)),
+              left: (index * 13.0 * index) % screenWidth,
+              top: (index * 20.0) % (screenHeight / 2), // Départ aléatoire haut
+              child: SnowParticle(
+                size: 2.0 + (index % 4), // Flocons de tailles différentes
+                color: Colors.white.withOpacity(0.6 + (index % 4) * 0.1),
+                duration: Duration(seconds: 4 + (index % 5)),
               ),
             );
           }),
 
-          // Lignes de terrain stylisées
+          // 3. Lignes de terrain (Subtiles)
           CustomPaint(
             size: Size(screenWidth, screenHeight),
             painter: FieldLinesPainter(),
           ),
 
-          // Contenu principal
+          // 4. Contenu principal
           SafeArea(
             child: Column(
               children: [
-                // Section header moderne avec coins
+                // --- HEADER ---
                 Expanded(
                   flex: 3,
                   child: Container(
                     width: double.infinity,
                     child: Stack(
                       children: [
-                        // Contenu principal centré
                         Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Logo moderne avec animation
+                              // Logo avec touche festive
                               TweenAnimationBuilder(
                                 duration: const Duration(seconds: 2),
                                 tween: Tween<double>(begin: 0, end: 1),
                                 builder: (context, value, child) {
                                   return Transform.scale(
                                     scale: 0.8 + (0.2 * value),
-                                    child: Container(
-                                      width: 140,
-                                      height: 140,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.white,
-                                            Color(0xFFF0F0F0),
-                                          ],
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.3),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
+                                    child: Stack(
+                                      alignment: Alignment.topRight,
+                                      children: [
+                                        Container(
+                                          width: 140,
+                                          height: 140,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: const LinearGradient(
+                                              colors: [Colors.white, Color(0xFFF0F0F0)],
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFFC62828).withOpacity(0.5), // Lueur rouge
+                                                blurRadius: 25,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
                                           ),
-                                          BoxShadow(
-                                            color: Colors.white.withOpacity(0.2),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, -5),
+                                          child: const Center(
+                                            child: Text('⚽', style: TextStyle(fontSize: 70)),
                                           ),
-                                        ],
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          '⚽',
-                                          style: TextStyle(fontSize: 70),
                                         ),
-                                      ),
+                                        // Petit bonnet de noël (emoji)
+                                        const Positioned(
+                                          right: 10,
+                                          top: -5,
+                                          child: Text('🎅', style: TextStyle(fontSize: 50)),
+                                        ),
+                                      ],
                                     ),
                                   );
                                 },
                               ),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 25),
 
-                              // Titre avec effet néon
+                              // Titre HappyGoal
                               ShaderMask(
                                 shaderCallback: (bounds) => const LinearGradient(
-                                  colors: [
-                                    Colors.white,
-                                    Color(0xFFE0E0E0),
-                                    Colors.white,
-                                  ],
+                                  colors: [Colors.white, Color(0xFFFFEBEE)],
                                 ).createShader(bounds),
                                 child: const Text(
                                   'HappyGoal',
                                   style: TextStyle(
-                                    fontSize: 56,
+                                    fontSize: 52,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
-                                    letterSpacing: 3,
+                                    letterSpacing: 2,
+                                    fontFamily: "Roboto",
                                     shadows: [
-                                      Shadow(
-                                        offset: Offset(0, 0),
-                                        blurRadius: 20,
-                                        color: Colors.white,
-                                      ),
-                                      Shadow(
-                                        offset: Offset(0, 5),
-                                        blurRadius: 15,
-                                        color: Colors.black,
-                                      ),
+                                      Shadow(color: Color(0xFFB71C1C), blurRadius: 15),
                                     ],
                                   ),
                                 ),
                               ),
 
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
 
-                              // Sous-titre moderne
+                              // Sous-titre Edition Noël
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 8,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                                 decoration: BoxDecoration(
+                                  color: const Color(0xFFC62828).withOpacity(0.8), // Rouge Noël
                                   borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white.withOpacity(0.1),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
-                                    width: 1,
-                                  ),
+                                  border: Border.all(color: Colors.white30),
                                 ),
-                                child: const Text(
-                                  'Le défi des tirs au but',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w300,
-                                    letterSpacing: 1.5,
-                                  ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.ac_unit, color: Colors.white, size: 16),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'ÉDITION FÊTES DE FIN D\'ANNÉE',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.ac_unit, color: Colors.white, size: 16),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        // Affichage du solde de coins en haut à droite
+                        // Solde Coins
                         Positioned(
                           top: 10,
                           right: 20,
@@ -435,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                   ),
                 ),
 
-                // Section boutons redesignée
+                // --- BOUTONS ---
                 Expanded(
                   flex: 2,
                   child: Padding(
@@ -443,28 +401,23 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Bouton JOUER principal
+                        // Bouton JOUER (Vert sapin avec lueur dorée)
                         PulsatingButton(
                           key: _playButtonKey,
-                          glowColor: const Color(0xFF4CAF50),
+                          glowColor: const Color(0xFFFFD700), // Or
                           child: _buildModernButton(
                             context,
-                            icon: Icons.play_circle_filled,
+                            icon: Icons.sports_soccer,
                             text: 'JOUER',
                             isPrimary: true,
                             onPressed: () {
                               Navigator.of(context).push(
                                 PageRouteBuilder(
                                   transitionDuration: const Duration(milliseconds: 300),
-                                  pageBuilder: (context, animation, _) {
-                                    return SlideTransition(
-                                      position: Tween<Offset>(
-                                        begin: const Offset(1.0, 0.0),
-                                        end: Offset.zero,
-                                      ).animate(animation),
-                                      child: const ModeSelectionScreen(),
-                                    );
-                                  },
+                                  pageBuilder: (_, animation, __) => SlideTransition(
+                                    position: Tween<Offset>(begin: const Offset(1,0), end: Offset.zero).animate(animation),
+                                    child: const ModeSelectionScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -473,14 +426,14 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
 
                         const SizedBox(height: 20),
 
-                        // Boutons secondaires en ligne
+                        // Boutons secondaires
                         Row(
                           children: [
                             Expanded(
                               child: _buildSecondaryButton(
                                 context,
                                 key: _rulesButtonKey,
-                                icon: Icons.info_outline,
+                                icon: Icons.menu_book,
                                 text: 'RÈGLES',
                                 onPressed: () => _showRulesDialog(context),
                               ),
@@ -490,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                               child: _buildSecondaryButton(
                                 context,
                                 key: _settingsButtonKey,
-                                icon: Icons.settings,
+                                icon: Icons.settings_suggest,
                                 text: 'OPTIONS',
                                 onPressed: () => _showSettingsDialog(context),
                               ),
@@ -500,18 +453,18 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
 
                         const SizedBox(height: 20),
 
-                        // Nouveau bouton Inviter des amis
+                        // Inviter
                         _buildInviteButton(context, key: _inviteButtonKey),
 
                         const SizedBox(height: 20),
 
+                        // Cadeau Noël (Récompense)
                         _buildRewardButton(context, key: _rewardButtonKey),
                       ],
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -520,7 +473,8 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // Nouveau bouton pour inviter des amis
+  // --- WIDGETS DÉTAILLÉS ---
+
   Widget _buildInviteButton(BuildContext context, {Key? key}) {
     return Container(
       key: key,
@@ -529,32 +483,25 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
       child: ElevatedButton(
         onPressed: _inviteFriends,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2196F3), // Bleu pour l'invitation
+          backgroundColor: const Color(0xFF1565C0), // Bleu glace
           foregroundColor: Colors.white,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          side: const BorderSide(color: Colors.white30, width: 1),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.share, size: 20),
-            const SizedBox(width: 10),
-            const Text(
-              'INVITER DES AMIS',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Icon(Icons.send, size: 18),
+            SizedBox(width: 10),
+            Text('INVITER UN AMI', style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
 
-  // Nouvelle méthode pour afficher le solde de coins
+  // Bouton Solde (Ouvre le menu coins)
   Widget _buildCoinBalance(BuildContext context) {
     return GestureDetector(
       key: _coinBalanceKey,
@@ -563,39 +510,18 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFD700),
-              Color(0xFFFFC400),
-            ],
+            colors: [Color(0xFFFFD700), Color(0xFFFFA000)], // Or festif
           ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white, width: 2),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, -1),
-            ),
+            BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 3)),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.monetization_on,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.monetization_on, color: Colors.white, size: 20),
             const SizedBox(width: 8),
             Text(
               '${AdController.instance.currentCoinCount}',
@@ -603,88 +529,84 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    color: Colors.black26,
-                    blurRadius: 3,
-                    offset: Offset(1, 1),
-                  ),
-                ],
+                shadows: [Shadow(color: Colors.black45, blurRadius: 2, offset: Offset(1,1))],
               ),
             ),
+            // Petit badge "+"
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+              child: const Icon(Icons.add, color: Colors.white, size: 12),
+            )
           ],
         ),
       ),
     );
   }
 
-  // Nouvelle méthode pour afficher les informations sur les coins
+  // Dialogue Coins + Boutique
   void _showCoinInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFF1B6B3A),
+        backgroundColor: const Color(0xFF0F3622), // Fond vert foncé
         title: Row(
           children: const [
-            Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 28),
+            Icon(Icons.storefront, color: Color(0xFFFFD700), size: 30),
             SizedBox(width: 10),
-            Text(
-              'Vos Coins',
-              style: TextStyle(color: Colors.white),
-            ),
+            Text('Trésorerie', style: TextStyle(color: Colors.white)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Votre solde actuel et comment utiliser vos coins:',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white24),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCoinInfoItem('💰 Solde actuel', '${AdController.instance.currentCoinCount} coins'),
-                  _buildCoinInfoItem('🎥 Gagner des coins', '+${AdController.instance.rewardCoins} coins/pub'),
-                  _buildCoinInfoItem('🔄 Acheter rembobinage', '${AdController.instance.rewindCost} coins'),
-                  _buildCoinInfoItem('📊 Rembobinages disponibles', '${AdController.instance.currentRewindCount}'),
+                  _buildCoinInfoItem('💰 Votre Solde', '${AdController.instance.currentCoinCount} coins'),
+                  _buildCoinInfoItem('🎁 Gain Pub', '+${AdController.instance.rewardCoins} coins'),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
             const Text(
-              'Les coins vous permettent d\'acheter des rembobinages pour revenir en arrière pendant les matches!',
-              style: TextStyle(fontSize: 14, color: Colors.white70),
+              'Utilisez vos coins pour acheter des rembobinages et sauver vos matchs !',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer', style: TextStyle(color: Colors.white)),
-          ),
-          ElevatedButton(
+          // Bouton Pub
+          TextButton.icon(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context);
               _showEarnRewardDialog();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-            ),
-            child: const Text(
-              'Gagner des Coins',
-              style: TextStyle(color: Colors.black),
-            ),
+            icon: const Icon(Icons.play_circle, color: Colors.white),
+            label: const Text('Pub Gratuit', style: TextStyle(color: Colors.white)),
+          ),
+
+          // ⭐ BOUTON BOUTIQUE IAP
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (context) => const CoinShopDialog(),
+              ).then((_) => setState((){})); // Rafraichir au retour
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
+            child: const Text('OUVRIR LA BOUTIQUE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -698,49 +620,72 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(color: Colors.white70)),
-          Text(value,
-              style: const TextStyle(
-                color: Color(0xFFFFD700),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              )),
+          Text(value, style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
+  // Dialogue Pub
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
-      title: 'Gagner des Coins',
-      description: 'Regardez une publicité pour gagner ${AdController.instance.rewardCoins} coins !',
+      title: 'Cadeau de Noël 🎁',
+      description: 'Regardez une vidéo festive pour gagner ${AdController.instance.rewardCoins} coins !',
       rewardType: 'coins',
       rewardAmount: AdController.instance.rewardCoins,
       onRewardEarned: () {
-        setState(() {}); // Rafraîchir l'affichage du solde
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.monetization_on, color: Colors.white),
-                const SizedBox(width: 10),
-                Text('+${AdController.instance.rewardCoins} coins gagnés !'),
-              ],
-            ),
-            backgroundColor: const Color(0xFFFFD700),
-            duration: const Duration(seconds: 2),
+            content: Row(children: [
+              const Icon(Icons.card_giftcard, color: Colors.white),
+              const SizedBox(width: 10),
+              Text('+${AdController.instance.rewardCoins} coins ajoutés ! Ho Ho Ho !'),
+            ]),
+            backgroundColor: Colors.green,
           ),
         );
       },
       onAdFailed: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Publicité non disponible'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 2),
-          ),
+          const SnackBar(content: Text('Le traîneau publicitaire est en retard...'), backgroundColor: Colors.orange),
         );
       },
+    );
+  }
+
+  // Bouton Récompense (Design Noël)
+  Widget _buildRewardButton(BuildContext context, {Key? key}) {
+    return Container(
+      key: key,
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: () => _showEarnRewardDialog(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFC62828), // Rouge Noël
+          foregroundColor: Colors.white,
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFFFFD700), width: 2), // Bordure Or
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.card_giftcard, size: 24, color: Color(0xFFFFD700)),
+            const SizedBox(width: 10),
+            Text(
+              AdController.instance.isRewardedAvailable
+                  ? 'CADEAU DE NOËL (+${AdController.instance.rewardCoins})'
+                  : 'COINS',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -758,35 +703,26 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: isPrimary
-              ? const Color(0xFF4CAF50)
+              ? const Color(0xFF2E7D32) // Vert Sapin
               : Colors.white.withOpacity(0.15),
           foregroundColor: Colors.white,
-          elevation: 0,
+          elevation: isPrimary ? 8 : 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
             side: BorderSide(
-              color: Colors.white.withOpacity(0.3),
-              width: 2,
+              color: isPrimary ? const Color(0xFF66BB6A) : Colors.white30,
+              width: isPrimary ? 2 : 1,
             ),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Colors.white,
-            ),
+            Icon(icon, size: 32),
             const SizedBox(width: 15),
             Text(
               text,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-                color: Colors.white,
-              ),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 1.5),
             ),
           ],
         ),
@@ -807,30 +743,19 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white.withOpacity(0.1),
+          backgroundColor: Colors.black.withOpacity(0.3),
           foregroundColor: Colors.white,
-          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+            side: const BorderSide(color: Colors.white24),
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: Colors.white),
+            Icon(icon, size: 20),
             const SizedBox(height: 4),
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+            Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -838,102 +763,50 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   }
 
   void _showSettingsDialog(BuildContext context) {
-    AnalyticsService.logSettingsView(); // Laissez cette ligne si vous utilisez un service d'analyse
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-          elevation: 20,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
           backgroundColor: Colors.white,
           child: SingleChildScrollView(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Color(0xFFF8F8F8)],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                    gradient: LinearGradient(colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)]),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.settings, color: Colors.white),
+                      SizedBox(width: 15),
+                      Text('Paramètres', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header du dialogue
-                  Container(
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(25),
-                        topRight: Radius.circular(25),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      const AudioSettingsWidget(),
+                      const SizedBox(height: 15),
+                      const TutorialSettingsWidget(),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[800],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        child: const Text('Fermer', style: TextStyle(color: Colors.white)),
                       ),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.green[800]!, // Remplacez AppColors.primary
-                          Colors.green[800]!.withOpacity(0.8), // Remplacez AppColors.primary
-                        ],
-                      ),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          Icons.settings,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        SizedBox(width: 15),
-                        Text(
-                          'Paramètres',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-
-                  // Contenu principal (scrollable)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    child: Column(
-                      children: [
-                        // Paramètres Audio
-                        const AudioSettingsWidget(),
-                        const SizedBox(height: 15),
-                        // Paramètres du Tutoriel
-                        const TutorialSettingsWidget(),
-                        const SizedBox(height: 20),
-                        // Bouton pour fermer le dialogue
-                        ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[800]!, // Remplacez AppColors.primary
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 50,
-                              vertical: 15,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                          ),
-                          child: const Text(
-                            "Fermer",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -942,290 +815,68 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   }
 
   void _showRulesDialog(BuildContext context) {
-    AnalyticsService.logRulesView();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-          elevation: 20,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Color(0xFFF8F8F8)],
-              ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(25),
-                        topRight: Radius.circular(25),
-                      ),
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary,
-                          AppColors.primary.withOpacity(0.8),
-                        ],
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 15),
-                        const Text(
-                          "Règles du jeu",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                    gradient: LinearGradient(colors: [Color(0xFFC62828), Color(0xFFE53935)]),
                   ),
-
-                  // Contenu
-                  Padding(
-                    padding: const EdgeInsets.all(25),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle("Principe du jeu"),
-                        _buildRuleItem("HappyGoal est un jeu de penalties où deux équipes s'affrontent dans une séance de tirs au but."),
-                        _buildRuleItem("Chaque équipe tire à tour de rôle pour marquer le plus de buts possible."),
-
-                        const SizedBox(height: 20),
-                        _buildSectionTitle("Déroulement du jeu"),
-                        _buildRuleItem("1. Choisissez deux équipes pour commencer le match."),
-                        _buildRuleItem("2. Chaque équipe dispose de 5 tirs pendant la phase normale."),
-                        _buildRuleItem("3. Pour chaque tir, choisissez une direction: gauche, centre ou droite."),
-                        _buildRuleItem("4. Le gardien plongera aléatoirement dans une des trois directions."),
-                        _buildRuleItem("5. Si le gardien plonge dans la même direction que votre tir, c'est un arrêt. Sinon, c'est un but!"),
-
-                        const SizedBox(height: 20),
-                        _buildSectionTitle("Comment gagner"),
-                        _buildRuleItem("L'équipe avec le plus de buts après les 5 tirs remporte le match."),
-                        _buildRuleItem("Si une équipe ne peut mathématiquement plus rattraper son retard, le match se termine immédiatement."),
-
-                        const SizedBox(height: 20),
-                        _buildSectionTitle("Mort subite"),
-                        _buildRuleItem("En cas d'égalité après les 5 tirs, une phase de mort subite commence."),
-                        _buildRuleItem("Chaque équipe tire à tour de rôle. Si une équipe marque et l'autre rate, la première remporte le match."),
-
-                        const SizedBox(height: 30),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 50,
-                                vertical: 15,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            child: const Text(
-                              "Compris!",
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.rule, color: Colors.white),
+                      SizedBox(width: 15),
+                      Text('Règles du Jeu', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      const Text('1. Choisissez une direction pour tirer.\n2. Le gardien plonge aléatoirement.\n3. Marquez 5 buts pour gagner !\n4. Utilisez les rembobinages si vous ratez.'),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Compris !'),
+                      )
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         );
       },
     );
   }
-  Widget _buildRewardButton(BuildContext context, {Key? key}) {
-    return Container(
-      key: key,
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: () {
-          AdController.instance.showRewardDialog(
-            context: context,
-            title: 'Bonus Quotidien - Coins',
-            description: 'Regardez une publicité pour gagner ${AdController.instance.rewardCoins} coins !',
-            rewardType: 'coins',
-            rewardAmount: AdController.instance.rewardCoins,
-            onRewardEarned: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      const Icon(Icons.monetization_on, color: Colors.white),
-                      const SizedBox(width: 10),
-                      Text('+${AdController.instance.rewardCoins} coins gagnés !'),
-                    ],
-                  ),
-                  backgroundColor: const Color(0xFFFFD700),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            onAdFailed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Publicité non disponible'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber.withOpacity(0.9),
-          foregroundColor: Colors.black,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.monetization_on, size: 24),
-            const SizedBox(width: 10),
-            Text(
-              AdController.instance.isRewardedAvailable ?
-              'GAGNER ${AdController.instance.rewardCoins} COINS' :
-              'COINS',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-Widget _buildSectionTitle(String title) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(20),
-      color: AppColors.primary.withOpacity(0.1),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          Icons.star,
-          color: AppColors.primary,
-          size: 20,
-        ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildRuleItem(String text) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 6, right: 12),
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.primary,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-
+// Painter pour les lignes du terrain (inchangé mais nécessaire)
 class FieldLinesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withOpacity(0.15)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
-    // Ligne centrale
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      paint,
-    );
-
-    // Cercle central
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height / 2),
-      60,
-      paint,
-    );
-
-    // Surface de réparation stylisée
+    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2), paint);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 60, paint);
     final rect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, size.height * 0.8),
-        width: size.width * 0.6,
-        height: 80,
-      ),
+      Rect.fromCenter(center: Offset(size.width / 2, size.height * 0.8), width: size.width * 0.6, height: 80),
       const Radius.circular(20),
     );
     canvas.drawRRect(rect, paint);
   }
-
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

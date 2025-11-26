@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import '../constants.dart';
 import 'home_screen.dart';
+import 'result_screen.dart';
 import 'team_selection_screen.dart';
 import 'difficulty_selection_screen.dart';
 import '../utils/audio_manager.dart';

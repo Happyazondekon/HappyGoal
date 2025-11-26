@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'home_screen.dart';
+import 'result_screen.dart';
 import 'team_selection_screen.dart';
 import '../utils/audio_manager.dart';
 import 'mode_selection_screen.dart';

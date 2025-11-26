@@ -7,8 +7,9 @@ import 'screens/splash_screen.dart';
 import 'constants.dart';
 import 'utils/audio_manager.dart';
 import 'utils/analytics_service.dart';
-import 'utils/admob_service.dart'; // Nouveau import
-import 'notification_service.dart'; // Ajout de l'import du service de notifications
+import 'utils/admob_service.dart';
+import 'notification_service.dart';
+import 'utils/iap_service.dart'; // ⭐ NOUVEAU : Import du service IAP
 
 // Instance globale pour l'analytics
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -21,6 +22,10 @@ void main() async {
 
   // Initialisation de l'analytics
   AnalyticsService.initialize(analytics);
+
+  // ⭐ NOUVEAU : Initialisation du service d'achats intégrés
+  // Il est important de l'initialiser tôt pour écouter les transactions en attente
+  await IAPService.instance.initialize();
 
   // Initialisation d'AdMob
   await AdMobService.initialize();
@@ -93,6 +98,8 @@ class _HappyGoalAppState extends State<HappyGoalApp> with WidgetsBindingObserver
     AudioManager.dispose();
     // Libérer les ressources AdMob
     AdMobService.instance.dispose();
+    // Libérer les ressources IAP (fermer le stream)
+    IAPService.instance.dispose(); // ⭐ NOUVEAU : Nettoyage IAP
     super.dispose();
   }
 
