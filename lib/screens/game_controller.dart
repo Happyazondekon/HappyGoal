@@ -1,4 +1,4 @@
-// game_controller.dart - VERSION CORRIGÉE
+// game_controller.dart
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_result_screen.dart';
 import 'dart:async';
@@ -23,6 +23,17 @@ class GameController {
   bool _isShooting = false;
   bool _showGoalText = false;
   final Random _random = Random();
+
+  // --- STATISTIQUES POUR ACHIEVEMENTS ---
+  // Compteurs pour le match en cours (pour l'équipe 1 / Joueur)
+  int _matchGoalsCurve = 0;
+  int _matchGoalsLob = 0;
+  int _matchGoalsKnuckle = 0;
+
+  // Compteurs accumulés pour le tournoi
+  int _tournamentGoalsCurve = 0;
+  int _tournamentGoalsLob = 0;
+  int _tournamentGoalsKnuckle = 0;
 
   // Callbacks pour communiquer avec le UI
   VoidCallback? onStateChanged;
@@ -201,17 +212,13 @@ class GameController {
       _gameState.currentPhase = GamePhase.humanGoalkeeping;
       onStateChanged?.call();
 
-      // Obtenir la décision de l'IA immédiatement
       final aiDecision = _gameState.getAIDecision();
 
-      // Configurer le tir de l'IA
       _gameState.selectedDirection = aiDecision['direction'];
       _gameState.shotPower = aiDecision['power'];
       _gameState.shotEffect = aiDecision['effect'];
 
-      // MODIFICATION: Timer de 3 secondes pour que l'utilisateur choisisse la direction du gardien
       _goalkeeperTimeout = Timer(const Duration(seconds: 3), () {
-        // Si l'utilisateur n'a pas choisi, le gardien reste au centre par défaut
         if (_gameState.currentPhase == GamePhase.humanGoalkeeping) {
           print("⏰ Timeout du gardien - Direction par défaut: centre");
           setGoalkeeperDirection(ShotDirection.center);
@@ -221,16 +228,12 @@ class GameController {
     }
   }
 
-
-
-
   void setGoalkeeperDirection(int direction) {
     _goalkeeperTimeout?.cancel();
 
     if (_gameState.currentPhase == GamePhase.humanGoalkeeping ||
         _gameState.currentPhase == GamePhase.goalkeepeerSaving) {
 
-      // Sauvegarder l'état avant le tir de l'IA
       _saveGameStateBeforeShot();
 
       _gameState.goalkeepeerDirection = direction;
@@ -239,7 +242,6 @@ class GameController {
       _setupGoalkeeperAnimation(direction);
       _setupBallAnimation();
 
-      // Jouer le son de tir en fonction de la puissance
       if (_gameState.shotPower > 70) {
         AudioManager.playSound('powerful_kick');
       } else {
@@ -257,7 +259,6 @@ class GameController {
   void shoot(int direction, int power, String effect) {
     if (_isShooting) return;
 
-    // CORRECTION: Simplifier la sauvegarde d'état
     _saveGameStateBeforeShot();
 
     _isShooting = true;
@@ -282,32 +283,18 @@ class GameController {
     onStateChanged?.call();
   }
 
-  // NOUVELLE MÉTHODE: Simplifier la sauvegarde d'état
   void _saveGameStateBeforeShot() {
-    // Toujours sauvegarder l'état avant un tir pour permettre le rembobinage
     _gameState.saveStateBeforeShot();
-    print("💾 État sauvegardé avant le tir");
   }
 
-  // NOUVELLE MÉTHODE: Vérifier si le rembobinage est disponible
   bool _canShowRewindPopup() {
-    // NOUVELLE CONDITION: Ne pas afficher le popup si c'est le tour de l'IA
     if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
-      print("❌ Pas de popup de rembobinage - C'est le tour de l'IA");
       return false;
     }
-
-    // NOUVELLE CONDITION: Ne pas afficher le popup en mode tournoi si c'est l'IA
     if (_gameState.isTournamentMode && _gameState.currentTeam == _gameState.team2) {
-      print("❌ Pas de popup de rembobinage - C'est le tour de l'IA en tournoi");
       return false;
     }
 
-    // Conditions pour afficher le popup de rembobinage :
-    // 1. Le tir a été raté
-    // 2. L'AdController permet l'utilisation d'un rembobinage
-    // 3. GameState permet le rembobinage
-    // 4. Ce n'est PAS le tour de l'IA (nouvelles conditions ajoutées ci-dessus)
     return !_gameState.isGoalScored &&
         AdController.instance.canUseRewind() &&
         _gameState.canRewind;
@@ -316,37 +303,24 @@ class GameController {
   Future<bool> rewindLastShot() async {
     print("🔄 Tentative de rembobinage...");
 
-    // Vérifier si AdController permet le rembobinage
-    if (!AdController.instance.canUseRewind()) {
-      print("❌ AdController refuse le rembobinage");
-      return false;
-    }
+    if (!AdController.instance.canUseRewind()) return false;
 
-    // Décrémenter le compteur de rembobinages dans AdController
-    if (!(await AdController.instance.decrementRewindCount())) {
-      print("❌ Impossible de décrémenter le compteur de rembobinages");
-      return false;
-    }
+    if (!(await AdController.instance.decrementRewindCount())) return false;
 
-    // Restaurer l'état du jeu
     bool success = _gameState.rewindToLastShot();
 
     if (success) {
-      print("✅ Rembobinage réussi");
-
-      // Réinitialiser les animations
       _ballAnimationController.reset();
       _goalkeeperController.reset();
       _goalTextController.reset();
-
-      // Réinitialiser les états d'animation
       _isShooting = false;
       _showGoalText = false;
-
-      // Annuler tout timer en cours
       _goalkeeperTimeout?.cancel();
 
-      // Jouer un son de rembobinage
+      // IMPORTANT : Annuler le comptage du tir précédent si on rembobine
+      // On ne décrémente pas les stats de tir car c'est compliqué de savoir quel effet c'était exactement
+      // Mais comme on rejoue le tir, le nouveau tir sera compté, donc c'est acceptable.
+
       try {
         AudioManager.playSound('rewind');
       } catch (e) {
@@ -355,19 +329,14 @@ class GameController {
 
       onStateChanged?.call();
     } else {
-      print("❌ Échec du rembobinage GameState");
-      // Si GameState échoue, remettre le compteur AdController
       await AdController.instance.incrementRewindCount();
     }
 
     return success;
   }
 
-  // MÉTHODE SIMPLIFIÉE: Afficher popup de rembobinage
   void _showRewindPopup() {
     if (context == null || !mounted(context!)) return;
-
-    print("🎯 Affichage du popup de rembobinage");
 
     showDialog(
       context: context!,
@@ -375,381 +344,65 @@ class GameController {
       builder: (BuildContext dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xFF1B6B3A),
-        contentPadding: const EdgeInsets.all(0),
-        titlePadding: const EdgeInsets.all(0),
         title: Container(
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1B6B3A),  // Vert moyen
-                Color(0xFF2E8B4B),  // Vert clair
-                Color(0xFF0D4A2D),  // Vert foncé
-              ],
-              stops: [0.0, 0.5, 1.0],
+              colors: [Color(0xFF1B6B3A), Color(0xFF2E8B4B), Color(0xFF0D4A2D)],
             ),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 0),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.replay,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                width: 36, height: 36,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.15)),
+                child: const Icon(Icons.replay, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [
-                          Colors.white,
-                          Color(0xFFE0E0E0),
-                        ],
-                      ).createShader(bounds),
-                      child: const Text(
-                        'TIR RATÉ !',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 1.0,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black26,
-                              blurRadius: 3,
-                              offset: Offset(1, 1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Seconde chance disponible',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    const Text('TIR RATÉ !', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text('Seconde chance disponible', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        content: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icône football moderne avec effet
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 0),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.sports_soccer,
-                  size: 30,
-                  color: Colors.white70,
-                ),
-              ),
-
-              const SizedBox(width: 14),
-
-              // Texte principal
-              Text(
-                'Voulez-vous utiliser un rembobinage pour rejouer ce tir ?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
-                  height: 1.3,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // Badge des rembobinages disponibles
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF4CAF50),
-                      Color(0xFF2E7D32),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.green.withOpacity(0.3),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.2),
-                      ),
-                      child: const Icon(
-                        Icons.replay,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Rembobinages: ${AdController.instance.currentRewindCount}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 13,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.sports_soccer, size: 50, color: Colors.white70),
+            const SizedBox(height: 14),
+            Text('Utiliser un rembobinage ?\n(Restants: ${AdController.instance.currentRewindCount})',
+                textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.9))),
+          ],
         ),
         actions: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Bouton Continuer
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.of(dialogContext).pop();
-                        _continueAfterShotResult();
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
-                        foregroundColor: Colors.white70,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: const Text(
-                        'Continuer',
-                        style: TextStyle(
-                          fontSize: 07,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // Bouton Rembobiner
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orange.withOpacity(0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(dialogContext).pop();
-
-                        bool success = await rewindLastShot();
-
-                        if (!mounted(context!)) return;
-
-                        if (success) {
-                          ScaffoldMessenger.of(context!).showSnackBar(
-                            SnackBar(
-                              content: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.check_circle, color: Colors.white, size: 20),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Tir rembobiné ! Vous pouvez rejouer.',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              backgroundColor: const Color(0xFF4CAF50),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              margin: const EdgeInsets.all(12),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context!).showSnackBar(
-                            SnackBar(
-                              content: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.error, color: Colors.white, size: 20),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Impossible de rembobiner.',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              backgroundColor: const Color(0xFFFF5722),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              margin: const EdgeInsets.all(12),
-                            ),
-                          );
-                          _continueAfterShotResult();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF9800),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.replay, size: 16),
-                          SizedBox(width: 6),
-                          Text(
-                            'Rembobiner',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _continueAfterShotResult();
+            },
+            child: const Text('Continuer', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              bool success = await rewindLastShot();
+              if (success && mounted(context!)) {
+                ScaffoldMessenger.of(context!).showSnackBar(const SnackBar(content: Text('Tir rembobiné !'), backgroundColor: Colors.green));
+              } else {
+                _continueAfterShotResult();
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('Rembobiner', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -758,7 +411,6 @@ class GameController {
 
   void _continueAfterShotResult() {
     Timer(const Duration(seconds: 2), () {
-      // Invalider la sauvegarde après le délai d'attente
       _gameState.invalidateSnapshot();
 
       if (_gameState.checkWinner()) {
@@ -767,6 +419,7 @@ class GameController {
         } else {
           final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
 
+          // ✅ CORRECTION ICI : On passe maintenant les compteurs au ResultScreen
           final resultScreen = ResultScreen(
             winner: _gameState.getWinner()!,
             loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
@@ -778,6 +431,10 @@ class GameController {
                 : _gameState.team1Results,
             isSoloMode: _gameState.isSoloMode,
             isUserWinner: isUserWinner,
+            // 👇 VOICI LES PARAMÈTRES QUI MANQUAIENT 👇
+            goalsCurve: _matchGoalsCurve,
+            goalsLob: _matchGoalsLob,
+            goalsKnuckle: _matchGoalsKnuckle,
           );
 
           onNavigate?.call(resultScreen);
@@ -790,14 +447,11 @@ class GameController {
 
   void _handleShotResult() {
     final bool isGoalKeepDirectionMatch = _gameState.selectedDirection == _gameState.goalkeepeerDirection;
-
     bool isGoalScored = !isGoalKeepDirectionMatch;
 
     if (isGoalKeepDirectionMatch) {
       double chanceToScore = 0.0;
-
       if (_gameState.shotPower > 80) chanceToScore += 0.3;
-
       if (_gameState.shotEffect == 'curve') chanceToScore += 0.2;
       else if (_gameState.shotEffect == 'knuckle') chanceToScore += 0.25;
 
@@ -814,6 +468,25 @@ class GameController {
     _gameState.currentPhase = isGoalScored ? GamePhase.goalScored : GamePhase.goalSaved;
     _gameState.recordShotResult(isGoalScored);
 
+    // ⭐ SUIVI DES STATISTIQUES POUR ACHIEVEMENTS (Seulement si c'est l'équipe du joueur)
+    if (isGoalScored && _gameState.currentTeam == _gameState.team1) {
+      // Debug print pour vérifier si ça passe ici
+      print("🎯 BUT MARQUÉ - Effet: ${_gameState.shotEffect}");
+
+      if (_gameState.shotEffect == 'curve') {
+        _matchGoalsCurve++;
+        print("📈 Courbes: $_matchGoalsCurve");
+      }
+      else if (_gameState.shotEffect == 'lob') {
+        _matchGoalsLob++;
+        print("📈 Lobs: $_matchGoalsLob");
+      }
+      else if (_gameState.shotEffect == 'knuckle') {
+        _matchGoalsKnuckle++;
+        print("📈 Knuckles: $_matchGoalsKnuckle");
+      }
+    }
+
     if (isGoalScored) {
       _showGoalText = true;
       _goalTextController.forward(from: 0.0);
@@ -827,45 +500,37 @@ class GameController {
 
     onStateChanged?.call();
 
-    // CORRECTION PRINCIPALE: Logique simplifiée pour le popup de rembobinage
     Timer(const Duration(seconds: 1), () {
       if (!mounted(context!)) return;
-
-      print("🎯 Vérification des conditions de rembobinage:");
-      print("- Tir raté: ${!_gameState.isGoalScored}");
-      print("- AdController peut rembobiner: ${AdController.instance.canUseRewind()}");
-      print("- GameState peut rembobiner: ${_gameState.canRewind}");
-
       if (_canShowRewindPopup()) {
-        print("✅ Toutes les conditions sont remplies - Affichage du popup");
         _showRewindPopup();
       } else {
-        print("❌ Conditions non remplies - Continuation normale");
         _continueAfterShotResult();
       }
     });
   }
 
-  void _handleTournamentProgress() async { // Ajout de async
+  void _handleTournamentProgress() async {
+    // 1. Accumuler les stats du match vers le tournoi
+    _tournamentGoalsCurve += _matchGoalsCurve;
+    _tournamentGoalsLob += _matchGoalsLob;
+    _tournamentGoalsKnuckle += _matchGoalsKnuckle;
+
+    // 2. Réinitialiser les stats du match pour le suivant
+    _matchGoalsCurve = 0;
+    _matchGoalsLob = 0;
+    _matchGoalsKnuckle = 0;
+
     final isUserWinner = _gameState.getWinner() == _gameState.team1;
     _gameState.tournamentState!.advanceToNextRound(isUserWinner);
 
     if (_gameState.tournamentState!.currentPhase == TournamentPhase.finished) {
-      // RÉCUPÉRER LES VRAIES STATISTIQUES DEPUIS LE STOCKAGE
       final statsService = StatsService();
-      final tournamentStats = await statsService.loadTournamentStats(); // await ajouté
+      final tournamentStats = await statsService.loadTournamentStats();
       final totalRewindCount = AdController.instance.getUsedRewindCount();
       final totalGoalsScored = _calculateTotalGoalsScored();
       final totalShotsTaken = _calculateTotalShotsTaken();
       final totalMatchesWon = _gameState.tournamentState!.userWins;
-
-      print('🏆 FIN DU TOURNOI - Statistiques:');
-      print('- Victoire: $isUserWinner');
-      print('- Rewinds utilisés: $totalRewindCount');
-      print('- Buts marqués: $totalGoalsScored');
-      print('- Tirs effectués: $totalShotsTaken');
-      print('- Matchs gagnés: $totalMatchesWon');
-      print('- Stats avant enregistrement: ${tournamentStats.tournamentsPlayed} tournois joués');
 
       final tournamentResultScreen = TournamentResultScreen(
         userTeam: _gameState.team1!,
@@ -874,9 +539,7 @@ class GameController {
         isWinner: isUserWinner,
         tournamentStats: tournamentStats,
         saveStatsCallback: () async {
-          // Sauvegarde asynchrone avec le service
           await statsService.saveTournamentStats(tournamentStats);
-          print('💾 Statistiques sauvegardées: ${tournamentStats.tournamentsPlayed} tournois');
         },
         totalRewindCount: totalRewindCount,
         totalGoalsScored: totalGoalsScored,
@@ -904,11 +567,6 @@ class GameController {
     }
   }
 
-
-
-
-
-// AJOUTEZ CES MÉTHODES DANS GameController POUR CALCULER LES STATISTIQUES
   int _calculateTotalGoalsScored() {
     int goals = 0;
     for (var result in _gameState.team1Results) {
@@ -924,8 +582,6 @@ class GameController {
     return _gameState.team1Results.length + _gameState.team1SuddenDeathResults.length;
   }
 
-
-
   void resetRound() {
     _ballAnimationController.reset();
     _goalkeeperController.reset();
@@ -939,14 +595,12 @@ class GameController {
     _gameState.isGoalScored = false;
     _isShooting = false;
 
-    // Invalider la sauvegarde lors du changement de tour
     _gameState.invalidateSnapshot();
 
     AudioManager.playSound('whistle');
 
     onStateChanged?.call();
 
-    // Vérifier si c'est l'IA qui doit jouer
     if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
       handleAITurn();
     }
@@ -954,29 +608,14 @@ class GameController {
 
   String getResultText() {
     if (_gameState.isGoalScored) {
-      if (_gameState.shotEffect == 'lob') {
-        return "BUT sur LOB 🎯";
-      } else if (_gameState.shotEffect == 'curve') {
-        return "BUT avec EFFET 🔥";
-      } else if (_gameState.shotEffect == 'knuckle') {
-        return "BUT KNUCKLE ⚡";
-      } else if (_gameState.shotPower < 30) {
-        return "BUT faiblement tiré 💨";
-      } else {
-        return "BUUUUT!";
-      }
+      if (_gameState.shotEffect == 'lob') return "BUT sur LOB 🎯";
+      if (_gameState.shotEffect == 'curve') return "BUT avec EFFET 🔥";
+      if (_gameState.shotEffect == 'knuckle') return "BUT KNUCKLE ⚡";
+      if (_gameState.shotPower < 30) return "BUT en douceur 💨";
+      return "BUUUUT!";
     } else {
-      if (_gameState.shotPower < 20) {
-        return "TIR TROP FAIBLE 😢";
-      } else if (_gameState.shotEffect == 'lob') {
-        return "LOB raté 😔";
-      } else if (_gameState.shotEffect == 'curve') {
-        return "EFFET arrêté 🛡️";
-      } else if (_gameState.shotEffect == 'knuckle') {
-        return "KNUCKLE arrêté ❌";
-      } else {
-        return "ARRÊT DU GARDIEN!";
-      }
+      if (_gameState.shotPower < 20) return "TIR TROP FAIBLE 😢";
+      return "ARRÊT DU GARDIEN!";
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tutorial_settings_screen.dart';
+import 'package:happygoal/screens/achievements_screen.dart';
 import '../constants.dart';
 import '../widgets/tutorial_overlay.dart';
 import 'mode_selection_screen.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import '../widgets/tutorial_mixin.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/coin_shop_dialog.dart'; // ⭐ NOUVEAU : Import de la boutique
+import '../widgets/coin_shop_dialog.dart';
 
 // --- WIDGETS D'ANIMATION (Modifiés pour Noël) ---
 
@@ -116,7 +117,7 @@ class _SnowParticleState extends State<SnowParticle>
       end: const Offset(0, 1.2),
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.linear, // Chute constante
+      curve: Curves.linear,
     ));
   }
 
@@ -165,6 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   final GlobalKey _rewardButtonKey = GlobalKey();
   final GlobalKey _inviteButtonKey = GlobalKey();
   final GlobalKey _coinBalanceKey = GlobalKey();
+  final GlobalKey _achievementsButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -185,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         position: TutorialPosition.top,
         customContent: Column(
           children: [
-            const Icon(Icons.snowboarding, size: 50, color: Colors.blue), // Icône festive
+            const Icon(Icons.snowboarding, size: 50, color: Colors.blue),
             const SizedBox(height: 10),
             const Text(
               'Prêt à marquer ?',
@@ -206,7 +208,29 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         targetKey: _rewardButtonKey,
         position: TutorialPosition.top,
       ),
+      TutorialStep(
+        title: 'Vos Succès',
+        description: 'Consultez vos achievements et récupérez vos récompenses ici !',
+        targetKey: _achievementsButtonKey,
+        position: TutorialPosition.top,
+      ),
     ];
+  }
+
+  void _navigateToAchievements() {
+    AnalyticsService.logAdEvent('achievements_screen');
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (_, animation, __) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(animation),
+          child: const AchievementsScreen(),
+        ),
+      ),
+    );
   }
 
   void _inviteFriends() {
@@ -242,9 +266,9 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0F3622),  // Vert sapin très foncé (Nuit)
-                  Color(0xFF1B5E20),  // Vert sapin
-                  Color(0xFF8F2525),  // Rouge foncé bas (Sol/Fête)
+                  Color(0xFF0F3622),
+                  Color(0xFF1B5E20),
+                  Color(0xFF8F2525),
                 ],
                 stops: [0.0, 0.6, 1.0],
               ),
@@ -255,9 +279,9 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
           ...List.generate(30, (index) {
             return Positioned(
               left: (index * 13.0 * index) % screenWidth,
-              top: (index * 20.0) % (screenHeight / 2), // Départ aléatoire haut
+              top: (index * 20.0) % (screenHeight / 2),
               child: SnowParticle(
-                size: 2.0 + (index % 4), // Flocons de tailles différentes
+                size: 2.0 + (index % 4),
                 color: Colors.white.withOpacity(0.6 + (index % 4) * 0.1),
                 duration: Duration(seconds: 4 + (index % 5)),
               ),
@@ -305,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: const Color(0xFFC62828).withOpacity(0.5), // Lueur rouge
+                                                color: const Color(0xFFC62828).withOpacity(0.5),
                                                 blurRadius: 25,
                                                 offset: const Offset(0, 5),
                                               ),
@@ -355,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFC62828).withOpacity(0.8), // Rouge Noël
+                                  color: const Color(0xFFC62828).withOpacity(0.8),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: Colors.white30),
                                 ),
@@ -388,6 +412,13 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                           right: 20,
                           child: _buildCoinBalance(context),
                         ),
+
+                        // Bouton Achievements
+                        Positioned(
+                          top: 10,
+                          left: 20,
+                          child: _buildAchievementsButton(context),
+                        ),
                       ],
                     ),
                   ),
@@ -404,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                         // Bouton JOUER (Vert sapin avec lueur dorée)
                         PulsatingButton(
                           key: _playButtonKey,
-                          glowColor: const Color(0xFFFFD700), // Or
+                          glowColor: const Color(0xFFFFD700),
                           child: _buildModernButton(
                             context,
                             icon: Icons.sports_soccer,
@@ -475,6 +506,54 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
 
   // --- WIDGETS DÉTAILLÉS ---
 
+  Widget _buildAchievementsButton(BuildContext context) {
+    return Container(
+      key: _achievementsButtonKey,
+      child: GestureDetector(
+        onTap: _navigateToAchievements,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.emoji_events, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'SUCCÈS',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 2,
+                      offset: const Offset(1, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildInviteButton(BuildContext context, {Key? key}) {
     return Container(
       key: key,
@@ -483,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
       child: ElevatedButton(
         onPressed: _inviteFriends,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1565C0), // Bleu glace
+          backgroundColor: const Color(0xFF1565C0),
           foregroundColor: Colors.white,
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -501,7 +580,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // Bouton Solde (Ouvre le menu coins)
   Widget _buildCoinBalance(BuildContext context) {
     return GestureDetector(
       key: _coinBalanceKey,
@@ -510,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFFFA000)], // Or festif
+            colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white, width: 2),
@@ -532,7 +610,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
                 shadows: [Shadow(color: Colors.black45, blurRadius: 2, offset: Offset(1,1))],
               ),
             ),
-            // Petit badge "+"
             Container(
               margin: const EdgeInsets.only(left: 8),
               padding: const EdgeInsets.all(2),
@@ -545,13 +622,12 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // Dialogue Coins + Boutique
   void _showCoinInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFF0F3622), // Fond vert foncé
+        backgroundColor: const Color(0xFF0F3622),
         title: Row(
           children: const [
             Icon(Icons.storefront, color: Color(0xFFFFD700), size: 30),
@@ -586,7 +662,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
           ],
         ),
         actions: [
-          // Bouton Pub
           TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
@@ -595,15 +670,13 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
             icon: const Icon(Icons.play_circle, color: Colors.white),
             label: const Text('Pub Gratuit', style: TextStyle(color: Colors.white)),
           ),
-
-          // ⭐ BOUTON BOUTIQUE IAP
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               showDialog(
                 context: context,
                 builder: (context) => const CoinShopDialog(),
-              ).then((_) => setState((){})); // Rafraichir au retour
+              ).then((_) => setState((){}));
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
             child: const Text('OUVRIR LA BOUTIQUE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
@@ -626,7 +699,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // Dialogue Pub
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
@@ -655,7 +727,6 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // Bouton Récompense (Design Noël)
   Widget _buildRewardButton(BuildContext context, {Key? key}) {
     return Container(
       key: key,
@@ -664,12 +735,12 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
       child: ElevatedButton(
         onPressed: () => _showEarnRewardDialog(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFC62828), // Rouge Noël
+          backgroundColor: const Color(0xFFC62828),
           foregroundColor: Colors.white,
           elevation: 5,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFFFD700), width: 2), // Bordure Or
+            side: const BorderSide(color: Color(0xFFFFD700), width: 2),
           ),
         ),
         child: Row(
@@ -703,7 +774,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: isPrimary
-              ? const Color(0xFF2E7D32) // Vert Sapin
+              ? const Color(0xFF2E7D32)
               : Colors.white.withOpacity(0.15),
           foregroundColor: Colors.white,
           elevation: isPrimary ? 8 : 0,
@@ -860,7 +931,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   }
 }
 
-// Painter pour les lignes du terrain (inchangé mais nécessaire)
+// Painter pour les lignes du terrain
 class FieldLinesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

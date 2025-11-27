@@ -9,13 +9,15 @@ import '../notification_service.dart';
 import 'home_screen.dart';
 import '../constants.dart';
 import '../utils/ad_controller.dart';
+import '../services/achievement_service.dart'; // ⭐ Import Service
+import '../models/achievement.dart'; // ⭐ Import Modèle
 
 class TournamentResultScreen extends StatefulWidget {
   final Team userTeam;
   final int userWins;
   final int aiWins;
   final bool isWinner;
-// Nouveaux champs requis pour l'enregistrement des statistiques
+  // Nouveaux champs requis pour l'enregistrement des statistiques
   final TournamentStats tournamentStats;
   final VoidCallback saveStatsCallback;
   final int totalRewindCount;
@@ -54,6 +56,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   late Animation<double> _fadeAnimation;
 
   bool _coinsAwarded = false;
+  bool _achievementsRecorded = false; // ⭐ Pour éviter les doublons
 
   @override
   void initState() {
@@ -115,9 +118,13 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
     if (widget.userWins == 4 && !_coinsAwarded) {
       _awardTournamentCoins();
     }
+
+    // ⭐ ENREGISTRER LES SUCCÈS
+    if (widget.userWins == 4 && !_achievementsRecorded) {
+      _recordTournamentAchievements();
+    }
   }
 
-  // Implémentation de la méthode demandée
   // Implémentation de la méthode demandée
   void _recordTournamentResult() {
     final stats = widget.tournamentStats;
@@ -154,9 +161,10 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
     print('- Total rewinds: ${stats.totalRewindsUsed}');
     print('- Total buts: ${stats.totalGoalsScored}');
   }
+
   // 🎁 NOUVELLE MÉTHODE: Donner les coins pour la victoire du tournoi
   void _awardTournamentCoins() async {
-    await AdController.instance.addCoins(30);
+    await AdController.instance.addCoins(25);
     _coinsAwarded = true;
     // AJOUT: Gérer les notifications pour la victoire du tournoi
     if (widget.userWins == 4) { // Seulement si champion (4 victoires)
@@ -175,7 +183,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               SizedBox(width: 15),
               Expanded(
                 child: Text(
-                  '🎉 CHAMPION! +30 COINS GAGNÉS!',
+                  '🎉 CHAMPION! +25 COINS GAGNÉS!',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -194,6 +202,87 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
         ),
       );
     }
+  }
+
+  // ⭐ Enregistrer les succès du tournoi
+  Future<void> _recordTournamentAchievements() async {
+    final newAchievements = await AchievementService().recordTournamentWin();
+    _achievementsRecorded = true;
+
+    // Afficher les nouveaux achievements débloqués
+    if (newAchievements.isNotEmpty && mounted) {
+      // Petit délai pour laisser l'animation de victoire se jouer
+      await Future.delayed(const Duration(milliseconds: 2500));
+      if (mounted) {
+        _showNewAchievementsDialog(newAchievements);
+      }
+    }
+  }
+
+  // ⭐ Dialog pour les succès débloqués (identique à ResultScreen)
+  void _showNewAchievementsDialog(List<Achievement> newAchievements) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF0F3622),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.emoji_events, color: Color(0xFFFFD700)),
+            SizedBox(width: 10),
+            Text('Succès Débloqués !', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: newAchievements.map((achievement) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: achievement.color.withOpacity(0.5)),
+              ),
+              child: Row(
+                children: [
+                  Icon(achievement.icon, color: achievement.color, size: 30),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          achievement.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '+${achievement.rewardCoins} Coins',
+                          style: const TextStyle(
+                            color: Color(0xFFFFD700),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
+            child: const Text('GÉNIAL !', style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startAnimations() async {
@@ -428,7 +517,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
                   Icon(Icons.monetization_on, color: Colors.white, size: 24),
                   SizedBox(width: 8),
                   Text(
-                    '+30 COINS',
+                    '+25 COINS',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

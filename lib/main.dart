@@ -10,6 +10,7 @@ import 'utils/analytics_service.dart';
 import 'utils/admob_service.dart';
 import 'notification_service.dart';
 import 'utils/iap_service.dart'; // ⭐ NOUVEAU : Import du service IAP
+import 'services/achievement_service.dart';
 
 // Instance globale pour l'analytics
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -44,6 +45,9 @@ void main() async {
   // Récupération automatique des IDs de test
   final deviceInfo = await MobileAds.instance.getRequestConfiguration();
   debugPrint('Test Device IDs actuels : ${deviceInfo.testDeviceIds}');
+
+  // Initialiser le service d'achievements
+  await AchievementService().initialize();
 
   // Préférences d'orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

@@ -1,3 +1,4 @@
+// result_screen.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
@@ -5,7 +6,9 @@ import '../constants.dart';
 import '../models/team.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
-import '../utils/ad_controller.dart'; // Import ajouté pour gérer les coins
+import '../utils/ad_controller.dart';
+import '../services/achievement_service.dart'; // ⭐ Import Service
+import '../models/achievement.dart'; // ⭐ Import Modèle
 
 class ResultScreen extends StatefulWidget {
   final Team winner;
@@ -17,6 +20,12 @@ class ResultScreen extends StatefulWidget {
   final bool isTournamentMode;
   final double? aiIntelligence;
 
+  // Nouveaux paramètres pour les stats détaillées (optionnels)
+  // Si vous ne les passez pas depuis GameController, ils seront 0
+  final int goalsCurve;
+  final int goalsLob;
+  final int goalsKnuckle;
+
   const ResultScreen({
     Key? key,
     required this.winner,
@@ -27,6 +36,9 @@ class ResultScreen extends StatefulWidget {
     this.isUserWinner = true,
     this.isTournamentMode = false,
     this.aiIntelligence,
+    this.goalsCurve = 0,
+    this.goalsLob = 0,
+    this.goalsKnuckle = 0,
   }) : super(key: key);
 
   @override
@@ -44,7 +56,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   late Animation<double> _buttonAnimation;
 
   final int _maxShotsToDisplay = 5;
-  bool _coinsAwarded = false; // Nouvelle variable pour éviter les doublons
+  bool _coinsAwarded = false;
+  bool _achievementsRecorded = false; // ⭐ Pour éviter les doublons
 
   @override
   void initState() {
@@ -107,48 +120,158 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       });
     }
 
-    // 🎁 DONNER LES COINS SI VICTOIRE
-    if ((!widget.isSoloMode || widget.isUserWinner) && !_coinsAwarded) {
-      _awardVictoryCoins();
+    // 🎁 GESTION DES RÉCOMPENSES (Coins + Achievements)
+    // On enregistre les stats même en cas de défaite (pour les séries brisées etc)
+    if (!_achievementsRecorded && widget.isSoloMode) {
+      _processMatchResult();
     }
   }
 
-  // 🎁 NOUVELLE MÉTHODE: Donner les coins pour la victoire
+  void _processMatchResult() async {
+    // 1. Si le joueur gagne
+    if (widget.isUserWinner) {
+      if (!_coinsAwarded) {
+        _awardVictoryCoins();
+      }
+      _recordWinAchievements();
+    }
+    // 2. Si le joueur perd (IMPORTANT: pour casser les séries de victoires)
+    else {
+      _recordLossStats();
+    }
+    _achievementsRecorded = true;
+  }
+
+  // 🎁 Donner les coins
   void _awardVictoryCoins() async {
-    await AdController.instance.addCoins(3);
+    await AdController.instance.addCoins(1);
     _coinsAwarded = true;
 
-    // Afficher une notification après un court délai
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Petit délai pour ne pas spammer les snackbars si un achievement pop aussi
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: const [
-              Icon(Icons.emoji_events, color: Colors.white, size: 24),
+              Icon(Icons.monetization_on, color: Colors.white, size: 24),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '🎉 VICTOIRE! +3 COINS GAGNÉS!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'VICTOIRE! +1 COIN GAGNÉS!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           backgroundColor: const Color(0xFFFFD700),
-          duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: const EdgeInsets.all(15),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
+  }
+
+  // ⭐ Enregistrer les succès (Victoire)
+  Future<void> _recordWinAchievements() async {
+    // Calcul des stats du match
+    final goalsScored = widget.winnerResults.where((r) => r).length;
+    final shotsTaken = widget.winnerResults.length;
+    final rewindsUsed = AdController.instance.getUsedRewindCount();
+
+    final newAchievements = await AchievementService().recordMatchWin(
+      userScore: widget.winner.score,
+      opponentScore: widget.loser.score,
+      goalsScored: goalsScored,
+      shotsTaken: shotsTaken,
+      rewindsUsed: rewindsUsed,
+      // Nouveaux paramètres (assurez-vous que GameController les passe, sinon 0 par défaut)
+      goalsCurve: widget.goalsCurve,
+      goalsLob: widget.goalsLob,
+      goalsKnuckle: widget.goalsKnuckle,
+    );
+
+    // Afficher les nouveaux achievements débloqués
+    if (newAchievements.isNotEmpty && mounted) {
+      // Petit délai pour laisser l'animation de victoire se jouer
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (mounted) {
+        _showNewAchievementsDialog(newAchievements);
+      }
+    }
+  }
+
+  // ⭐ Enregistrer la défaite (Pour casser la série)
+  Future<void> _recordLossStats() async {
+    final rewindsUsed = AdController.instance.getUsedRewindCount();
+    await AchievementService().recordMatchLoss(rewindsUsed: rewindsUsed);
+  }
+
+  // ⭐ Dialog pour les succès débloqués
+  void _showNewAchievementsDialog(List<Achievement> newAchievements) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF0F3622),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.emoji_events, color: Color(0xFFFFD700)),
+            SizedBox(width: 10),
+            Text('Succès Débloqués !', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: newAchievements.map((achievement) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: achievement.color.withOpacity(0.5)),
+              ),
+              child: Row(
+                children: [
+                  Icon(achievement.icon, color: achievement.color, size: 30),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          achievement.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '+${achievement.rewardCoins} Coins',
+                          style: const TextStyle(
+                            color: Color(0xFFFFD700),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
+            child: const Text('GÉNIAL !', style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -212,7 +335,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final bool isDefeat = widget.isSoloMode && !widget.isUserWinner;
@@ -221,21 +343,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
     // Gradient colors based on result
     final List<Color> gradientColors = isDefeat
-        ? [
-      const Color(0xFF212121),
-      const Color(0xFF424242),
-      const Color(0xFF616161),
-    ]
-        : [
-      primaryColor.withOpacity(0.9),
-      primaryColor.withOpacity(0.7),
-      primaryColor.withOpacity(0.5),
-    ];
+        ? [const Color(0xFF212121), const Color(0xFF424242), const Color(0xFF616161)]
+        : [primaryColor.withOpacity(0.9), primaryColor.withOpacity(0.7), primaryColor.withOpacity(0.5)];
 
     return Scaffold(
       body: Stack(
         children: [
-          // Animated gradient background
           AnimatedContainer(
             duration: const Duration(milliseconds: 1000),
             decoration: BoxDecoration(
@@ -247,8 +360,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ),
             ),
           ),
-
-          // Animated floating particles
           ...List.generate(15, (index) {
             return Positioned(
               left: (index * 40.0) % MediaQuery.of(context).size.width,
@@ -260,39 +371,30 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ),
             );
           }),
-
-          // Main content
           SafeArea(
             child: SingleChildScrollView(
-              // Ajout de Center pour centrer le contenu verticalement si l'écran est grand
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600), // Limite la largeur pour les grands écrans
+                  constraints: const BoxConstraints(maxWidth: 600),
                   child: Column(
                     children: [
-                      // Animated title section
                       SlideTransition(
                         position: _slideAnimation,
                         child: Center(
                           child: Padding(
-                            // Réduction des padding pour moins de marge
                             padding: const EdgeInsets.only(top: 20, bottom: 15),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // Glow effect behind title
                                 Container(
-                                  // Réduction des padding
                                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(30),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: isDefeat
-                                            ? Colors.grey.withOpacity(0.3)
-                                            : primaryColor.withOpacity(0.4),
-                                        blurRadius: 20, // Réduction du flou
-                                        spreadRadius: 10, // Réduction de l'étalement
+                                        color: isDefeat ? Colors.grey.withOpacity(0.3) : primaryColor.withOpacity(0.4),
+                                        blurRadius: 20,
+                                        spreadRadius: 10,
                                       ),
                                     ],
                                   ),
@@ -306,7 +408,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                     child: Text(
                                       resultTitle,
                                       style: const TextStyle(
-                                        fontSize: 42, // Taille du titre réduite
+                                        fontSize: 42,
                                         fontWeight: FontWeight.w900,
                                         color: Colors.white,
                                         letterSpacing: 3,
@@ -315,34 +417,24 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                     ),
                                   ),
                                 ),
-
-                                const SizedBox(height: 10), // Espace réduit
-
-                                // Subtitle with context
+                                const SizedBox(height: 10),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding réduit
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20), // Rayon réduit
+                                    borderRadius: BorderRadius.circular(20),
                                     color: Colors.black.withOpacity(0.2),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 1,
-                                    ),
+                                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
                                   ),
                                   child: Text(
-                                    isDefeat
-                                        ? "L'IA a remporté cette séance"
-                                        : "Félicitations pour cette victoire !",
+                                    isDefeat ? "L'IA a remporté cette séance" : "Félicitations pour cette victoire !",
                                     style: TextStyle(
-                                      fontSize: 14, // Taille du texte réduite
+                                      fontSize: 14,
                                       color: Colors.white.withOpacity(0.9),
                                       fontWeight: FontWeight.w500,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
                                 ),
-
-                                // 🎁 Affichage des coins gagnés pour la victoire
                                 if (!isDefeat) ...[
                                   const SizedBox(height: 8),
                                   Container(
@@ -358,7 +450,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                         Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 16),
                                         SizedBox(width: 6),
                                         Text(
-                                          '+3 COINS',
+                                          '+1 COIN',
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
@@ -375,29 +467,25 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                           ),
                         ),
                       ),
-
-                      // Team and score section
                       Padding(
-                        // Réduction du padding
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ScaleTransition(
                           scale: _scaleAnimation,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Winner flag with enhanced glow
                               Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
                                       color: primaryColor.withOpacity(0.6),
-                                      blurRadius: 25, // Réduction du flou
-                                      spreadRadius: 10, // Réduction de l'étalement
+                                      blurRadius: 25,
+                                      spreadRadius: 10,
                                     ),
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 15, // Réduction du flou
+                                      blurRadius: 15,
                                       offset: const Offset(0, 8),
                                     ),
                                   ],
@@ -406,128 +494,88 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   borderRadius: BorderRadius.circular(20),
                                   child: Image.asset(
                                     widget.winner.flagImage,
-                                    width: 180, // Taille de l'image réduite
-                                    height: 120, // Taille de l'image réduite
+                                    width: 180,
+                                    height: 120,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-
-                              const SizedBox(height: 15), // Espace réduit
-
-                              // Winner name with style
+                              const SizedBox(height: 15),
                               Container(
-                                // Padding réduit
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(25),
                                   gradient: LinearGradient(
-                                    colors: [
-                                      Colors.black.withOpacity(0.3),
-                                      Colors.black.withOpacity(0.1),
-                                    ],
+                                    colors: [Colors.black.withOpacity(0.3), Colors.black.withOpacity(0.1)],
                                   ),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.4),
-                                    width: 2,
-                                  ),
+                                  border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
                                 ),
                                 child: Text(
                                   widget.winner.name.toUpperCase(),
                                   style: TextStyle(
-                                    fontSize: 24, // Taille du texte réduite
+                                    fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     letterSpacing: 2,
                                     shadows: [
-                                      Shadow(
-                                        offset: const Offset(2, 2),
-                                        blurRadius: 6,
-                                        color: Colors.black.withOpacity(0.7),
-                                      ),
+                                      Shadow(offset: const Offset(2, 2), blurRadius: 6, color: Colors.black.withOpacity(0.7)),
                                     ],
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-
-                              const SizedBox(height: 20), // Espace réduit
-
-                              // Enhanced score card
+                              const SizedBox(height: 20),
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.all(15), // Padding réduit
+                                padding: const EdgeInsets.all(15),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20), // Rayon réduit
+                                  borderRadius: BorderRadius.circular(20),
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
-                                    colors: [
-                                      Colors.black.withOpacity(0.3),
-                                      Colors.black.withOpacity(0.1),
-                                    ],
+                                    colors: [Colors.black.withOpacity(0.3), Colors.black.withOpacity(0.1)],
                                   ),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 2,
-                                  ),
+                                  border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
                                   boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 15, // Réduction du flou
-                                      offset: const Offset(0, 10),
-                                    ),
+                                    BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 10)),
                                   ],
                                 ),
                                 child: Column(
                                   children: [
-                                    // Main score display
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         _buildEnhancedTeamCard(widget.winner, true),
-
-                                        // Score display with glow
                                         Container(
-                                          margin: const EdgeInsets.symmetric(horizontal: 10), // Marge réduite
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Padding réduit
+                                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(15), // Rayon réduit
+                                            borderRadius: BorderRadius.circular(15),
                                             gradient: const LinearGradient(
                                               colors: [Color(0xFFFF6B35), Color(0xFFF7931E)],
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: const Color(0xFFFF6B35).withOpacity(0.5),
-                                                blurRadius: 10, // Réduction du flou
-                                                spreadRadius: 3, // Réduction de l'étalement
+                                                blurRadius: 10,
+                                                spreadRadius: 3,
                                               ),
                                             ],
                                           ),
                                           child: Text(
                                             '${widget.winner.score} - ${widget.loser.score}',
                                             style: const TextStyle(
-                                              fontSize: 32, // Taille du texte réduite
+                                              fontSize: 32,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
-                                              shadows: [
-                                                Shadow(
-                                                  offset: Offset(2, 2),
-                                                  blurRadius: 4,
-                                                  color: Colors.black54,
-                                                ),
-                                              ],
+                                              shadows: [Shadow(offset: Offset(2, 2), blurRadius: 4, color: Colors.black54)],
                                             ),
                                           ),
                                         ),
-
                                         _buildEnhancedTeamCard(widget.loser, false),
                                       ],
                                     ),
-
-                                    const SizedBox(height: 15), // Espace réduit
-
-                                    // Shot statistics
+                                    const SizedBox(height: 15),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: [
@@ -542,21 +590,17 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                           ),
                         ),
                       ),
-
-                      // Enhanced button section
                       AnimatedBuilder(
                         animation: _buttonController,
                         builder: (context, child) {
                           return Transform.scale(
                             scale: _buttonAnimation.value,
                             child: Padding(
-                              // Padding réduit
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (isDefeat) ...[
-                                    // Defeat buttons
                                     Row(
                                       children: [
                                         Expanded(
@@ -567,7 +611,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                             onPressed: _navigateToTeamSelection,
                                           ),
                                         ),
-                                        const SizedBox(width: 10), // Espace réduit
+                                        const SizedBox(width: 10),
                                         Expanded(
                                           child: _buildActionButton(
                                             text: 'RETOUR AU MENU',
@@ -579,7 +623,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                       ],
                                     ),
                                   ] else ...[
-                                    // Victory buttons
                                     Row(
                                       children: [
                                         Expanded(
@@ -590,7 +633,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                             onPressed: _navigateToTeamSelection,
                                           ),
                                         ),
-                                        const SizedBox(width: 10), // Espace réduit
+                                        const SizedBox(width: 10),
                                         Expanded(
                                           child: _buildActionButton(
                                             text: 'RETOUR AU MENU',
@@ -614,8 +657,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ),
             ),
           ),
-
-          // Confetti for victory
           if (!isDefeat)
             Align(
               alignment: Alignment.topCenter,
@@ -627,16 +668,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 maxBlastForce: 40,
                 minBlastForce: 20,
                 gravity: 0.08,
-                colors: const [
-                  Colors.red,
-                  Colors.green,
-                  Colors.blue,
-                  Colors.yellow,
-                  Colors.purple,
-                  Colors.orange,
-                  Colors.white,
-                  Colors.pink,
-                ],
+                colors: const [Colors.red, Colors.green, Colors.blue, Colors.yellow, Colors.purple, Colors.orange, Colors.white, Colors.pink],
                 shouldLoop: false,
               ),
             ),
@@ -652,13 +684,13 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     required VoidCallback onPressed,
   }) {
     return Container(
-      height: 50, // Hauteur du bouton réduite
+      height: 50,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25), // Rayon réduit
+        borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
-            blurRadius: 10, // Réduction du flou
+            blurRadius: 10,
             offset: const Offset(0, 6),
           ),
         ],
@@ -668,20 +700,14 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25), // Rayon réduit
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12), // Padding réduit
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         ),
-        icon: Icon(icon, size: 20), // Taille de l'icône réduite
+        icon: Icon(icon, size: 20),
         label: Text(
           text,
-          style: const TextStyle(
-            fontSize: 10, // Taille du texte réduite
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-          ),
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
         ),
       ),
     );
@@ -692,54 +718,39 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       child: Column(
         children: [
           Container(
-            width: 70, // Taille réduite
-            height: 50, // Taille réduite
+            width: 70,
+            height: 50,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10), // Rayon réduit
+              borderRadius: BorderRadius.circular(10),
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: isWinner
-                      ? team.color.withOpacity(0.6)
-                      : Colors.grey.withOpacity(0.4),
-                  blurRadius: 10, // Réduction du flou
-                  spreadRadius: 2, // Réduction de l'étalement
+                  color: isWinner ? team.color.withOpacity(0.6) : Colors.grey.withOpacity(0.4),
+                  blurRadius: 10,
+                  spreadRadius: 2,
                 ),
-                const BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 6, // Réduction du flou
-                  offset: Offset(0, 3),
-                ),
+                const BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(10), // Rayon réduit
-              child: Image.asset(
-                team.flagImage,
-                fit: BoxFit.cover,
-              ),
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(team.flagImage, fit: BoxFit.cover),
             ),
           ),
-          const SizedBox(height: 8), // Espace réduit
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Padding réduit
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12), // Rayon réduit
+              borderRadius: BorderRadius.circular(12),
               color: Colors.black.withOpacity(0.2),
             ),
             child: Text(
               team.name,
               style: TextStyle(
-                fontSize: 12, // Taille du texte réduite
+                fontSize: 12,
                 color: Colors.white,
                 fontWeight: isWinner ? FontWeight.bold : FontWeight.w500,
-                shadows: const [
-                  Shadow(
-                    offset: Offset(1, 1),
-                    blurRadius: 2,
-                    color: Colors.black45,
-                  ),
-                ],
+                shadows: const [Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black45)],
               ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
@@ -758,58 +769,40 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
     return Flexible(
       child: Container(
-        padding: const EdgeInsets.all(10), // Padding réduit
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           color: Colors.black.withOpacity(0.2),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
         ),
         child: Column(
           children: [
             Text(
               'TIRS AU BUT',
-              style: TextStyle(
-                fontSize: 12, // Taille du texte réduite
-                fontWeight: FontWeight.bold,
-                color: team.color,
-                letterSpacing: 1.2,
-              ),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: team.color, letterSpacing: 1.2),
             ),
-            const SizedBox(height: 6), // Espace réduit
+            const SizedBox(height: 6),
             Text(
               '$goals / $total',
               style: const TextStyle(
-                fontSize: 18, // Taille du texte réduite
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                shadows: [
-                  Shadow(
-                    offset: Offset(1, 1),
-                    blurRadius: 2,
-                    color: Colors.black54,
-                  ),
-                ],
+                shadows: [Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black54)],
               ),
             ),
-            const SizedBox(height: 10), // Espace réduit
+            const SizedBox(height: 10),
             if (hasMoreShots)
               Padding(
-                padding: const EdgeInsets.only(bottom: 6), // Padding réduit
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
                   '(Derniers $_maxShotsToDisplay tirs)',
-                  style: TextStyle(
-                    fontSize: 10, // Taille du texte réduite
-                    color: Colors.white.withOpacity(0.7),
-                    fontStyle: FontStyle.italic,
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic),
                 ),
               ),
             Wrap(
-              spacing: 4, // Espace réduit
-              runSpacing: 4, // Espace réduit
+              spacing: 4,
+              runSpacing: 4,
               alignment: WrapAlignment.center,
               children: displayResults.map((isGoal) => _buildEnhancedShotIndicator(isGoal)).toList(),
             ),
@@ -821,21 +814,19 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
   Widget _buildEnhancedShotIndicator(bool isGoal) {
     return Container(
-      width: 22, // Taille réduite
-      height: 22, // Taille réduite
+      width: 22,
+      height: 22,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isGoal
-              ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
-              : [const Color(0xFFE53935), const Color(0xFFC62828)],
+          colors: isGoal ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)] : [const Color(0xFFE53935), const Color(0xFFC62828)],
         ),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1.5), // Épaisseur réduite
+        border: Border.all(color: Colors.white, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: (isGoal ? Colors.green : Colors.red).withOpacity(0.4),
-            blurRadius: 4, // Réduction du flou
-            spreadRadius: 1, // Réduction de l'étalement
+            blurRadius: 4,
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -843,14 +834,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         child: Icon(
           isGoal ? Icons.check : Icons.close,
           color: Colors.white,
-          size: 14, // Taille de l'icône réduite
-          shadows: const [
-            Shadow(
-              offset: Offset(1, 1),
-              blurRadius: 2,
-              color: Colors.black54,
-            ),
-          ],
+          size: 14,
+          shadows: const [Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black54)],
         ),
       ),
     );
@@ -873,25 +858,15 @@ class FloatingParticle extends StatefulWidget {
   _FloatingParticleState createState() => _FloatingParticleState();
 }
 
-class _FloatingParticleState extends State<FloatingParticle>
-    with SingleTickerProviderStateMixin {
+class _FloatingParticleState extends State<FloatingParticle> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: -15, end: 15).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this)..repeat(reverse: true);
+    _animation = Tween<double>(begin: -15, end: 15).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -914,11 +889,7 @@ class _FloatingParticleState extends State<FloatingParticle>
               color: widget.color,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(
-                  color: widget.color.withOpacity(0.5),
-                  blurRadius: widget.size,
-                  spreadRadius: widget.size / 4,
-                ),
+                BoxShadow(color: widget.color.withOpacity(0.5), blurRadius: widget.size, spreadRadius: widget.size / 4),
               ],
             ),
           ),

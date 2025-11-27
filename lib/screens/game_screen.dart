@@ -1,9 +1,9 @@
+// game_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:flutter/foundation.dart'; // Importez kDebugMode
+import 'package:flutter/foundation.dart';
 import '../constants.dart' hide ShotDirection;
 import '../models/game_state.dart';
-import '../widgets/banner_ad_widget.dart';
 import '../widgets/goal_post_widget.dart';
 import '../widgets/goalkeeper_controller_widget.dart';
 import '../widgets/score_board_widget.dart';
@@ -98,7 +98,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
     _snowController.addListener(_updateSnow);
 
-
+    // Initialisation du contrôleur de jeu
+    // C'est lui qui va compter les types de tirs (curve, lob, etc.)
     _controller = GameController(
       gameState: widget.gameState,
       vsync: this,
@@ -160,7 +161,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   @override
   void dispose() {
     _controller.dispose();
-    _snowController.dispose(); // Ne pas oublier de dispose
+    _snowController.dispose();
     AdController.instance.onGameCompleted(context);
     super.dispose();
   }
@@ -224,6 +225,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           children: [
             _buildTipRow(Icons.gps_fixed, 'Direction : Gauche, Centre, Droite'),
             _buildTipRow(Icons.flash_on, 'Puissance : Attention au dosage'),
+            _buildTipRow(Icons.stars, 'Effet : Courbe, Lob ou Knuckle pour les succès !'),
           ],
         ),
       ),
@@ -613,7 +615,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                     child: SlideTransition(
                                       position: _controller.goalTextAnimation,
                                       child: Text(
-                                        'GOALLL..!',
+                                        // Utilisation du texte généré par le contrôleur (incluant les types de tirs)
+                                        _controller.getResultText(),
                                         style: goalTextStyle,
                                       ),
                                     ),
@@ -662,6 +665,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                 padding: EdgeInsets.only(bottom: responsivePadding(10)),
                                 child: ShotControllerWidget(
                                   key: _shotControllerKey,
+                                  // C'est ICI que l'effet est passé au GameController qui va le compter
                                   onShoot: (direction, power, effect) => _controller.shoot(direction, power, effect),
                                 ),
                               ),

@@ -21,18 +21,17 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     namespace = "com.heyhappy.happygoal"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36  // Update this as suggested
     ndkVersion = "29.0.13113456"
 
     compileOptions {
-        // AJOUT: Activer le core library desugaring
         coreLibraryDesugaringEnabled true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17  // Changed from VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_17  // Changed from VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"  // Changed from VERSION_1_8 / "1.8"
     }
 
     defaultConfig {
