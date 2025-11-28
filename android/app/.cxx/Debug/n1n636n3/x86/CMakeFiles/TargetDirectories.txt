@@ -1,0 +1,2 @@
+C:/Users/ELITEBOOK/StudioProjects/happygoal/android/app/.cxx/Debug/n1n636n3/x86/CMakeFiles/edit_cache.dir
+C:/Users/ELITEBOOK/StudioProjects/happygoal/android/app/.cxx/Debug/n1n636n3/x86/CMakeFiles/rebuild_cache.dir

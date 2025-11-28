@@ -2,40 +2,34 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 /// Service qui gère toutes les interactions avec Firebase Analytics.
-/// Utilise des méthodes statiques pour une utilisation facile dans l'ensemble de l'application.
 class AnalyticsService {
   static late FirebaseAnalytics _analytics;
 
-  /// Initialise le service avec une instance de FirebaseAnalytics.
-  /// Cette méthode doit être appelée au démarrage de l'application.
   static void initialize(FirebaseAnalytics analytics) {
     _analytics = analytics;
   }
 
-  /// Enregistre l'ouverture de l'application.
   static Future<void> logAppOpen() async {
     await _analytics.logAppOpen();
   }
 
-  /// Enregistre quand l'application passe en arrière-plan.
   static Future<void> logAppBackground() async {
     await _analytics.logEvent(name: 'happygoal_app_background');
   }
 
-  /// Enregistre quand l'application revient au premier plan.
   static Future<void> logAppForeground() async {
     await _analytics.logEvent(name: 'app_foreground');
   }
 
-  /// Enregistre le début d'une partie.
   static Future<void> logGameStart({
-    required String gameMode, // 'solo' ou 'multi'
+    required String gameMode,
     required String team1Name,
     required String team2Name,
   }) async {
+    // CORRECTION : Utilisation explicite de <String, Object>
     await _analytics.logEvent(
       name: 'game_start',
-      parameters: {
+      parameters: <String, Object>{
         'game_mode': gameMode,
         'team1': team1Name,
         'team2': team2Name,
@@ -43,19 +37,19 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre la fin d'une partie.
   static Future<void> logGameEnd({
     required String gameMode,
     required String winnerTeam,
     required String loserTeam,
     required int winnerScore,
     required int loserScore,
-    required int duration, // durée en secondes
+    required int duration,
     required bool isSuddenDeath,
   }) async {
+    // CORRECTION : Utilisation explicite de <String, Object>
     await _analytics.logEvent(
       name: 'game_end',
-      parameters: {
+      parameters: <String, Object>{
         'game_mode': gameMode,
         'winner_team': winnerTeam,
         'loser_team': loserTeam,
@@ -67,18 +61,18 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre un tir au but.
   static Future<void> logShot({
     required String teamName,
-    required String direction, // 'gauche', 'centre', 'droite'
-    required int power, // 0-100
-    required String effect, // 'none', 'curve', 'lob', 'knuckle'
+    required String direction,
+    required int power,
+    required String effect,
     required bool isGoal,
     required bool isAI,
   }) async {
+    // CORRECTION : Utilisation explicite de <String, Object>
     await _analytics.logEvent(
       name: 'shot_attempt',
-      parameters: {
+      parameters: <String, Object>{
         'team': teamName,
         'direction': direction,
         'power': power,
@@ -89,45 +83,39 @@ class AnalyticsService {
     );
   }
 
-  /// Enregistre un changement de paramètres audio.
   static Future<void> logAudioSettingsChange({
     required bool musicEnabled,
     required bool soundEnabled,
   }) async {
     await _analytics.logEvent(
       name: 'audio_settings_change',
-      parameters: {
+      parameters: <String, Object>{
         'music_enabled': musicEnabled,
         'sound_enabled': soundEnabled,
       },
     );
   }
 
-  /// Enregistre quand l'utilisateur consulte les règles.
   static Future<void> logRulesView() async {
     await _analytics.logEvent(name: 'rules_view');
   }
 
-  /// Enregistre quand l'utilisateur accède aux paramètres.
   static Future<void> logSettingsView() async {
     await _analytics.logEvent(name: 'settings_view');
   }
 
-  /// Enregistre une erreur non fatale.
   static Future<void> logError(String errorType, String errorMessage) async {
     await _analytics.logEvent(
       name: 'app_error',
-      parameters: {
+      parameters: <String, Object>{
         'error_type': errorType,
         'error_message': errorMessage,
       },
     );
   }
 
-  /// Enregistre un événement publicitaire avec des paramètres optionnels.
-  /// [eventName] le nom de l'événement publicitaire (ex: 'ad_impression', 'ad_click').
-  /// [parameters] un Map de paramètres pour fournir plus de détails.
-  static Future<void> logAdEvent(String eventName, {Map<String, dynamic>? parameters}) async {
+  // CORRECTION : Changement de 'dynamic' à 'Object' dans la signature
+  static Future<void> logAdEvent(String eventName, {Map<String, Object>? parameters}) async {
     await _analytics.logEvent(
       name: eventName,
       parameters: parameters,
