@@ -451,6 +451,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             image: DecorationImage(
               image: AssetImage('assets/images/field_background.jpg'),
               fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
             ),
           ),
           child: SafeArea(
