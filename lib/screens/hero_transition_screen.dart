@@ -7,7 +7,12 @@ class HeroTransitionScreen extends StatefulWidget {
   final Team myTeam;
   final Team opponent;
   final int level;
-  final int stars;
+
+  /// Liste des challenges réellement complétés lors du DERNIER passage sur ce niveau.
+  /// completedChallenges[i] == true signifie que le challenge i a été validé.
+  /// Liste vide = première fois sur ce niveau (aucun historique).
+  final List<bool> completedChallenges;
+
   final VoidCallback onContinue;
 
   const HeroTransitionScreen({
@@ -15,7 +20,7 @@ class HeroTransitionScreen extends StatefulWidget {
     required this.myTeam,
     required this.opponent,
     required this.level,
-    required this.stars,
+    required this.completedChallenges,
     required this.onContinue,
   }) : super(key: key);
 
@@ -171,8 +176,8 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
 
                 const SizedBox(height: 16),
 
-                // Challenges
-                if (widget.stars > 0 && challenges.isNotEmpty)
+                // Affiche les objectifs seulement si le joueur a déjà joué ce niveau
+                if (widget.completedChallenges.isNotEmpty && challenges.isNotEmpty)
                   FadeTransition(
                     opacity: _challengeController,
                     child: _buildChallengesSection(challenges),
@@ -394,51 +399,82 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
   Widget _buildChallengesSection(List<HeroChallenge> challenges) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        children: [
-          const Text(
-            'OBJECTIFS',
-            style: TextStyle(
-              color: Color(0xFFFFD700),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 3,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ...List.generate(
-            challenges.length,
-                (i) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  Icon(
-                    i < widget.stars ? Icons.star : Icons.star_border,
-                    color: i < widget.stars
-                        ? const Color(0xFFFFD700)
-                        : Colors.white38,
-                    size: 20,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.history, color: Color(0xFFFFD700), size: 14),
+                SizedBox(width: 6),
+                Text(
+                  'VOTRE MEILLEUR RÉSULTAT',
+                  style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.5,
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      challenges[i].title,
-                      style: TextStyle(
-                        color: i < widget.stars
-                            ? Colors.white
-                            : Colors.white54,
-                        fontSize: 13,
-                        fontWeight: i < widget.stars
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...List.generate(challenges.length, (i) {
+              // On lit le vrai résultat du challenge i depuis completedChallenges.
+              // Si completedChallenges est plus court (ne devrait pas arriver), on considère false.
+              final bool done = i < widget.completedChallenges.length
+                  ? widget.completedChallenges[i]
+                  : false;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Icon(
+                      done ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: done
+                          ? const Color(0xFFFFD700)
+                          : Colors.white24,
+                      size: 20,
+                      shadows: done
+                          ? [
+                        const Shadow(
+                            color: Color(0xFFFFD700), blurRadius: 6)
+                      ]
+                          : [],
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        challenges[i].title,
+                        style: TextStyle(
+                          color: done ? Colors.white : Colors.white38,
+                          fontSize: 13,
+                          fontWeight:
+                          done ? FontWeight.w600 : FontWeight.normal,
+                          decoration:
+                          !done ? TextDecoration.lineThrough : null,
+                          decorationColor: Colors.white24,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+                    if (done)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 6),
+                        child: Icon(Icons.check_circle,
+                            color: Color(0xFF4CAF50), size: 14),
+                      ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }

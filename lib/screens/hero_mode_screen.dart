@@ -87,7 +87,11 @@ class _HeroModeScreenState extends State<HeroModeScreen>
     final double aiDifficulty = 0.5 + 0.005 * (level - 1);
     Team myTeamCopy = myTeam.copyWith(score: 0);
     Team opponentCopy = opponent.copyWith(score: 0);
-    final int stars = progression?.starsPerLevel[level] ?? 0;
+
+    // Récupère les challenges réellement complétés lors du meilleur passage
+    final List<bool> previousCompleted =
+        progression?.getCompletedChallenges(level) ?? [];
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -95,7 +99,7 @@ class _HeroModeScreenState extends State<HeroModeScreen>
           myTeam: myTeamCopy,
           opponent: opponentCopy,
           level: level,
-          stars: stars,
+          completedChallenges: previousCompleted,
           onContinue: () async {
             Navigator.pop(context);
             final gameState = GameState(
@@ -115,7 +119,13 @@ class _HeroModeScreenState extends State<HeroModeScreen>
               ),
             );
             if (result != null && result.containsKey('stars')) {
-              await progression!.completeLevel(level, result['stars']);
+              // On récupère aussi la liste des challenges complétés retournée par GameScreen
+              final List<bool> completedChallenges =
+                  (result['completedChallenges'] as List<dynamic>?)
+                      ?.cast<bool>() ??
+                      [];
+              await progression!.completeLevel(
+                  level, result['stars'], completedChallenges);
               setState(() {
                 _pendingResult = {
                   "level": level,
@@ -176,7 +186,64 @@ class _HeroModeScreenState extends State<HeroModeScreen>
       );
     }
 
-    return _buildMapScreen();
+    // Ajoute le bouton flottant pour scroller en bas
+    return Stack(
+      children: [
+        _buildMapScreen(),
+        Positioned(
+          bottom: 32,
+          right: 24,
+          child: _buildScrollToBottomButton(),
+        ),
+      ],
+    );
+  }
+  Widget _buildScrollToBottomButton() {
+    // Affiche le bouton seulement si la progression existe
+    if (progression == null) return SizedBox.shrink();
+    return Material(
+      color: Colors.transparent,
+      elevation: 8,
+      borderRadius: BorderRadius.circular(30),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(30),
+        onTap: () {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeInOutCubic,
+            );
+          }
+        },
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF5277EF), Color(0xFF0F4A2D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+            ],
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: const Icon(
+            Icons.arrow_downward_rounded,
+            color: Colors.white,
+            size: 32,
+            shadows: [Shadow(color: Colors.black38, blurRadius: 8)],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildMapScreen() {
