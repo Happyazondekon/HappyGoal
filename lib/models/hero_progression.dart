@@ -58,8 +58,12 @@ class HeroProgression {
   }
 
   Future<void> completeLevel(int level, int stars) async {
-    starsPerLevel[level] = stars;
-    if (level == currentLevel && currentLevel < maxLevel) {
+    // On garde le meilleur score d'étoiles pour chaque niveau
+    final previous = starsPerLevel[level] ?? 0;
+    if (stars > previous) {
+      starsPerLevel[level] = stars;
+    }
+    if (level == currentLevel && currentLevel < maxLevel && stars > 0) {
       currentLevel++;
     }
     await save();

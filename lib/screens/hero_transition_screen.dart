@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/models/team.dart';
 
+
+import 'package:happygoal/models/hero_challenge.dart';
+
 class HeroTransitionScreen extends StatelessWidget {
   final Team myTeam;
   final Team opponent;
   final int level;
+  final int stars;
   final VoidCallback onContinue;
 
   const HeroTransitionScreen({
@@ -12,11 +16,13 @@ class HeroTransitionScreen extends StatelessWidget {
     required this.myTeam,
     required this.opponent,
     required this.level,
+    required this.stars,
     required this.onContinue,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final List<HeroChallenge> challenges = HeroChallengeRepository.getChallenges()[level] ?? [];
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -59,6 +65,19 @@ class HeroTransitionScreen extends StatelessWidget {
                 style: const TextStyle(color: Colors.white70, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
+              if (stars > 0) ...[
+                const SizedBox(height: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(challenges.length, (i) => Row(
+                    children: [
+                      Icon(i < stars ? Icons.star : Icons.star_border, color: Colors.amber, size: 22),
+                      const SizedBox(width: 8),
+                      Flexible(child: Text(challenges[i].title, style: TextStyle(color: Colors.white, fontSize: 16))),
+                    ],
+                  )),
+                ),
+              ],
               const SizedBox(height: 40),
               ElevatedButton.icon(
                 icon: const Icon(Icons.play_arrow),

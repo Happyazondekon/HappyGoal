@@ -41,6 +41,7 @@ class _HeroModeScreenState extends State<HeroModeScreen> {
     // Crée une copie profonde des équipes pour éviter la persistance du score
     Team myTeamCopy = myTeam.copyWith(score: 0);
     Team opponentCopy = opponent.copyWith(score: 0);
+    final int stars = progression?.starsPerLevel[level] ?? 0;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -48,6 +49,7 @@ class _HeroModeScreenState extends State<HeroModeScreen> {
           myTeam: myTeamCopy,
           opponent: opponentCopy,
           level: level,
+          stars: stars,
           onContinue: () async {
             Navigator.pop(context); // Ferme l'écran de transition
             final gameState = GameState(
@@ -55,6 +57,7 @@ class _HeroModeScreenState extends State<HeroModeScreen> {
               team2: opponentCopy,
               isSoloMode: true,
               isHeroMode: true,
+              heroLevel: level,
               aiIntelligenceLevel: aiDifficulty.clamp(0.5, 1.0),
               isTournamentMode: false,
               currentPhase: GamePhase.playerShooting,
@@ -159,33 +162,55 @@ class _HeroModeScreenState extends State<HeroModeScreen> {
             ),
           ],
         ),
-        body: ListView.builder(
-          itemCount: progression!.maxLevel,
-          itemBuilder: (context, index) {
-            final level = index + 1;
-            final stars = progression!.starsPerLevel[level] ?? 0;
-            return ListTile(
-              leading: Text('Niveau $level'),
-              title: Row(
-                children: List.generate(3, (i) => Icon(
-                  i < stars ? Icons.star : Icons.star_border,
-                  color: Colors.amber,
-                  size: 20,
-                )),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Builder(
+                builder: (_) {
+                  int totalStars = 0;
+                  for (var s in progression!.starsPerLevel.values) {
+                    totalStars += s;
+                  }
+                  final int maxStars = progression!.maxLevel * 3;
+                  return Text(
+                    '$totalStars/$maxStars étoiles',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.amber),
+                  );
+                },
               ),
-              selected: progression!.currentLevel == level,
-              onTap: progression!.currentLevel == level
-                  ? () {
-                      final allTeams = Team.getPredefinedTeams();
-                      final myTeam = allTeams.firstWhere((t) => t.name == progression!.selectedCountryCode);
-                      final possibleOpponents = allTeams.where((t) => t.name != myTeam.name).toList();
-                      possibleOpponents.shuffle();
-                      final opponent = possibleOpponents.first;
-                      _launchLevel(level, myTeam, opponent);
-                    }
-                  : null,
-            );
-          },
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: progression!.maxLevel,
+                itemBuilder: (context, index) {
+                  final level = index + 1;
+                  final stars = progression!.starsPerLevel[level] ?? 0;
+                  return ListTile(
+                    leading: Text('Niveau $level'),
+                    title: Row(
+                      children: List.generate(3, (i) => Icon(
+                        i < stars ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 20,
+                      )),
+                    ),
+                    selected: progression!.currentLevel == level,
+                    onTap: (progression!.currentLevel > level || (progression!.currentLevel == level))
+                        ? () {
+                            final allTeams = Team.getPredefinedTeams();
+                            final myTeam = allTeams.firstWhere((t) => t.name == progression!.selectedCountryCode);
+                            final possibleOpponents = allTeams.where((t) => t.name != myTeam.name).toList();
+                            possibleOpponents.shuffle();
+                            final opponent = possibleOpponents.first;
+                            _launchLevel(level, myTeam, opponent);
+                          }
+                        : null,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       );
     }

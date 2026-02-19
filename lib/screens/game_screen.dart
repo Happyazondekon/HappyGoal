@@ -16,6 +16,7 @@ import 'package:happygoal/widgets/tutorial_overlay.dart';
 
 import 'game_helpers.dart';
 import 'package:happygoal/widgets/rewind_reward_widget.dart';
+import 'package:happygoal/models/hero_challenge.dart';
 
 class GameScreen extends StatefulWidget {
   final GameState gameState;
@@ -41,16 +42,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   final GlobalKey _rewindKey = GlobalKey();
   final GlobalKey _goalkeeperControllerKey = GlobalKey();
 
-  // Permet de retourner le nombre d'étoiles gagnées en mode Hero
+  // Nouvelle logique d'attribution des étoiles selon les challenges
   int _calculateHeroStars() {
     if (!widget.gameState.isHeroMode) return 0;
-    final totalShots = _controller.gameState.team1Results.length + _controller.gameState.team1SuddenDeathResults.length;
-    if (_controller.gameState.isUserWinner) {
-      if (totalShots <= 3) return 3;
-      if (totalShots <= 5) return 2;
-      return 1;
+    final int level = widget.gameState.heroLevel ?? 1;
+    final challenges = HeroChallengeRepository.getChallenges()[level] ?? [];
+    // Le challenge 0 est toujours "Gagner le match"
+    final bool hasWon = challenges.isNotEmpty && challenges[0].isCompleted(_controller.gameState);
+    if (!hasWon) return 0;
+    int completed = 0;
+    for (final challenge in challenges) {
+      if (challenge.isCompleted(_controller.gameState)) completed++;
     }
-    return 0;
+    // 1 étoile : victoire (challenge 1)
+    // 2 étoiles : victoire + un challenge supplémentaire
+    // 3 étoiles : tous les challenges
+    if (completed == 1) return 1;
+    if (completed == 2) return 2;
+    return 3;
   }
 
   @override

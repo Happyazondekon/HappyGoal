@@ -359,10 +359,9 @@ class _HomeScreenState extends State<HomeScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF0D4A2D),  // Vert foncé
-                  Color(0xFF1B6B3A),  // Vert moyen
-                  Color(0xFF2E8B4B),  // Vert clair
-                ],
+                  AppColors.primary, AppColors.fieldGreen, Color(0xFF0F4A2D)],
+                  stops: [0.0, 0.5, 1.0],
+
               ),
             ),
           ),

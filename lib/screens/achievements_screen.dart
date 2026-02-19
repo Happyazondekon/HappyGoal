@@ -85,10 +85,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0D4A2D),
-              Color(0xFF1B6B3A),
-              Color(0xFF2E8B4B),
-            ],
+              AppColors.primary, AppColors.fieldGreen, Color(0xFF0F4A2D)],
+            stops: [0.0, 0.5, 1.0],
+
           ),
         ),
         child: SafeArea(

@@ -259,6 +259,8 @@ class GameStateSnapshot {
 }
 
 class GameState {
+      // Ajout pour Hero Mode : niveau en cours
+      int? heroLevel;
     // Indique si l'utilisateur (team1) a gagné le match
     bool get isUserWinner {
       final winner = getWinner();
@@ -401,6 +403,7 @@ class GameState {
     this.shotPrecision = 1.0,
     this.isSoloMode = false,
     this.isHeroMode = false,
+    this.heroLevel,
     double? aiIntelligenceLevel,
     required bool isTournamentMode,
   }) {
