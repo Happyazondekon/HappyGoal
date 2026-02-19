@@ -1,8 +1,14 @@
 import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/services/hero_challenge_evaluator.dart';
 
+/// Un challenge Hero avec son titre, sa description,
+/// et sa condition d'évaluation basée sur le GameState réel.
 class HeroChallenge {
   final String title;
   final String description;
+
+  /// Retourne true UNIQUEMENT si le joueur a rempli la condition
+  /// en se basant sur les vrais événements du match (team1ShotData, team2ShotData).
   final bool Function(GameState) isCompleted;
 
   HeroChallenge({
@@ -16,89 +22,107 @@ class HeroChallengeRepository {
   static Map<int, List<HeroChallenge>> getChallenges() {
     final Map<int, List<HeroChallenge>> challenges = {};
     for (int level = 1; level <= 100; level++) {
-      final String challengeTitle = _challengeTitle(level);
-      challenges[level] = [
-        HeroChallenge(
-          title: 'Gagner le match',
-          description: 'Remportez la séance de tirs au but.',
-          isCompleted: (state) => state.isUserWinner,
-        ),
-        HeroChallenge(
-          title: challengeTitle,
-          description: _challengeDescription(level),
-          isCompleted: (state) => _challengeCondition(level, state),
-        ),
-        HeroChallenge(
-          title: 'Faire un arrêt',
-          description: 'Arrêtez au moins un tir adverse.',
-          isCompleted: (state) => state.team2Results.contains(false),
-        ),
-      ];
+      challenges[level] = _buildChallenges(level);
     }
     return challenges;
   }
 
-  static String _challengeTitle(int level) {
-    if (level % 5 == 0) {
-      return 'Marquer tous les buts en lob';
-    } else if (level % 3 == 0) {
-      return 'Marquer 2 buts effet curve';
-    } else if (level % 7 == 0) {
-      return 'Encaisser max 2 buts';
-    } else if (level % 11 == 0) {
-      return 'Marquer un but knuckle';
-    } else if (level % 13 == 0) {
-      return 'Marquer tous les buts puissance > 80';
-    } else {
-      return 'Marquer 3 buts effet lob';
-    }
+  /// Construit les 3 challenges d'un niveau.
+  ///
+  /// Challenge 0 : Gagner le match (toujours présent)
+  /// Challenge 1 : Objectif offensif (varie selon le niveau)
+  /// Challenge 2 : Objectif défensif / arrêt (toujours : au moins 1 arrêt)
+  ///
+  /// Priorité des conditions pour le challenge 1 :
+  /// On utilise des intervalles exclusifs pour éviter toute ambiguïté.
+  ///
+  ///   level % 11 == 0                       → but knuckle
+  ///   level % 13 == 0 (et pas % 11)         → tous les buts puissance > 80
+  ///   level % 7  == 0 (et pas % 11 ni % 13) → encaisser max 2 buts
+  ///   level % 5  == 0 (et pas les précédents)→ tous les buts en lob
+  ///   level % 3  == 0 (et pas les précédents)→ 2 buts curve
+  ///   sinon                                  → 3 buts lob
+  static List<HeroChallenge> _buildChallenges(int level) {
+    return [
+      // ─── Challenge 0 : Victoire (obligatoire, toujours 1ère étoile) ─────────
+      HeroChallenge(
+        title: 'Gagner le match',
+        description: 'Remportez la séance de tirs au but.',
+        isCompleted: (state) => HeroChallengeEvaluator.userWon(state),
+      ),
+
+      // ─── Challenge 1 : Objectif offensif/défensif (2ème étoile) ─────────────
+      _buildOffensiveChallenge(level),
+
+      // ─── Challenge 2 : Arrêt (3ème étoile) ──────────────────────────────────
+      HeroChallenge(
+        title: 'Réaliser au moins 1 arrêt',
+        description:
+        'Votre gardien doit stopper au moins un tir adverse.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.madeSaves(state, 1),
+      ),
+    ];
   }
 
-  static String _challengeDescription(int level) {
-    if (level % 5 == 0) {
-      return 'Marquez tous vos buts avec l\'effet lob.';
-    } else if (level % 3 == 0) {
-      return 'Marquez au moins 2 buts avec effet curve.';
-    } else if (level % 7 == 0) {
-      return 'Ne pas encaisser plus de 2 buts.';
-    } else if (level % 11 == 0) {
-      return 'Marquez un but knuckle.';
+  static HeroChallenge _buildOffensiveChallenge(int level) {
+    // Priorité décroissante avec des else-if strictement ordonnés :
+    // les diviseurs les plus rares (11, 13) passent en premier.
+    if (level % 11 == 0) {
+      return HeroChallenge(
+        title: 'Marquer un but en Knuckle',
+        description: 'Marquez au moins 1 but avec l\'effet Knuckle.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.scoredGoalsWithEffect(
+                state, ShotEffect.knuckle, 1),
+      );
     } else if (level % 13 == 0) {
-      return 'Marquez tous vos buts avec puissance > 80.';
-    } else {
-      return 'Marquez au moins 3 buts avec effet lob.';
-    }
-  }
-
-  static bool _challengeCondition(int level, GameState state) {
-    if (level % 5 == 0) {
-      final allLob = state.team1ShotData
-        .where((shot) => shot.isGoal)
-        .every((shot) => shot.effect == 'lob');
-      return allLob && state.isUserWinner;
-    } else if (level % 3 == 0) {
-      final curveGoals = state.team1ShotData
-        .where((shot) => shot.isGoal && shot.effect == 'curve')
-        .length;
-      return curveGoals >= 2 && state.isUserWinner;
+      return HeroChallenge(
+        title: 'Tous les buts puissance > 80',
+        description:
+        'Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.allGoalsWithPowerAbove(state, 80),
+      );
     } else if (level % 7 == 0) {
-      final goalsAgainst = state.team2Results.where((r) => r).length;
-      return goalsAgainst <= 2 && state.isUserWinner;
-    } else if (level % 11 == 0) {
-      final knuckleGoals = state.team1ShotData
-        .where((shot) => shot.isGoal && shot.effect == 'knuckle')
-        .length;
-      return knuckleGoals >= 1 && state.isUserWinner;
-    } else if (level % 13 == 0) {
-      final allPower = state.team1ShotData
-        .where((shot) => shot.isGoal)
-        .every((shot) => shot.power > 80);
-      return allPower && state.isUserWinner;
+      return HeroChallenge(
+        title: 'Encaisser maximum 2 buts',
+        description: 'Ne laissez pas l\'adversaire marquer plus de 2 buts.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.concededAtMost(state, 2),
+      );
+    } else if (level % 5 == 0) {
+      return HeroChallenge(
+        title: 'Tous les buts en Lob',
+        description:
+        'Chaque but marqué doit avoir été tiré avec l\'effet Lob.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.allGoalsWithEffect(
+                state, ShotEffect.lob),
+      );
+    } else if (level % 3 == 0) {
+      return HeroChallenge(
+        title: 'Marquer 2 buts en Curve',
+        description: 'Marquez au moins 2 buts avec l\'effet Curve.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.scoredGoalsWithEffect(
+                state, ShotEffect.curve, 2),
+      );
     } else {
-      final lobGoals = state.team1ShotData
-        .where((shot) => shot.isGoal && shot.effect == 'lob')
-        .length;
-      return lobGoals >= 3 && state.isUserWinner;
+      return HeroChallenge(
+        title: 'Marquer 3 buts en Lob',
+        description: 'Marquez au moins 3 buts avec l\'effet Lob.',
+        isCompleted: (state) =>
+        HeroChallengeEvaluator.userWon(state) &&
+            HeroChallengeEvaluator.scoredGoalsWithEffect(
+                state, ShotEffect.lob, 3),
+      );
     }
   }
 }

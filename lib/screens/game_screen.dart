@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:happygoal/constants.dart' hide ShotDirection;
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/screens/game_controller.dart';
+import 'package:happygoal/services/hero_challenge_evaluator.dart';
 import 'package:happygoal/widgets/goal_post_widget.dart';
 import 'package:happygoal/widgets/goalkeeper_controller_widget.dart';
 import 'package:happygoal/widgets/score_board_widget.dart';
@@ -42,23 +43,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   final GlobalKey _rewindKey = GlobalKey();
   final GlobalKey _goalkeeperControllerKey = GlobalKey();
 
-  // Nouvelle logique d'attribution des étoiles selon les challenges
+  // Nouvelle logique d'attribution des étoiles selon les challenges (strict)
   int _calculateHeroStars() {
     if (!widget.gameState.isHeroMode) return 0;
     final int level = widget.gameState.heroLevel ?? 1;
-    final challenges = HeroChallengeRepository.getChallenges()[level] ?? [];
+    final completed = HeroChallengeEvaluator.evaluateAll(level, _controller.gameState);
     // Le challenge 0 est toujours "Gagner le match"
-    final bool hasWon = challenges.isNotEmpty && challenges[0].isCompleted(_controller.gameState);
-    if (!hasWon) return 0;
-    int completed = 0;
-    for (final challenge in challenges) {
-      if (challenge.isCompleted(_controller.gameState)) completed++;
-    }
-    // 1 étoile : victoire (challenge 1)
-    // 2 étoiles : victoire + un challenge supplémentaire
-    // 3 étoiles : tous les challenges
-    if (completed == 1) return 1;
-    if (completed == 2) return 2;
+    if (completed.isEmpty || !completed[0]) return 0;
+    final int count = completed.where((b) => b).length;
+    if (count == 1) return 1;
+    if (count == 2) return 2;
     return 3;
   }
 
