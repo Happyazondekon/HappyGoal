@@ -3,69 +3,10 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../constants.dart';
+import 'package:happygoal/constants.dart';
 import 'home_screen.dart';
-import '../utils/remote_config_service.dart'; // ⭐ Import de ton service
+import 'package:happygoal/utils/remote_config_service.dart'; //
 
-class FloatingParticle extends StatefulWidget {
-  final double size;
-  final Color color;
-  final Duration duration;
-
-  const FloatingParticle({
-    Key? key,
-    this.size = 4.0,
-    this.color = Colors.white,
-    this.duration = const Duration(seconds: 3),
-  }) : super(key: key);
-
-  @override
-  _FloatingParticleState createState() => _FloatingParticleState();
-}
-
-class _FloatingParticleState extends State<FloatingParticle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: const Offset(0, -0.2),
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _animation,
-      child: Container(
-        width: widget.size,
-        height: widget.size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: widget.color,
-        ),
-      ),
-    );
-  }
-}
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -286,22 +227,11 @@ class _SplashScreenState extends State<SplashScreen>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF0D4A2D), Color(0xFF1B6B3A), Color(0xFF2E8B4B)],
+                colors: [AppColors.primary, AppColors.fieldGreen, Color(0xFF0F4A2D)],
                 stops: [0.0, 0.5, 1.0],
               ),
             ),
           ),
-          ...List.generate(20, (index) {
-            return Positioned(
-              left: (index * 35.0) % screenWidth,
-              top: (index * 47.0) % screenHeight,
-              child: FloatingParticle(
-                size: 2.0 + (index % 4),
-                color: Colors.white.withOpacity(0.1 + (index % 3) * 0.1),
-                duration: Duration(seconds: 3 + (index % 5)),
-              ),
-            );
-          }),
           CustomPaint(
             size: Size(screenWidth, screenHeight),
             painter: FieldLinesPainter(),

@@ -2,13 +2,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import '../constants.dart';
-import '../models/team.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/models/team.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
-import '../utils/ad_controller.dart';
-import '../services/achievement_service.dart'; // ⭐ Import Service
-import '../models/achievement.dart'; // ⭐ Import Modèle
+import 'package:happygoal/utils/ad_controller.dart';
+import 'package:happygoal/services/achievement_service.dart'; // ⭐ Import Service
+import 'package:happygoal/models/achievement.dart'; // ⭐ Import Modèle
 
 class ResultScreen extends StatefulWidget {
   final Team winner;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../utils/admob_service.dart';
+import 'package:happygoal/utils/admob_service.dart';
 
 class BannerAdWidget extends StatefulWidget {
   final AdSize adSize;

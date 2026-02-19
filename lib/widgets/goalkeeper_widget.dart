@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/team.dart';
+import 'package:happygoal/models/team.dart';
 
 class GoalkeeperWidget extends StatelessWidget {
   final Team team;

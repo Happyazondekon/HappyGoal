@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants.dart' hide ShotDirection;
-import '../models/game_state.dart';
+import 'package:happygoal/constants.dart' hide ShotDirection;
+import 'package:happygoal/models/game_state.dart';
 
 
 class GameHelpers {
@@ -25,9 +25,14 @@ class GameHelpers {
 
 
   static bool shouldShowShotControls(GameState gameState) {
-    return gameState.currentPhase == GamePhase.playerShooting &&
-        (gameState.currentTeam == gameState.team1 ||
-            (!gameState.isSoloMode && !gameState.isTournamentMode));
+    // En mode Hero, Solo ou Tournoi : seulement team1 (le joueur humain) voit les contrôles
+    final bool isHumanTurn = (gameState.isSoloMode || gameState.isTournamentMode || gameState.isHeroMode)
+        ? gameState.currentTeam == gameState.team1
+        : true;
+    final debug = '[DEBUG shouldShowShotControls] phase: \\${gameState.currentPhase} | team: \\${gameState.currentTeam?.name} | isSolo: \\${gameState.isSoloMode} | isHero: \\${gameState.isHeroMode} | isTournament: \\${gameState.isTournamentMode} | isHumanTurn: \\${isHumanTurn}';
+    // ignore: avoid_print
+    print(debug);
+    return gameState.currentPhase == GamePhase.playerShooting && isHumanTurn;
   }
 
   static bool shouldShowResultText(GameState gameState) {
@@ -46,4 +51,3 @@ class GameHelpers {
             gameState.currentPhase == GamePhase.humanGoalkeeping);
   }
 }
-

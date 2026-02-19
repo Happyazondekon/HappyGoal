@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_result_screen.dart';
 import 'dart:async';
 import 'dart:math';
-import '../constants.dart' hide ShotDirection;
-import '../models/game_state.dart';
-import '../stats_service.dart';
-import '../utils/audio_manager.dart';
-import '../utils/ad_controller.dart';
+import 'package:happygoal/constants.dart' hide ShotDirection;
+import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/stats_service.dart';
+import 'package:happygoal/utils/audio_manager.dart';
+import 'package:happygoal/utils/ad_controller.dart';
 import 'result_screen.dart';
 
 class GameController {
@@ -205,9 +205,10 @@ class GameController {
   Timer? _goalkeeperTimeout;
 
   void handleAITurn() {
-    if (_gameState.isSoloMode &&
-        _gameState.currentTeam == _gameState.team2 &&
-        _gameState.currentPhase == GamePhase.playerShooting) {
+    // Ne déclencher l'IA que si c'est bien le tour de team2 (l'adversaire IA)
+    if ((_gameState.isSoloMode || _gameState.isTournamentMode || _gameState.isHeroMode)
+        && _gameState.currentTeam == _gameState.team2
+        && _gameState.currentPhase == GamePhase.playerShooting) {
 
       _gameState.currentPhase = GamePhase.humanGoalkeeping;
       onStateChanged?.call();
@@ -226,6 +227,8 @@ class GameController {
         _goalkeeperTimeout?.cancel();
       });
     }
+    // Si c'est le tour de team1 (joueur humain), on ne fait rien :
+    // les contrôles de tir s'affichent et le joueur choisit lui-même.
   }
 
   void setGoalkeeperDirection(int direction) {
@@ -416,10 +419,8 @@ class GameController {
       if (_gameState.checkWinner()) {
         if (_gameState.isTournamentMode && _gameState.tournamentState != null) {
           _handleTournamentProgress();
-        } else {
+        } else if (!_gameState.isHeroMode) {
           final bool isUserWinner = !_gameState.isSoloMode || _gameState.getWinner() == _gameState.team1;
-
-          // ✅ CORRECTION ICI : On passe maintenant les compteurs au ResultScreen
           final resultScreen = ResultScreen(
             winner: _gameState.getWinner()!,
             loser: _gameState.getWinner() == _gameState.team1 ? _gameState.team2! : _gameState.team1!,
@@ -431,14 +432,13 @@ class GameController {
                 : _gameState.team1Results,
             isSoloMode: _gameState.isSoloMode,
             isUserWinner: isUserWinner,
-            // 👇 VOICI LES PARAMÈTRES QUI MANQUAIENT 👇
             goalsCurve: _matchGoalsCurve,
             goalsLob: _matchGoalsLob,
             goalsKnuckle: _matchGoalsKnuckle,
           );
-
           onNavigate?.call(resultScreen);
         }
+        // En mode Hero, ne rien faire ici : GameScreen gère le retour
       } else {
         resetRound();
       }
@@ -601,7 +601,8 @@ class GameController {
 
     onStateChanged?.call();
 
-    if (_gameState.isSoloMode && _gameState.currentTeam == _gameState.team2) {
+    if ((_gameState.isSoloMode || _gameState.isTournamentMode || _gameState.isHeroMode)
+        && _gameState.currentTeam == _gameState.team2) {
       handleAITurn();
     }
   }

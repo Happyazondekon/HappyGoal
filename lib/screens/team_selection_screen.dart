@@ -1,10 +1,10 @@
 // lib/screens/team_selection_screen.dart
 import 'package:flutter/material.dart';
-import '../constants.dart';
-import '../models/team.dart';
-import '../models/game_state.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/models/team.dart';
+import 'package:happygoal/models/game_state.dart';
 import 'game_screen.dart';
-import '../models/ai_opponent.dart';
+import 'package:happygoal/models/ai_opponent.dart';
 
 class TeamSelectionScreen extends StatefulWidget {
   final bool isSoloMode;

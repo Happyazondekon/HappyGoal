@@ -2,57 +2,20 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import '../constants.dart' hide ShotDirection;
-import '../models/game_state.dart';
-import '../widgets/goal_post_widget.dart';
-import '../widgets/goalkeeper_controller_widget.dart';
-import '../widgets/score_board_widget.dart';
-import '../widgets/shot_controller_widget.dart';
-import '../utils/audio_manager.dart';
-import '../utils/ad_controller.dart';
-import '../widgets/tutorial_mixin.dart';
-import '../widgets/tutorial_overlay.dart';
-import 'game_controller.dart';
+import 'package:happygoal/constants.dart' hide ShotDirection;
+import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/screens/game_controller.dart';
+import 'package:happygoal/widgets/goal_post_widget.dart';
+import 'package:happygoal/widgets/goalkeeper_controller_widget.dart';
+import 'package:happygoal/widgets/score_board_widget.dart';
+import 'package:happygoal/widgets/shot_controller_widget.dart';
+import 'package:happygoal/utils/audio_manager.dart';
+import 'package:happygoal/utils/ad_controller.dart';
+import 'package:happygoal/widgets/tutorial_mixin.dart';
+import 'package:happygoal/widgets/tutorial_overlay.dart';
+
 import 'game_helpers.dart';
-import '../widgets/rewind_reward_widget.dart';
-
-// --- CLASSE POUR GÉRER LA NEIGE (OPTIMISÉE) ---
-class SnowFlake {
-  double x;
-  double y;
-  double radius;
-  double speed;
-  double opacity;
-
-  SnowFlake({
-    required this.x,
-    required this.y,
-    required this.radius,
-    required this.speed,
-    required this.opacity,
-  });
-}
-
-class SnowPainter extends CustomPainter {
-  final List<SnowFlake> flakes;
-
-  SnowPainter(this.flakes);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white;
-
-    for (var flake in flakes) {
-      paint.color = Colors.white.withOpacity(flake.opacity);
-      canvas.drawCircle(Offset(flake.x * size.width, flake.y * size.height), flake.radius, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
-}
-
-// ---------------------------------------------------------------------------
+import 'package:happygoal/widgets/rewind_reward_widget.dart';
 
 class GameScreen extends StatefulWidget {
   final GameState gameState;
@@ -67,6 +30,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, TutorialMixin {
+    bool _hasPoppedHeroResult = false;
   late GameController _controller;
 
   // Clés globales pour les éléments du tutoriel
@@ -77,26 +41,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   final GlobalKey _rewindKey = GlobalKey();
   final GlobalKey _goalkeeperControllerKey = GlobalKey();
 
-  // --- VARIABLES NEIGE ---
-  late AnimationController _snowController;
-  final List<SnowFlake> _snowFlakes = [];
-  final Random _random = Random();
-  final int _numberOfFlakes = 50; // Nombre raisonnable pour la performance
+  // Permet de retourner le nombre d'étoiles gagnées en mode Hero
+  int _calculateHeroStars() {
+    if (!widget.gameState.isHeroMode) return 0;
+    final totalShots = _controller.gameState.team1Results.length + _controller.gameState.team1SuddenDeathResults.length;
+    if (_controller.gameState.isUserWinner) {
+      if (totalShots <= 3) return 3;
+      if (totalShots <= 5) return 2;
+      return 1;
+    }
+    return 0;
+  }
 
   @override
   void initState() {
     super.initState();
     AudioManager.playSound('whistle');
     AdController.instance.onGameStarted();
-
-    // Initialisation de la neige
-    _initSnow();
-    _snowController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1), // La durée importe peu, on boucle
-    )..repeat();
-
-    _snowController.addListener(_updateSnow);
 
     // Initialisation du contrôleur de jeu
     // C'est lui qui va compter les types de tirs (curve, lob, etc.)
@@ -119,10 +80,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       },
     );
 
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        if (widget.gameState.isSoloMode || widget.gameState.isTournamentMode) {
+        if (widget.gameState.isSoloMode || widget.gameState.isTournamentMode || widget.gameState.isHeroMode) {
           showTutorialIfNeeded('game_screen_solo', _createGameplayTutorialSteps());
+          // Ne déclencher l'IA que si c'est vraiment le tour de l'IA (team2)
           if (_controller.gameState.currentTeam == _controller.gameState.team2) {
             _controller.handleAITurn();
           }
@@ -133,35 +96,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     });
   }
 
-  void _initSnow() {
-    for (int i = 0; i < _numberOfFlakes; i++) {
-      _snowFlakes.add(SnowFlake(
-        x: _random.nextDouble(),
-        y: _random.nextDouble(),
-        radius: _random.nextDouble() * 2 + 1, // Taille entre 1 et 3
-        speed: _random.nextDouble() * 0.005 + 0.002, // Vitesse variable
-        opacity: _random.nextDouble() * 0.5 + 0.3, // Opacité entre 0.3 et 0.8
-      ));
-    }
-  }
-
-  void _updateSnow() {
-    setState(() {
-      for (var flake in _snowFlakes) {
-        flake.y += flake.speed;
-        if (flake.y > 1.0) {
-          // Reset en haut quand il sort de l'écran
-          flake.y = -0.05;
-          flake.x = _random.nextDouble();
-        }
-      }
-    });
-  }
-
   @override
   void dispose() {
     _controller.dispose();
-    _snowController.dispose();
     AdController.instance.onGameCompleted(context);
     super.dispose();
   }
@@ -400,6 +337,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   @override
   Widget build(BuildContext context) {
+        // Détection automatique de fin de match Hero
+        if (!_hasPoppedHeroResult && widget.gameState.isHeroMode && _controller.gameState.checkWinner()) {
+          _hasPoppedHeroResult = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context, {"stars": _calculateHeroStars()});
+            }
+          });
+        }
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -442,6 +388,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
     return WillPopScope(
       onWillPop: () async {
+        if (widget.gameState.isHeroMode) {
+          Navigator.pop(context, {"stars": _calculateHeroStars()});
+          return false;
+        }
         AudioManager.playSound('whistle');
         return true;
       },
@@ -455,269 +405,255 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             ),
           ),
           child: SafeArea(
-            child: Stack( // Utiliser un Stack global pour la neige
+            child: Column(
               children: [
-                Column(
-                  children: [
-                    // --- TOP INFO SECTION ---
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: topSectionMaxHeight,
-                      ),
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(horizontal: responsivePadding(10)),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(height: responsivePadding(5)),
-                            if (_controller.gameState.isTournamentMode && _controller.gameState.tournamentState != null)
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: responsivePadding(15),
-                                  vertical: responsivePadding(8),
-                                ),
-                                margin: EdgeInsets.only(top: responsivePadding(5), bottom: responsivePadding(5)),
-                                decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(responsivePadding(20)),
-                                    border: Border.all(color: Colors.white.withOpacity(0.5), width: 1)
-                                ),
-                                child: Text(
-                                  _controller.gameState.tournamentState!.getPhaseName(),
-                                  style: titleStyle.copyWith(fontSize: responsiveFontSize(16)),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-
-                            RewindRewardWidget(
-                              key: _rewindKey,
-                              gameState: _controller.gameState,
-                              onStateChanged: () => setState(() {}),
-                              gameController: _controller,
+                // --- TOP INFO SECTION ---
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: topSectionMaxHeight,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: responsivePadding(10)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(height: responsivePadding(5)),
+                        if (_controller.gameState.isTournamentMode && _controller.gameState.tournamentState != null)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: responsivePadding(15),
+                              vertical: responsivePadding(8),
                             ),
-
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: responsivePadding(5)),
-                              child: ScoreBoardWidget(
-                                key: _scoreBoardKey,
-                                team1: _controller.gameState.team1!,
-                                team2: _controller.gameState.team2!,
-                                currentTeam: _controller.gameState.currentTeam!,
-                                team1Results: _controller.gameState.team1Results,
-                                team2Results: _controller.gameState.team2Results,
-                                shotsPerTeam: PenaltySettings.shotsPerTeam,
-                              ),
+                            margin: EdgeInsets.only(top: responsivePadding(5), bottom: responsivePadding(5)),
+                            decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(responsivePadding(20)),
+                                border: Border.all(color: Colors.white.withOpacity(0.5), width: 1)
                             ),
-                            if (_controller.gameState.isSuddenDeathPhase())
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: responsivePadding(15), vertical: responsivePadding(5)),
-                                margin: EdgeInsets.only(bottom: responsivePadding(5)),
-                                decoration: BoxDecoration(
-                                    color: Colors.redAccent.withOpacity(0.85),
-                                    borderRadius: BorderRadius.circular(responsivePadding(15)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black.withOpacity(0.3),
-                                          spreadRadius: 1,
-                                          blurRadius: 5,
-                                          offset: const Offset(0, 2))
-                                    ]
-                                ),
-                                child: Text(
-                                  'MORT SUBITE',
-                                  style: subtitleStyle.copyWith(fontSize: responsiveFontSize(14), color: Colors.white, fontWeight: FontWeight.w900),
-                                ),
-                              ),
-
-                            Padding(
-                              padding: EdgeInsets.only(bottom: responsivePadding(5)),
-                              child: Text(
-                                GameHelpers.getRoundText(_controller.gameState),
-                                style: subtitleStyle,
-                                textAlign: TextAlign.center,
-                              ),
+                            child: Text(
+                              _controller.gameState.tournamentState!.getPhaseName(),
+                              style: titleStyle.copyWith(fontSize: responsiveFontSize(16)),
+                              textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: responsivePadding(5)),
-                          ],
+                          ),
+
+                        RewindRewardWidget(
+                          key: _rewindKey,
+                          gameState: _controller.gameState,
+                          onStateChanged: () => setState(() {}),
+                          gameController: _controller,
                         ),
-                      ),
-                    ),
 
-                    // --- GAME FIELD SECTION ---
-                    Expanded(
-                      child: LayoutBuilder(
-                          builder: (context, gameFieldConstraints) {
-                            final double gameAreaHeight = gameFieldConstraints.maxHeight;
-                            final double gameAreaWidth = gameFieldConstraints.maxWidth;
-                            final double goalPostTopPosition = gameAreaHeight * 0.0;
-                            final double goalkeeperTopPosition = gameAreaHeight * 0.23;
-                            final double goalkeeperSize = min(gameAreaWidth * 0.25, gameAreaHeight * 0.25);
-                            final double playerBottomPosition = gameAreaHeight * 0.05;
-                            final double playerSize = min(gameAreaWidth * 0.2, gameAreaHeight * 0.22);
-                            final double goalTextTop = gameAreaHeight * 0.40;
-
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Positioned(
-                                  top: goalPostTopPosition,
-                                  child: GoalPostWidget(key: _goalPostKey),
-                                ),
-                                Positioned(
-                                  top: goalkeeperTopPosition,
-                                  child: SlideTransition(
-                                    position: _controller.goalkeeperAnimation,
-                                    child: Container(
-                                      width: goalkeeperSize,
-                                      height: goalkeeperSize * 1.2,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: GameHelpers.getOpponentTeamColor(_controller.gameState).withOpacity(0.6),
-                                            blurRadius: 25,
-                                            spreadRadius: 5,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Image.asset(
-                                        'assets/images/players/goalkeeper.png',
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                _buildBallAnimation(context, gameFieldConstraints),
-                                Positioned(
-                                  bottom: playerBottomPosition,
-                                  child: Container(
-                                    key: _playerKey,
-                                    width: playerSize,
-                                    height: playerSize * 1.25,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (_controller.gameState.currentTeam?.color ?? AppColors.primary).withOpacity(0.6),
-                                          blurRadius: 25,
-                                          spreadRadius: 5,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Image.asset(
-                                      'assets/images/players/striker.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                if (_controller.showGoalText && _controller.gameState.isGoalScored)
-                                  Positioned(
-                                    top: goalTextTop,
-                                    child: SlideTransition(
-                                      position: _controller.goalTextAnimation,
-                                      child: Text(
-                                        // Utilisation du texte généré par le contrôleur (incluant les types de tirs)
-                                        _controller.getResultText(),
-                                        style: goalTextStyle,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          }
-                      ),
-                    ),
-
-                    // --- BOTTOM INFO / CONTROLS SECTION ---
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: bottomSectionMaxHeight,
-                      ),
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(horizontal: responsivePadding(10)),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(height: responsivePadding(10)),
-                            if (GameHelpers.shouldShowGoalkeeperControls(_controller.gameState))
-                              Padding(
-                                padding: EdgeInsets.only(bottom: responsivePadding(10)),
-                                child: GoalkeeperControllerWidget(
-                                  key: _goalkeeperControllerKey,
-                                  onDive: (direction) => _controller.setGoalkeeperDirection(direction),
-                                ),
-                              ),
-
-                            if (GameHelpers.shouldShowAIIndicator(_controller.gameState))
-                              Padding(
-                                padding: EdgeInsets.only(bottom: responsivePadding(10)),
-                                child: Text(
-                                  _controller.gameState.currentPhase == GamePhase.humanGoalkeeping
-                                      ? "L'IA va tirer - Choisissez votre plongée !"
-                                      : "Tour de l'IA - Patientez...",
-                                  style: titleStyle.copyWith(fontSize: responsiveFontSize(16)),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            if (_controller.gameState.currentPhase == GamePhase.playerShooting &&
-                                (_controller.gameState.currentTeam == _controller.gameState.team1 ||
-                                    (!_controller.gameState.isSoloMode && !_controller.gameState.isTournamentMode)))
-                              Padding(
-                                padding: EdgeInsets.only(bottom: responsivePadding(10)),
-                                child: ShotControllerWidget(
-                                  key: _shotControllerKey,
-                                  // C'est ICI que l'effet est passé au GameController qui va le compter
-                                  onShoot: (direction, power, effect) => _controller.shoot(direction, power, effect),
-                                ),
-                              ),
-                            if (_controller.gameState.currentPhase == GamePhase.goalScored ||
-                                _controller.gameState.currentPhase == GamePhase.goalSaved)
-                              Container(
-                                margin: EdgeInsets.symmetric(vertical: responsivePadding(10)),
-                                padding: EdgeInsets.symmetric(horizontal: responsivePadding(30), vertical: responsivePadding(15)),
-                                decoration: BoxDecoration(
-                                    color: (_controller.gameState.isGoalScored ? AppColors.primary : Colors.redAccent).withOpacity(0.85),
-                                    borderRadius: BorderRadius.circular(responsivePadding(20)),
-                                    border: Border.all(color: Colors.white.withOpacity(0.7), width:1.5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black.withOpacity(0.4),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3))
-                                    ]
-                                ),
-                                child: Text(
-                                  _controller.getResultText(),
-                                  style: titleStyle.copyWith(fontSize: responsiveFontSize(22)),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-
-                            if (kDebugMode)
-                              FloatingActionButton.small(
-                                onPressed: () {
-                                  if (widget.gameState.isSoloMode || widget.gameState.isTournamentMode) {
-                                    forceTutorial('game_screen_solo', _createGameplayTutorialSteps());
-                                  } else {
-                                    forceTutorial('game_screen_multi', _createMultiplayerTutorialSteps());
-                                  }
-                                },
-                                child: const Icon(Icons.help),
-                              ),
-
-                            SizedBox(height: responsivePadding(10)),
-                          ],
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: responsivePadding(5)),
+                          child: ScoreBoardWidget(
+                            key: _scoreBoardKey,
+                            team1: _controller.gameState.team1!,
+                            team2: _controller.gameState.team2!,
+                            currentTeam: _controller.gameState.currentTeam!,
+                            team1Results: _controller.gameState.team1Results,
+                            team2Results: _controller.gameState.team2Results,
+                            shotsPerTeam: PenaltySettings.shotsPerTeam,
+                          ),
                         ),
-                      ),
+                        if (_controller.gameState.isSuddenDeathPhase())
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: responsivePadding(15), vertical: responsivePadding(5)),
+                            margin: EdgeInsets.only(bottom: responsivePadding(5)),
+                            decoration: BoxDecoration(
+                                color: Colors.redAccent.withOpacity(0.85),
+                                borderRadius: BorderRadius.circular(responsivePadding(15)),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      spreadRadius: 1,
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2))
+                                ]
+                            ),
+                            child: Text(
+                              'MORT SUBITE',
+                              style: subtitleStyle.copyWith(fontSize: responsiveFontSize(14), color: Colors.white, fontWeight: FontWeight.w900),
+                            ),
+                          ),
+
+                        Padding(
+                          padding: EdgeInsets.only(bottom: responsivePadding(5)),
+                          child: Text(
+                            GameHelpers.getRoundText(_controller.gameState),
+                            style: subtitleStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        SizedBox(height: responsivePadding(5)),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                // ⚠️ AJOUT DE LA NEIGE PAR-DESSUS TOUT (POUR L'AMBIANCE)
-                IgnorePointer(
-                  child: CustomPaint(
-                    painter: SnowPainter(_snowFlakes),
-                    child: Container(),
+
+                // --- GAME FIELD SECTION ---
+                Expanded(
+                  child: LayoutBuilder(
+                      builder: (context, gameFieldConstraints) {
+                        final double gameAreaHeight = gameFieldConstraints.maxHeight;
+                        final double gameAreaWidth = gameFieldConstraints.maxWidth;
+                        final double goalPostTopPosition = gameAreaHeight * 0.0;
+                        final double goalkeeperTopPosition = gameAreaHeight * 0.23;
+                        final double goalkeeperSize = min(gameAreaWidth * 0.25, gameAreaHeight * 0.25);
+                        final double playerBottomPosition = gameAreaHeight * 0.05;
+                        final double playerSize = min(gameAreaWidth * 0.2, gameAreaHeight * 0.22);
+                        final double goalTextTop = gameAreaHeight * 0.40;
+
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Positioned(
+                              top: goalPostTopPosition,
+                              child: GoalPostWidget(key: _goalPostKey),
+                            ),
+                            Positioned(
+                              top: goalkeeperTopPosition,
+                              child: SlideTransition(
+                                position: _controller.goalkeeperAnimation,
+                                child: Container(
+                                  width: goalkeeperSize,
+                                  height: goalkeeperSize * 1.2,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: GameHelpers.getOpponentTeamColor(_controller.gameState).withOpacity(0.6),
+                                        blurRadius: 25,
+                                        spreadRadius: 5,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Image.asset(
+                                    'assets/images/players/goalkeeper.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _buildBallAnimation(context, gameFieldConstraints),
+                            Positioned(
+                              bottom: playerBottomPosition,
+                              child: Container(
+                                key: _playerKey,
+                                width: playerSize,
+                                height: playerSize * 1.25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (_controller.gameState.currentTeam?.color ?? AppColors.primary).withOpacity(0.6),
+                                      blurRadius: 25,
+                                      spreadRadius: 5,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset(
+                                  'assets/images/players/striker.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                            if (_controller.showGoalText && _controller.gameState.isGoalScored)
+                              Positioned(
+                                top: goalTextTop,
+                                child: SlideTransition(
+                                  position: _controller.goalTextAnimation,
+                                  child: Text(
+                                    // Utilisation du texte généré par le contrôleur (incluant les types de tirs)
+                                    _controller.getResultText(),
+                                    style: goalTextStyle,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }
+                  ),
+                ),
+
+                // --- BOTTOM INFO / CONTROLS SECTION ---
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: bottomSectionMaxHeight,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: responsivePadding(10)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(height: responsivePadding(10)),
+                        if (GameHelpers.shouldShowGoalkeeperControls(_controller.gameState))
+                          Padding(
+                            padding: EdgeInsets.only(bottom: responsivePadding(10)),
+                            child: GoalkeeperControllerWidget(
+                              key: _goalkeeperControllerKey,
+                              onDive: (direction) => _controller.setGoalkeeperDirection(direction),
+                            ),
+                          ),
+
+                        if (GameHelpers.shouldShowAIIndicator(_controller.gameState))
+                          Padding(
+                            padding: EdgeInsets.only(bottom: responsivePadding(10)),
+                            child: Text(
+                              _controller.gameState.currentPhase == GamePhase.humanGoalkeeping
+                                  ? "L'IA va tirer - Choisissez votre plongée !"
+                                  : "Tour de l'IA - Patientez...",
+                              style: titleStyle.copyWith(fontSize: responsiveFontSize(16)),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        if (GameHelpers.shouldShowShotControls(_controller.gameState))
+                          Padding(
+                            padding: EdgeInsets.only(bottom: responsivePadding(10)),
+                            child: ShotControllerWidget(
+                              key: _shotControllerKey,
+                              onShoot: (direction, power, effect) => _controller.shoot(direction, power, effect),
+                            ),
+                          ),
+                        if (_controller.gameState.currentPhase == GamePhase.goalScored ||
+                            _controller.gameState.currentPhase == GamePhase.goalSaved)
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: responsivePadding(10)),
+                            padding: EdgeInsets.symmetric(horizontal: responsivePadding(30), vertical: responsivePadding(15)),
+                            decoration: BoxDecoration(
+                                color: (_controller.gameState.isGoalScored ? AppColors.primary : Colors.redAccent).withOpacity(0.85),
+                                borderRadius: BorderRadius.circular(responsivePadding(20)),
+                                border: Border.all(color: Colors.white.withOpacity(0.7), width:1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(0.4),
+                                      spreadRadius: 2,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3))
+                                ]
+                            ),
+                            child: Text(
+                              _controller.getResultText(),
+                              style: titleStyle.copyWith(fontSize: responsiveFontSize(22)),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+
+                        if (kDebugMode)
+                          FloatingActionButton.small(
+                            onPressed: () {
+                              if (widget.gameState.isSoloMode || widget.gameState.isTournamentMode) {
+                                forceTutorial('game_screen_solo', _createGameplayTutorialSteps());
+                              } else {
+                                forceTutorial('game_screen_multi', _createMultiplayerTutorialSteps());
+                              }
+                            },
+                            child: const Icon(Icons.help),
+                          ),
+
+                        SizedBox(height: responsivePadding(10)),
+                      ],
+                    ),
                   ),
                 ),
               ],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import 'package:happygoal/constants.dart';
 import 'home_screen.dart';
 import 'result_screen.dart';
 import 'team_selection_screen.dart';
-import '../utils/audio_manager.dart';
+import 'package:happygoal/utils/audio_manager.dart';
 import 'mode_selection_screen.dart';
 
 class DifficultyLevel {
@@ -125,7 +125,7 @@ class _DifficultySelectionScreenState extends State<DifficultySelectionScreen> {
           // Lignes de terrain stylisées
           CustomPaint(
             size: Size(screenWidth, screenHeight),
-            painter: FieldLinesPainter(),
+
           ),
 
           // Contenu principal

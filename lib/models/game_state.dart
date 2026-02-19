@@ -259,6 +259,11 @@ class GameStateSnapshot {
 }
 
 class GameState {
+    // Indique si l'utilisateur (team1) a gagné le match
+    bool get isUserWinner {
+      final winner = getWinner();
+      return winner != null && winner == team1;
+    }
   Team? team1;
   Team? team2;
   Team? currentTeam;
@@ -276,6 +281,7 @@ class GameState {
 
   // Nouvelles propriétés pour IA
   bool isSoloMode = false;
+  bool isHeroMode = false;
   AIOpponent? aiOpponent;
   TournamentState? tournamentState;
   bool isTournamentMode = false;
@@ -394,6 +400,7 @@ class GameState {
     this.shotEffect = ShotEffect.normal,
     this.shotPrecision = 1.0,
     this.isSoloMode = false,
+    this.isHeroMode = false,
     double? aiIntelligenceLevel,
     required bool isTournamentMode,
   }) {
@@ -401,7 +408,7 @@ class GameState {
     this.isTournamentMode = isTournamentMode;
     currentTeam = team1;
 
-    if (this.isSoloMode || this.isTournamentMode) {
+    if (this.isSoloMode || this.isTournamentMode || this.isHeroMode) {
       aiOpponent = AIOpponent(intelligence: aiIntelligenceLevel ?? 0.6);
     }
 

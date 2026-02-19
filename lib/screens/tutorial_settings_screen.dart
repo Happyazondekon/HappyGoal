@@ -1,8 +1,8 @@
 // lib/screens/tutorial_settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/tutorial_manager.dart';
-import '../constants.dart';
+import 'package:happygoal/utils/tutorial_manager.dart';
+import 'package:happygoal/constants.dart';
 
 class TutorialSettingsScreen extends StatefulWidget {
   const TutorialSettingsScreen({Key? key}) : super(key: key);

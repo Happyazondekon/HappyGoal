@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:lottie/lottie.dart';
-import '../models/game_state.dart';
-import '../models/team.dart';
-import '../notification_service.dart';
+import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/models/team.dart';
+import 'package:happygoal/notification_service.dart';
 import 'home_screen.dart';
-import '../constants.dart';
-import '../utils/ad_controller.dart';
-import '../services/achievement_service.dart'; // ⭐ Import Service
-import '../models/achievement.dart'; // ⭐ Import Modèle
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/ad_controller.dart';
+import 'package:happygoal/services/achievement_service.dart'; // ⭐ Import Service
+import 'package:happygoal/models/achievement.dart'; // ⭐ Import Modèle
 
 class TournamentResultScreen extends StatefulWidget {
   final Team userTeam;

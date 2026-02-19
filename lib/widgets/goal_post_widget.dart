@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import 'package:happygoal/constants.dart';
 
 class GoalPostWidget extends StatelessWidget {
   const GoalPostWidget({Key? key}) : super(key: key);

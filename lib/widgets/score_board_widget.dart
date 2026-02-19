@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
-import '../models/team.dart';
-import '../models/game_state.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/models/team.dart';
+import 'package:happygoal/models/game_state.dart';
 
 class ScoreBoardWidget extends StatelessWidget {
   final Team team1;

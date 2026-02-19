@@ -1,10 +1,10 @@
 // lib/screens/achievements_screen.dart
 
 import 'package:flutter/material.dart';
-import '../models/achievement.dart';
-import '../services/achievement_service.dart';
-import '../constants.dart';
-import '../utils/audio_manager.dart';
+import 'package:happygoal/models/achievement.dart';
+import 'package:happygoal/services/achievement_service.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/audio_manager.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({Key? key}) : super(key: key);

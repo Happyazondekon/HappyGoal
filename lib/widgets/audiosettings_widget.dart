@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/audio_manager.dart';
+import 'package:happygoal/utils/audio_manager.dart';
 
 class AudioSettingsWidget extends StatefulWidget {
   const AudioSettingsWidget({Key? key}) : super(key: key);

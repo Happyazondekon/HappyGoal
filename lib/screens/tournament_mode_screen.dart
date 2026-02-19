@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:happygoal/screens/game_screen.dart';
-import '../models/team.dart';
-import '../models/game_state.dart';
+import 'package:happygoal/models/team.dart';
+import 'package:happygoal/models/game_state.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
-import '../constants.dart';
+import 'package:happygoal/constants.dart';
 import 'dart:convert'; // Pour json.encode et json.decode
 
 class TournamentModeScreen extends StatefulWidget {

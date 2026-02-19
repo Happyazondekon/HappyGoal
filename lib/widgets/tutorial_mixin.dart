@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:happygoal/widgets/tutorial_overlay.dart';
 
-import '../utils/tutorial_manager.dart';
+import 'package:happygoal/utils/tutorial_manager.dart';
 
 mixin TutorialMixin<T extends StatefulWidget> on State<T> {
   bool _tutorialShown = false;

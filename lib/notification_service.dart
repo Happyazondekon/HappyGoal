@@ -1,14 +1,16 @@
 // notification_service.dart
 import 'dart:ui';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:happygoal/models/achievement.dart';
+import 'package:happygoal/services/achievement_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
-import 'services/achievement_service.dart'; // ⭐ Import nécessaire pour lire la progression
-import 'models/achievement.dart';
+
+
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();

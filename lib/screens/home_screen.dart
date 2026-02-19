@@ -1,53 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tutorial_settings_screen.dart';
 import 'package:happygoal/screens/achievements_screen.dart';
-import '../constants.dart';
-import '../widgets/tutorial_overlay.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/widgets/tutorial_overlay.dart';
 import 'mode_selection_screen.dart';
-import '../widgets/audiosettings_widget.dart';
-import '../utils/analytics_service.dart';
-import '../utils/ad_controller.dart';
+import 'package:happygoal/widgets/audiosettings_widget.dart';
+import 'package:happygoal/utils/analytics_service.dart';
+import 'package:happygoal/utils/ad_controller.dart';
 import 'package:flutter/foundation.dart';
-import '../widgets/tutorial_mixin.dart';
+import 'package:happygoal/widgets/tutorial_mixin.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/coin_shop_dialog.dart';
+import 'package:happygoal/widgets/coin_shop_dialog.dart';
+import 'dart:math' as math;
 
-// --- WIDGETS D'ANIMATION (Modifiés pour Noël) ---
+// ---------------------------------------------------------------------------
+// ANIMATION: Ballon flottant
+// ---------------------------------------------------------------------------
 
-class PulsatingButton extends StatefulWidget {
-  final Widget child;
-  final Color glowColor;
-  final Duration duration;
-
-  const PulsatingButton({
-    Key? key,
-    required this.child,
-    this.glowColor = Colors.white,
-    this.duration = const Duration(milliseconds: 1500),
-  }) : super(key: key);
+class FloatingBallWidget extends StatefulWidget {
+  const FloatingBallWidget({Key? key}) : super(key: key);
 
   @override
-  _PulsatingButtonState createState() => _PulsatingButtonState();
+  State<FloatingBallWidget> createState() => _FloatingBallWidgetState();
 }
 
-class _PulsatingButtonState extends State<PulsatingButton>
+class _FloatingBallWidgetState extends State<FloatingBallWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _float;
+  late Animation<double> _rotate;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.duration,
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
+    _float = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _rotate = Tween<double>(begin: -0.05, end: 0.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
 
@@ -60,97 +55,184 @@ class _PulsatingButtonState extends State<PulsatingButton>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
+      animation: _controller,
       builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(
-                color: widget.glowColor.withOpacity(0.6 * _animation.value),
-                spreadRadius: 4 * _animation.value,
-                blurRadius: 15 * _animation.value,
-                offset: const Offset(0, 0),
-              ),
-            ],
+        return Transform.translate(
+          offset: Offset(0, _float.value),
+          child: Transform.rotate(
+            angle: _rotate.value,
+            child: child,
           ),
-          child: widget.child,
         );
       },
-    );
-  }
-}
-
-// Transformé en flocon de neige (tombe vers le bas)
-class SnowParticle extends StatefulWidget {
-  final double size;
-  final Color color;
-  final Duration duration;
-
-  const SnowParticle({
-    Key? key,
-    this.size = 4.0,
-    this.color = Colors.white,
-    this.duration = const Duration(seconds: 3),
-  }) : super(key: key);
-
-  @override
-  _SnowParticleState createState() => _SnowParticleState();
-}
-
-class _SnowParticleState extends State<SnowParticle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat();
-
-    // La neige tombe (de -0.2 à 1.2 pour traverser l'écran)
-    _animation = Tween<Offset>(
-      begin: const Offset(0, -0.2),
-      end: const Offset(0, 1.2),
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.linear,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _animation,
       child: Container(
-        width: widget.size,
-        height: widget.size,
+        width: 120,
+        height: 120,
         decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: widget.color,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(0.8),
-                blurRadius: 2,
-                spreadRadius: 1,
-              )
-            ]
+          shape: BoxShape.circle,
+          gradient: const RadialGradient(
+            colors: [Color(0xFFFFFFFF), Color(0xFFE8F5E9)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+            BoxShadow(
+              color: const Color(0xFF4CAF50).withOpacity(0.4),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Text('⚽', style: TextStyle(fontSize: 65)),
         ),
       ),
     );
   }
 }
 
-// --- ECRAN PRINCIPAL ---
+// ---------------------------------------------------------------------------
+// ANIMATION: Particules de fond
+// ---------------------------------------------------------------------------
+
+class _Particle {
+  late double x, y, radius, opacity, speed;
+  _Particle(double w, double h) {
+    final rng = math.Random();
+    x = rng.nextDouble() * w;
+    y = rng.nextDouble() * h;
+    radius = 1 + rng.nextDouble() * 3;
+    opacity = 0.1 + rng.nextDouble() * 0.25;
+    speed = 0.2 + rng.nextDouble() * 0.5;
+  }
+}
+
+class ParticlesPainter extends CustomPainter {
+  final double progress;
+  final List<_Particle> particles;
+
+  ParticlesPainter({required this.progress, required this.particles});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+    for (final p in particles) {
+      final dy = (p.y - progress * p.speed * size.height) % size.height;
+      paint.color = Colors.white.withOpacity(p.opacity);
+      canvas.drawCircle(Offset(p.x, dy), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(ParticlesPainter old) => old.progress != progress;
+}
+
+// ---------------------------------------------------------------------------
+// BOUTON JOUER PRINCIPAL
+// ---------------------------------------------------------------------------
+
+class PlayButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  const PlayButton({Key? key, required this.onPressed}) : super(key: key);
+
+  @override
+  State<PlayButton> createState() => _PlayButtonState();
+}
+
+class _PlayButtonState extends State<PlayButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _glow = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glow,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withOpacity(0.5 * _glow.value),
+                blurRadius: 30 * _glow.value,
+                spreadRadius: 4 * _glow.value,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: SizedBox(
+        width: double.infinity,
+        height: 72,
+        child: ElevatedButton(
+          onPressed: widget.onPressed,
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            elevation: 0,
+          ),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD700), Color(0xFFF57F17)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: const Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.sports_soccer, color: Colors.white, size: 28),
+                  SizedBox(width: 12),
+                  Text(
+                    'JOUER',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ECRAN PRINCIPAL
+// ---------------------------------------------------------------------------
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -159,7 +241,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with TutorialMixin, SingleTickerProviderStateMixin {
   final GlobalKey _playButtonKey = GlobalKey();
   final GlobalKey _rulesButtonKey = GlobalKey();
   final GlobalKey _settingsButtonKey = GlobalKey();
@@ -168,12 +251,22 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   final GlobalKey _coinBalanceKey = GlobalKey();
   final GlobalKey _achievementsButtonKey = GlobalKey();
 
+  late AnimationController _particleCtrl;
+  late List<_Particle> _particles;
+
   @override
   void initState() {
     super.initState();
     AdController.instance.initialize();
 
+    _particleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final size = MediaQuery.of(context).size;
+      _particles = List.generate(40, (_) => _Particle(size.width, size.height));
       showTutorialIfNeeded('home_screen', _createTutorialSteps());
     });
   }
@@ -181,40 +274,44 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   List<TutorialStep> _createTutorialSteps() {
     return [
       TutorialStep(
-        title: 'Joyeux Noël sur HappyGoal ! 🎄',
-        description: 'Découvrez notre édition festive ! Prêt pour des tirs au but sous la neige ?',
+        title: 'Bienvenue sur HappyGoal !',
+        description: 'Prêt pour une série de tirs au but ?',
         targetKey: _playButtonKey,
         position: TutorialPosition.top,
         customContent: Column(
           children: [
-            const Icon(Icons.snowboarding, size: 50, color: Colors.blue),
+            const Icon(Icons.sports_soccer, size: 50, color: Colors.blue),
             const SizedBox(height: 10),
-            const Text(
-              'Prêt à marquer ?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            const Text('Prêt à marquer ?',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
       TutorialStep(
-        title: 'Boutique de Noël 🎁',
-        description: 'Vos coins sont ici. Touchez pour ouvrir la boutique et faire le plein !',
+        title: 'Boutique',
+        description: 'Vos coins sont ici. Touchez pour ouvrir la boutique !',
         targetKey: _coinBalanceKey,
         position: TutorialPosition.bottom,
       ),
       TutorialStep(
         title: 'Cadeau Quotidien',
-        description: 'Récupérez votre cadeau de Noël (coins gratuits) ici !',
+        description: 'Récupérez vos coins gratuits ici !',
         targetKey: _rewardButtonKey,
         position: TutorialPosition.top,
       ),
       TutorialStep(
         title: 'Vos Succès',
-        description: 'Consultez vos achievements et récupérez vos récompenses ici !',
+        description: 'Consultez vos achievements et récupérez vos récompenses !',
         targetKey: _achievementsButtonKey,
         position: TutorialPosition.top,
       ),
     ];
+  }
+
+  @override
+  void dispose() {
+    _particleCtrl.dispose();
+    super.dispose();
   }
 
   void _navigateToAchievements() {
@@ -236,266 +333,217 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   void _inviteFriends() {
     AnalyticsService.logAdEvent('invite_friends');
     final String shareText =
-        '🎄 Spécial Noël sur HappyGoal ! ⚽\n\n'
-        'Viens tirer des penalties sous la neige et défie-moi !\n'
-        '🎁 Bonus de fêtes actifs\n'
-        'Télécharge maintenant : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
-    Share.share(shareText, subject: 'HappyGoal: Édition de Noël 🎅');
+        'HappyGoal ! ⚽\n\nViens tirer des penalties et défie-moi !\n'
+        'Télécharge : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
+    Share.share(shareText, subject: 'HappyGoal');
   }
 
   void _rateApp() async {
     AnalyticsService.logAdEvent('rate_app');
-    final String url = 'https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    }
+    final uri = Uri.parse(
+        'https://play.google.com/store/apps/details?id=com.heyhappy.happygoal');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
+
+  // ---- BUILD ----
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Arrière-plan Noël (Dégradé Vert Sapin -> Rouge Noël)
+          // Fond dégradé profond
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF0F3622),
-                  Color(0xFF1B5E20),
-                  Color(0xFF8F2525),
+                  Color(0xFF0D4A2D),  // Vert foncé
+                  Color(0xFF1B6B3A),  // Vert moyen
+                  Color(0xFF2E8B4B),  // Vert clair
                 ],
-                stops: [0.0, 0.6, 1.0],
               ),
             ),
           ),
 
-          // 2. Neige qui tombe (Particules)
-          ...List.generate(30, (index) {
-            return Positioned(
-              left: (index * 13.0 * index) % screenWidth,
-              top: (index * 20.0) % (screenHeight / 2),
-              child: SnowParticle(
-                size: 2.0 + (index % 4),
-                color: Colors.white.withOpacity(0.6 + (index % 4) * 0.1),
-                duration: Duration(seconds: 4 + (index % 5)),
-              ),
-            );
-          }),
-
-          // 3. Lignes de terrain (Subtiles)
-          CustomPaint(
-            size: Size(screenWidth, screenHeight),
-            painter: FieldLinesPainter(),
+          // Particules animées
+          AnimatedBuilder(
+            animation: _particleCtrl,
+            builder: (context, _) {
+              return CustomPaint(
+                size: MediaQuery.of(context).size,
+                painter: ParticlesPainter(
+                  progress: _particleCtrl.value,
+                  particles: _particles.isNotEmpty
+                      ? _particles
+                      : [],
+                ),
+              );
+            },
           ),
 
-          // 4. Contenu principal
+          // Cercle décoratif en haut
+          Positioned(
+            top: -120,
+            right: -80,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.04),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: -80,
+            left: -60,
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF4CAF50).withOpacity(0.07),
+              ),
+            ),
+          ),
+
+          // Contenu
           SafeArea(
             child: Column(
               children: [
-                // --- HEADER ---
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Logo avec touche festive
-                              TweenAnimationBuilder(
-                                duration: const Duration(seconds: 2),
-                                tween: Tween<double>(begin: 0, end: 1),
-                                builder: (context, value, child) {
-                                  return Transform.scale(
-                                    scale: 0.8 + (0.2 * value),
-                                    child: Stack(
-                                      alignment: Alignment.topRight,
-                                      children: [
-                                        Container(
-                                          width: 140,
-                                          height: 140,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: const LinearGradient(
-                                              colors: [Colors.white, Color(0xFFF0F0F0)],
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFFC62828).withOpacity(0.5),
-                                                blurRadius: 25,
-                                                offset: const Offset(0, 5),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Center(
-                                            child: Text('⚽', style: TextStyle(fontSize: 70)),
-                                          ),
-                                        ),
-                                        // Petit bonnet de noël (emoji)
-                                        const Positioned(
-                                          right: 10,
-                                          top: -5,
-                                          child: Text('🎅', style: TextStyle(fontSize: 50)),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: 25),
-
-                              // Titre HappyGoal
-                              ShaderMask(
-                                shaderCallback: (bounds) => const LinearGradient(
-                                  colors: [Colors.white, Color(0xFFFFEBEE)],
-                                ).createShader(bounds),
-                                child: const Text(
-                                  'HappyGoal',
-                                  style: TextStyle(
-                                    fontSize: 52,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 2,
-                                    fontFamily: "Roboto",
-                                    shadows: [
-                                      Shadow(color: Color(0xFFB71C1C), blurRadius: 15),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // Sous-titre Edition Noël
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFC62828).withOpacity(0.8),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.white30),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.ac_unit, color: Colors.white, size: 16),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'ÉDITION FÊTES DE FIN D\'ANNÉE',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.ac_unit, color: Colors.white, size: 16),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Solde Coins
-                        Positioned(
-                          top: 10,
-                          right: 20,
-                          child: _buildCoinBalance(context),
-                        ),
-
-                        // Bouton Achievements
-                        Positioned(
-                          top: 10,
-                          left: 20,
-                          child: _buildAchievementsButton(context),
-                        ),
-                      ],
-                    ),
+                // ── TOP BAR ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildTopChip(
+                        key: _achievementsButtonKey,
+                        icon: Icons.emoji_events,
+                        label: 'SUCCÈS',
+                        gradient: const [Color(0xFFFFD700), Color(0xFFFFA000)],
+                        onTap: _navigateToAchievements,
+                      ),
+                      _buildCoinChip(),
+                    ],
                   ),
                 ),
 
-                // --- BOUTONS ---
+                // ── HERO SECTION ─────────────────────────────────────
                 Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Bouton JOUER (Vert sapin avec lueur dorée)
-                        PulsatingButton(
-                          key: _playButtonKey,
-                          glowColor: const Color(0xFFFFD700),
-                          child: _buildModernButton(
-                            context,
-                            icon: Icons.sports_soccer,
-                            text: 'JOUER',
-                            isPrimary: true,
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  transitionDuration: const Duration(milliseconds: 300),
-                                  pageBuilder: (_, animation, __) => SlideTransition(
-                                    position: Tween<Offset>(begin: const Offset(1,0), end: Offset.zero).animate(animation),
-                                    child: const ModeSelectionScreen(),
-                                  ),
-                                ),
-                              );
-                            },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const FloatingBallWidget(),
+                      const SizedBox(height: 28),
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Colors.white, Color(0xFFB9F6CA)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ).createShader(bounds),
+                        child: const Text(
+                          'HappyGoal',
+                          style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.5,
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-
-                        // Boutons secondaires
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildSecondaryButton(
-                                context,
-                                key: _rulesButtonKey,
-                                icon: Icons.menu_book,
-                                text: 'RÈGLES',
-                                onPressed: () => _showRulesDialog(context),
-                              ),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: _buildSecondaryButton(
-                                context,
-                                key: _settingsButtonKey,
-                                icon: Icons.settings_suggest,
-                                text: 'OPTIONS',
-                                onPressed: () => _showSettingsDialog(context),
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'LE DÉFI DES TIRS AU BUT',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.55),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 3,
                         ),
-
-                        const SizedBox(height: 20),
-
-                        // Inviter
-                        _buildInviteButton(context, key: _inviteButtonKey),
-
-                        const SizedBox(height: 20),
-
-                        // Cadeau Noël (Récompense)
-                        _buildRewardButton(context, key: _rewardButtonKey),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
+
+                // ── ACTIONS ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
+                  child: Column(
+                    children: [
+                      // BOUTON JOUER
+                      PlayButton(
+                        key: _playButtonKey,
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              transitionDuration: const Duration(milliseconds: 300),
+                              pageBuilder: (_, animation, __) => SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(1, 0),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: const ModeSelectionScreen(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // GRILLE DE BOUTONS SECONDAIRES
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildIconAction(
+                              key: _rewardButtonKey,
+                              icon: Icons.card_giftcard,
+                              label: 'Cadeau',
+                              color: const Color(0xFF7C4DFF),
+                              onTap: _showEarnRewardDialog,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildIconAction(
+                              key: _inviteButtonKey,
+                              icon: Icons.group_add,
+                              label: 'Inviter',
+                              color: const Color(0xFF0288D1),
+                              onTap: _inviteFriends,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildIconAction(
+                              key: _rulesButtonKey,
+                              icon: Icons.menu_book,
+                              label: 'Règles',
+                              color: const Color(0xFF00897B),
+                              onTap: () => _showRulesDialog(context),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildIconAction(
+                              key: _settingsButtonKey,
+                              icon: Icons.tune,
+                              label: 'Options',
+                              color: const Color(0xFF546E7A),
+                              onTap: () => _showSettingsDialog(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -504,159 +552,153 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
     );
   }
 
-  // --- WIDGETS DÉTAILLÉS ---
+  // ── WIDGETS HELPERS ────────────────────────────────────────────────────────
 
-  Widget _buildAchievementsButton(BuildContext context) {
-    return Container(
-      key: _achievementsButtonKey,
-      child: GestureDetector(
-        onTap: _navigateToAchievements,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.emoji_events, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'SUCCÈS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.5),
-                      blurRadius: 2,
-                      offset: const Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInviteButton(BuildContext context, {Key? key}) {
-    return Container(
-      key: key,
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: _inviteFriends,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1565C0),
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          side: const BorderSide(color: Colors.white30, width: 1),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.send, size: 18),
-            SizedBox(width: 10),
-            Text('INVITER UN AMI', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCoinBalance(BuildContext context) {
+  /// Chip en haut de l'écran (Succès / Coins)
+  Widget _buildTopChip({
+    Key? key,
+    required IconData icon,
+    required String label,
+    required List<Color> gradient,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
-      key: _coinBalanceKey,
-      onTap: () => _showCoinInfoDialog(context),
+      key: key,
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white, width: 2),
+          gradient: LinearGradient(colors: gradient),
+          borderRadius: BorderRadius.circular(50),
           boxShadow: [
-            BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 3)),
+            BoxShadow(
+              color: gradient.last.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.monetization_on, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
+            Icon(icon, color: Colors.white, size: 18),
+            const SizedBox(width: 6),
             Text(
-              '${AdController.instance.currentCoinCount}',
+              label,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                shadows: [Shadow(color: Colors.black45, blurRadius: 2, offset: Offset(1,1))],
+                fontSize: 13,
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(left: 8),
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: const Icon(Icons.add, color: Colors.white, size: 12),
-            )
           ],
         ),
       ),
     );
   }
 
+  Widget _buildCoinChip() {
+    return GestureDetector(
+      key: _coinBalanceKey,
+      onTap: () => _showCoinInfoDialog(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🪙', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 6),
+            Text(
+              '${AdController.instance.currentCoinCount}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFD700),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add, color: Colors.black, size: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Bouton icône carré pour la grille secondaire
+  Widget _buildIconAction({
+    Key? key,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      key: key,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.35)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── DIALOGS ────────────────────────────────────────────────────────────────
+
   void _showCoinInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFF0F3622),
-        title: Row(
-          children: const [
-            Icon(Icons.storefront, color: Color(0xFFFFD700), size: 30),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: const Color(0xFF1B2A1E),
+        title: const Row(
+          children: [
+            Text('🪙', style: TextStyle(fontSize: 26)),
             SizedBox(width: 10),
             Text('Trésorerie', style: TextStyle(color: Colors.white)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Column(
-                children: [
-                  _buildCoinInfoItem('💰 Votre Solde', '${AdController.instance.currentCoinCount} coins'),
-                  _buildCoinInfoItem('🎁 Gain Pub', '+${AdController.instance.rewardCoins} coins'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 15),
-            const Text(
-              'Utilisez vos coins pour acheter des rembobinages et sauver vos matchs !',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+            _buildCoinInfoItem(
+                '💰 Votre Solde', '${AdController.instance.currentCoinCount} coins'),
+            _buildCoinInfoItem(
+                '🎁 Gain Pub', '+${AdController.instance.rewardCoins} coins'),
+            const SizedBox(height: 10),
+            Text(
+              'Utilisez vos coins pour acheter des rembobinages !',
+              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
               textAlign: TextAlign.center,
             ),
           ],
@@ -667,8 +709,8 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
               Navigator.pop(context);
               _showEarnRewardDialog();
             },
-            icon: const Icon(Icons.play_circle, color: Colors.white),
-            label: const Text('Pub Gratuit', style: TextStyle(color: Colors.white)),
+            icon: const Icon(Icons.play_circle, color: Colors.white70),
+            label: const Text('Pub Gratuit', style: TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -676,10 +718,16 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
               showDialog(
                 context: context,
                 builder: (context) => const CoinShopDialog(),
-              ).then((_) => setState((){}));
+              ).then((_) => setState(() {}));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
-            child: const Text('OUVRIR LA BOUTIQUE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text(
+              'BOUTIQUE',
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -693,7 +741,9 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(color: Colors.white70)),
-          Text(value, style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+          Text(value,
+              style: const TextStyle(
+                  color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -702,8 +752,8 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
-      title: 'Cadeau de Noël 🎁',
-      description: 'Regardez une vidéo festive pour gagner ${AdController.instance.rewardCoins} coins !',
+      title: 'Cadeau quotidien',
+      description: 'Regardez une vidéo pour gagner ${AdController.instance.rewardCoins} coins !',
       rewardType: 'coins',
       rewardAmount: AdController.instance.rewardCoins,
       onRewardEarned: () {
@@ -713,7 +763,7 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
             content: Row(children: [
               const Icon(Icons.card_giftcard, color: Colors.white),
               const SizedBox(width: 10),
-              Text('+${AdController.instance.rewardCoins} coins ajoutés ! Ho Ho Ho !'),
+              Text('+${AdController.instance.rewardCoins} coins ajoutés !'),
             ]),
             backgroundColor: Colors.green,
           ),
@@ -721,233 +771,163 @@ class _HomeScreenState extends State<HomeScreen> with TutorialMixin {
       },
       onAdFailed: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Le traîneau publicitaire est en retard...'), backgroundColor: Colors.orange),
+          const SnackBar(
+            content: Text('La publicité est indisponible.'),
+            backgroundColor: Colors.orange,
+          ),
         );
       },
-    );
-  }
-
-  Widget _buildRewardButton(BuildContext context, {Key? key}) {
-    return Container(
-      key: key,
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: () => _showEarnRewardDialog(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFC62828),
-          foregroundColor: Colors.white,
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFFFD700), width: 2),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.card_giftcard, size: 24, color: Color(0xFFFFD700)),
-            const SizedBox(width: 10),
-            Text(
-              AdController.instance.isRewardedAvailable
-                  ? 'CADEAU DE NOËL (+${AdController.instance.rewardCoins})'
-                  : 'COINS',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernButton(
-      BuildContext context, {
-        required IconData icon,
-        required String text,
-        required VoidCallback onPressed,
-        bool isPrimary = false,
-      }) {
-    return Container(
-      width: double.infinity,
-      height: 70,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? const Color(0xFF2E7D32)
-              : Colors.white.withOpacity(0.15),
-          foregroundColor: Colors.white,
-          elevation: isPrimary ? 8 : 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color: isPrimary ? const Color(0xFF66BB6A) : Colors.white30,
-              width: isPrimary ? 2 : 1,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32),
-            const SizedBox(width: 15),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 1.5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryButton(
-      BuildContext context, {
-        Key? key,
-        required IconData icon,
-        required String text,
-        required VoidCallback onPressed,
-      }) {
-    return Container(
-      key: key,
-      height: 55,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black.withOpacity(0.3),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.white24),
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 20),
-            const SizedBox(height: 4),
-            Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
     );
   }
 
   void _showSettingsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          backgroundColor: Colors.white,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-                    gradient: LinearGradient(colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)]),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.settings, color: Colors.white),
-                      SizedBox(width: 15),
-                      Text('Paramètres', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: const Color(0xFF1B2A1E),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      const AudioSettingsWidget(),
-                      const SizedBox(height: 15),
-                      const TutorialSettingsWidget(),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[800],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: const Text('Fermer', style: TextStyle(color: Colors.white)),
+                child: const Row(
+                  children: [
+                    Icon(Icons.tune, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text('Options',
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const AudioSettingsWidget(),
+                    const SizedBox(height: 15),
+                    const TutorialSettingsWidget(),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white12,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
-                    ],
-                  ),
+                      child: const Text('Fermer',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   void _showRulesDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-                    gradient: LinearGradient(colors: [Color(0xFFC62828), Color(0xFFE53935)]),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.rule, color: Colors.white),
-                      SizedBox(width: 15),
-                      Text('Règles du Jeu', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: const Color(0xFF1B2A1E),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                gradient: LinearGradient(
+                  colors: [Color(0xFF00695C), Color(0xFF00897B)],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      const Text('1. Choisissez une direction pour tirer.\n2. Le gardien plonge aléatoirement.\n3. Marquez 5 buts pour gagner !\n4. Utilisez les rembobinages si vous ratez.'),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Compris !'),
-                      )
-                    ],
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.menu_book, color: Colors.white),
+                  SizedBox(width: 12),
+                  Text('Règles du Jeu',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ruleItem('1', 'Choisissez une direction pour tirer.'),
+                  _ruleItem('2', 'Le gardien plonge aléatoirement.'),
+                  _ruleItem('3', 'Marquez 5 buts pour gagner !'),
+                  _ruleItem('4', 'Utilisez les rembobinages si vous ratez.'),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00897B),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Compris !',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _ruleItem(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFF00897B),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(number,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
             ),
           ),
-        );
-      },
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          ),
+        ],
+      ),
     );
   }
-}
-
-// Painter pour les lignes du terrain
-class FieldLinesPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2), paint);
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 60, paint);
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(size.width / 2, size.height * 0.8), width: size.width * 0.6, height: 80),
-      const Radius.circular(20),
-    );
-    canvas.drawRRect(rect, paint);
-  }
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

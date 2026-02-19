@@ -2,6 +2,21 @@
 import 'package:flutter/material.dart';
 
 class Team {
+    Team copyWith({
+      String? name,
+      Color? color,
+      String? flagImage,
+      String? continent,
+      int? score,
+    }) {
+      return Team(
+        name: name ?? this.name,
+        color: color ?? this.color,
+        flagImage: flagImage ?? this.flagImage,
+        continent: continent ?? this.continent,
+        score: score ?? this.score,
+      );
+    }
   final String name;
   final Color color;
   final String flagImage;

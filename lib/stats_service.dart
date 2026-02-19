@@ -1,7 +1,7 @@
 // stats_service.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/game_state.dart'; // Adaptez le chemin
+import 'package:happygoal/models/game_state.dart'; // Adaptez le chemin
 
 class StatsService {
   static final StatsService _instance = StatsService._();

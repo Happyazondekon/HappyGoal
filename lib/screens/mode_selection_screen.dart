@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
-import '../constants.dart';
+import 'package:happygoal/constants.dart';
 import 'home_screen.dart';
 import 'result_screen.dart';
 import 'team_selection_screen.dart';
 import 'difficulty_selection_screen.dart';
-import '../utils/audio_manager.dart';
+import 'package:happygoal/utils/audio_manager.dart';
+import 'hero_mode_screen.dart';
 
 class ModeSelectionScreen extends StatelessWidget {
   const ModeSelectionScreen({Key? key}) : super(key: key);
@@ -50,7 +51,7 @@ class ModeSelectionScreen extends StatelessWidget {
           // Lignes de terrain stylisées
           CustomPaint(
             size: Size(screenWidth, screenHeight),
-            painter: FieldLinesPainter(),
+
           ),
 
           // Contenu principal
@@ -149,7 +150,7 @@ class ModeSelectionScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Mode Solo avec animation
+                        // Mode Hero avec animation
                         TweenAnimationBuilder(
                           duration: Duration(milliseconds: 600 + (0 * 200)),
                           tween: Tween<double>(begin: 0, end: 1),
@@ -160,9 +161,9 @@ class ModeSelectionScreen extends StatelessWidget {
                                 opacity: value,
                                 child: _buildModernModeCard(
                                   context,
-                                  title: 'MODE SOLO',
-                                  subtitle: 'Affrontez l\'ordinateur',
-                                  icon: Icons.person,
+                                  title: 'MODE HERO',
+                                  subtitle: 'Progressez à travers 100 niveaux',
+                                  icon: Icons.star,
                                   gradient: const LinearGradient(
                                     colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
                                   ),
@@ -172,7 +173,7 @@ class ModeSelectionScreen extends StatelessWidget {
                                       context,
                                       PageRouteBuilder(
                                         pageBuilder: (context, animation, secondaryAnimation) =>
-                                        const DifficultySelectionScreen(),
+                                            HeroModeScreen(), // À créer
                                         transitionDuration: const Duration(milliseconds: 300),
                                         transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                           return SlideTransition(

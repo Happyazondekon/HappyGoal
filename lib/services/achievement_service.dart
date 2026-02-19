@@ -3,8 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/achievement.dart';
-import '../utils/ad_controller.dart';
+import 'package:happygoal/models/achievement.dart';
+import 'package:happygoal/utils/ad_controller.dart';
 
 class AchievementService {
   static final AchievementService _instance = AchievementService._();

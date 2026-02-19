@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/screens/game_controller.dart';
-import '../utils/ad_controller.dart';
-import '../constants.dart';
-import '../widgets/coin_shop_dialog.dart'; // ⭐ NOUVEAU : Import de la boutique
+import 'package:happygoal/utils/ad_controller.dart';
+import 'package:happygoal/constants.dart';
+import 'package:happygoal/widgets/coin_shop_dialog.dart'; // ⭐ NOUVEAU : Import de la boutique
 
 class RewindRewardWidget extends StatefulWidget {
   final GameState gameState;

@@ -2,10 +2,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import '../utils/iap_service.dart';
-import '../utils/ad_controller.dart';
-import '../utils/iap_products.dart';
-import '../utils/audio_manager.dart'; // Pour le son de succès
+import 'package:happygoal/utils/iap_service.dart';
+import 'package:happygoal/utils/ad_controller.dart';
+import 'package:happygoal/utils/iap_products.dart';
+import 'package:happygoal/utils/audio_manager.dart'; // Pour le son de succès
+import 'package:happygoal/constants.dart';
 
 class CoinShopDialog extends StatefulWidget {
   const CoinShopDialog({Key? key}) : super(key: key);
@@ -136,13 +137,13 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
     final products = IAPService.instance.products;
 
     return AlertDialog(
-      backgroundColor: const Color(0xFF0F3622), // Vert foncé Noël
+      backgroundColor: AppColors.primary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: const [
-          Icon(Icons.storefront, color: Color(0xFFFFD700), size: 30),
+          Icon(Icons.storefront, color: Colors.white, size: 30),
           SizedBox(width: 10),
-          Text('Boutique de Noël', style: TextStyle(color: Colors.white)),
+          Text('Boutique', style: TextStyle(color: Colors.white)),
         ],
       ),
       content: Container(
@@ -153,7 +154,7 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
           height: 100,
           child: Center(
             child: Text(
-              "Connexion au magasin du Père Noël...\n(Chargement...)",
+              "Connexion au magasin...\n(Chargement...)",
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white70),
             ),

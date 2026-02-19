@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants.dart'; // Assurez-vous que ShotDirection est défini ici
+import 'package:happygoal/constants.dart'; // Assurez-vous que ShotDirection est défini ici
 
 class ShotControllerWidget extends StatefulWidget {
   final Function(int direction, int power, String effect) onShoot;
