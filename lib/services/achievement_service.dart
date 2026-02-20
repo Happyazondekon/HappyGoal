@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:happygoal/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:happygoal/models/achievement.dart';
 import 'package:happygoal/utils/ad_controller.dart';
@@ -24,7 +25,13 @@ class AchievementService {
     'hero_all_stars': 0, // 1 si toutes les étoiles de tous les niveaux sont obtenues
   };
   /// À appeler quand le joueur termine un niveau Hero (pour mettre à jour la progression Hero)
-  Future<void> recordHeroLevel({required int level, required bool got3Stars, required bool allStarsCompleted, int total3StarsLevels = 0}) async {
+  Future<void> recordHeroLevel({
+    required int level,
+    required bool got3Stars,
+    required bool allStarsCompleted,
+    int total3StarsLevels = 0,
+    BuildContext? context,
+  }) async {
     if (level > (_playerStats['hero_max_level'] ?? 0)) {
       _playerStats['hero_max_level'] = level;
     }
@@ -36,7 +43,7 @@ class AchievementService {
       _playerStats['hero_all_stars'] = 1;
     }
     await _saveStats();
-    await _checkAchievements();
+    await _checkAchievements(context: context);
   }
 
   Map<String, AchievementProgress> _progress = {};
@@ -121,6 +128,7 @@ class AchievementService {
     int goalsCurve = 0,
     int goalsLob = 0,
     int goalsKnuckle = 0,
+    BuildContext? context,
   }) async {
     _playerStats['total_matches_played'] = (_playerStats['total_matches_played'] ?? 0) + 1;
     _playerStats['total_matches_won'] = (_playerStats['total_matches_won'] ?? 0) + 1;
@@ -154,11 +162,11 @@ class AchievementService {
     }
 
     await _saveStats();
-    return await _checkAchievements();
+    return await _checkAchievements(context: context);
   }
 
   /// Enregistrer une défaite (Pour casser la série)
-  Future<void> recordMatchLoss({int rewindsUsed = 0}) async {
+  Future<void> recordMatchLoss({int rewindsUsed = 0, BuildContext? context}) async {
     _playerStats['total_matches_played'] = (_playerStats['total_matches_played'] ?? 0) + 1;
     _playerStats['current_win_streak'] = 0; // 😭 Série brisée
 
@@ -167,20 +175,20 @@ class AchievementService {
 
     await _saveStats();
     // On vérifie quand même les achievements (ex: "Utiliser 100 rewinds" peut se débloquer même en perdant)
-    await _checkAchievements();
+    await _checkAchievements(context: context);
   }
 
   /// Enregistrer une victoire de tournoi
-  Future<List<Achievement>> recordTournamentWin() async {
+  Future<List<Achievement>> recordTournamentWin({BuildContext? context}) async {
     _playerStats['tournaments_played'] = (_playerStats['tournaments_played'] ?? 0) + 1;
     _playerStats['tournaments_won'] = (_playerStats['tournaments_won'] ?? 0) + 1;
 
     await _saveStats();
-    return await _checkAchievements();
+    return await _checkAchievements(context: context);
   }
 
   /// Mettre à jour la série quotidienne
-  Future<void> updateDailyStreak() async {
+  Future<void> updateDailyStreak({BuildContext? context}) async {
     final now = DateTime.now();
     final lastPlayDate = DateTime.fromMillisecondsSinceEpoch(
       _playerStats['last_play_date'] ?? 0,
@@ -199,9 +207,8 @@ class AchievementService {
   }
 
   /// Vérifier les achievements débloqués
-  Future<List<Achievement>> _checkAchievements() async {
+  Future<List<Achievement>> _checkAchievements({BuildContext? context}) async {
     List<Achievement> newlyUnlocked = [];
-
 
     for (var achievement in AchievementsList.all) {
       final progress = _progress[achievement.id];
@@ -244,6 +251,15 @@ class AchievementService {
         progress.unlockedAt = DateTime.now();
         newlyUnlocked.add(achievement);
         print('🏆 Achievement débloqué: ${achievement.title}');
+
+        // Notification automatique pour succès Hero (si contexte disponible)
+        if (achievement.id.startsWith('hero_') && context != null) {
+          await NotificationService().sendHeroAchievementNotification(achievement.id, context);
+        }
+        // Notification automatique pour championnat (si contexte disponible)
+        if (achievement.id.startsWith('tournament_') && context != null) {
+          await NotificationService().sendTournamentWinNotification(context);
+        }
       }
     }
 

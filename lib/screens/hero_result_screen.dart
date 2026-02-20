@@ -598,23 +598,6 @@ class _HeroResultScreenState extends State<HeroResultScreen>
     );
   }
 
-  /// Maps a ShotEffect to its localized display name.
-  String _getEffectName(ShotEffect effect) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (effect) {
-      case ShotEffect.normal:
-        return l10n.shotEffectNormal;
-      case ShotEffect.curve:
-        return l10n.shotEffectCurve;
-      case ShotEffect.lob:
-        return l10n.shotEffectLob;
-      case ShotEffect.knuckle:
-        return l10n.shotEffectKnuckle;
-    }
-    // Fallback for exhaustive switch (should never reach here)
-    return '';
-  }
-
   /// Stats réelles du match pour aider le joueur à comprendre ses résultats.
   Widget _buildMatchStatsCard() {
     final state = widget.gameState;

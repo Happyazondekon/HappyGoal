@@ -376,6 +376,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tournamentStatsMotivationPerseverance => 'La persévérance est la clé du succès ! Ne lâchez rien ! ⚽';
 
   @override
+  String get tournamentModeTitle => 'TOURNOI';
+
+  @override
+  String get tournamentModeDescription => 'Concourez pour la Gloire';
+
+  @override
   String get tournamentHappyTitle => 'TOURNOI HAPPY';
 
   @override
@@ -1223,4 +1229,64 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rarityLegendary => 'LÉGENDAIRE';
+
+  @override
+  String get notificationMotivational1 => 'Prêt à marquer des buts spectaculaires ? ⚽';
+
+  @override
+  String get notificationMotivational2 => 'Votre équipe préférée vous attend sur le terrain ! 🏆';
+
+  @override
+  String get notificationMotivational3 => 'Nouveau défi de pénalti contre le Brésil ! 🇧🇷';
+
+  @override
+  String get notificationMotivational4 => 'C\'est le moment de devenir un héros du football ! 🦸‍♂️';
+
+  @override
+  String get notificationMotivational5 => 'Les penaltis vous appellent ! Prêt à jouer ? 🎮';
+
+  @override
+  String get notificationMotivational6 => 'Transformez-vous en star du football ! ⭐';
+
+  @override
+  String get notificationMotivational7 => 'Une nouvelle compétition vous attend ! 🌟';
+
+  @override
+  String get notificationMotivational8 => 'Venez montrer vos compétences de buteur ! 💪';
+
+  @override
+  String get notificationMotivational9 => 'C\'est l\'heure pour une séance de tirs au but ! 🎉';
+
+  @override
+  String get notificationMotivational10 => 'Vos compétences ont besoin d\'entraînement ! 🔥';
+
+  @override
+  String get notificationCongratulation1 => 'Félicitations champion ! Vous avez remporté le tournoi 🏆';
+
+  @override
+  String get notificationCongratulation2 => 'Victoire impressionnante ! Vous dominez le jeu ⭐';
+
+  @override
+  String get notificationCongratulation3 => 'Tournoi remporté ! Vous êtes un vrai professionnel 💪';
+
+  @override
+  String get notificationAchievementUnlocked => '🎉 Succès du Héros Débloqué !';
+
+  @override
+  String get notificationTournamentWon => '🏆 CHAMPIONNAT REMPORTÉ !';
+
+  @override
+  String notificationMatchFor(Object team) {
+    return 'Match pour $team ! ⚽';
+  }
+
+  @override
+  String notificationChallengeOpponent(Object opponent) {
+    return 'Défi $opponent !';
+  }
+
+  @override
+  String notificationProgressTowardAchievement(Object achievement, Object coins, Object remaining) {
+    return 'Il en manque $remaining pour débloquer $achievement et gagner $coins pièces !';
+  }
 }

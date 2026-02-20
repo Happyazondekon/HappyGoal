@@ -785,6 +785,18 @@ abstract class AppLocalizations {
   /// **'Perseverance is the key to success! Never give up! ⚽'**
   String get tournamentStatsMotivationPerseverance;
 
+  /// No description provided for @tournamentModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TOURNAMENT'**
+  String get tournamentModeTitle;
+
+  /// No description provided for @tournamentModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Compete for Glory'**
+  String get tournamentModeDescription;
+
   /// No description provided for @tournamentHappyTitle.
   ///
   /// In en, this message translates to:
@@ -2410,6 +2422,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LEGENDARY'**
   String get rarityLegendary;
+
+  /// No description provided for @notificationMotivational1.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to score spectacular goals? ⚽'**
+  String get notificationMotivational1;
+
+  /// No description provided for @notificationMotivational2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your favorite team is waiting for you on the field! 🏆'**
+  String get notificationMotivational2;
+
+  /// No description provided for @notificationMotivational3.
+  ///
+  /// In en, this message translates to:
+  /// **'New penalty challenge against Brazil! 🇧🇷'**
+  String get notificationMotivational3;
+
+  /// No description provided for @notificationMotivational4.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s time to become a football hero! 🦸‍♂️'**
+  String get notificationMotivational4;
+
+  /// No description provided for @notificationMotivational5.
+  ///
+  /// In en, this message translates to:
+  /// **'The penalties are calling you! Ready to play? 🎮'**
+  String get notificationMotivational5;
+
+  /// No description provided for @notificationMotivational6.
+  ///
+  /// In en, this message translates to:
+  /// **'Transform into a football star! ⭐'**
+  String get notificationMotivational6;
+
+  /// No description provided for @notificationMotivational7.
+  ///
+  /// In en, this message translates to:
+  /// **'A new competition awaits you! 🌟'**
+  String get notificationMotivational7;
+
+  /// No description provided for @notificationMotivational8.
+  ///
+  /// In en, this message translates to:
+  /// **'Come show off your striker skills! 💪'**
+  String get notificationMotivational8;
+
+  /// No description provided for @notificationMotivational9.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s time for a penalty shootout session! 🎉'**
+  String get notificationMotivational9;
+
+  /// No description provided for @notificationMotivational10.
+  ///
+  /// In en, this message translates to:
+  /// **'Your skills need training! 🔥'**
+  String get notificationMotivational10;
+
+  /// No description provided for @notificationCongratulation1.
+  ///
+  /// In en, this message translates to:
+  /// **'Congrats champion! You won the tournament 🏆'**
+  String get notificationCongratulation1;
+
+  /// No description provided for @notificationCongratulation2.
+  ///
+  /// In en, this message translates to:
+  /// **'Impressive victory! You dominate the game ⭐'**
+  String get notificationCongratulation2;
+
+  /// No description provided for @notificationCongratulation3.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament won! You\'re a true professional 💪'**
+  String get notificationCongratulation3;
+
+  /// No description provided for @notificationAchievementUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'🎉 Hero Achievement Unlocked!'**
+  String get notificationAchievementUnlocked;
+
+  /// No description provided for @notificationTournamentWon.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 CHAMPIONSHIP WON!'**
+  String get notificationTournamentWon;
+
+  /// No description provided for @notificationMatchFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Match for {team}! ⚽'**
+  String notificationMatchFor(Object team);
+
+  /// No description provided for @notificationChallengeOpponent.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge {opponent}!'**
+  String notificationChallengeOpponent(Object opponent);
+
+  /// No description provided for @notificationProgressTowardAchievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {remaining} more to unlock {achievement} and win {coins} coins!'**
+  String notificationProgressTowardAchievement(Object achievement, Object coins, Object remaining);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

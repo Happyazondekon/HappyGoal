@@ -1,12 +1,12 @@
 // lib/screens/team_selection_screen.dart
 import 'package:flutter/material.dart';
-import 'package:happygoal/constants.dart';
 import 'package:happygoal/l10n/app_localizations.dart';
-import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'game_screen.dart';
 import 'package:happygoal/models/ai_opponent.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
+import 'package:happygoal/constants.dart';
 
 class TeamSelectionScreen extends StatefulWidget {
   final bool isSoloMode;
@@ -33,20 +33,19 @@ class TeamSelectionScreen extends StatefulWidget {
 }
 
 class _TeamSelectionScreenState extends State<TeamSelectionScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   Team? selectedTeam1;
   Team? selectedTeam2;
   late final Map<String, List<Team>> _teamsByContinent;
   String? _selectedContinent;
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  // ← Plus de _modeTitle initialisé ici : on le calcule dans build()
+  late AnimationController _headerController;
+  late Animation<double> _headerAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Grouper les équipes par continent (pas de context nécessaire)
+    // Grouper les équipes par continent
     _teamsByContinent = _groupTeamsByContinent(Team.getPredefinedTeams());
 
     if (widget.preSelectedTeam1 != null) {
@@ -62,16 +61,13 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen>
       });
     }
 
-    // ← NE PAS appeler AppLocalizations.of(context) ici
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+    _headerController = AnimationController(
       vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOut,
-      ),
+      duration: const Duration(milliseconds: 900),
+    )..forward();
+    _headerAnimation = CurvedAnimation(
+      parent: _headerController,
+      curve: Curves.easeOutBack,
     );
   }
 
@@ -89,7 +85,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _headerController.dispose();
     super.dispose();
   }
 
@@ -97,16 +93,12 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen>
     setState(() {
       if (team == selectedTeam1) {
         selectedTeam1 = null;
-        _controller.reverse();
       } else if (team == selectedTeam2) {
         selectedTeam2 = null;
-        _controller.reverse();
       } else if (selectedTeam1 == null) {
         selectedTeam1 = team;
-        _controller.forward();
       } else if (selectedTeam2 == null && team != selectedTeam1) {
         selectedTeam2 = team;
-        _controller.forward();
       }
     });
     if (widget.isTournamentMode) {
@@ -143,7 +135,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen>
     }
   }
 
-  // ← Calcul du titre de mode directement dans build(), où context est valide
   String _getModeTitle(AppLocalizations l10n) {
     if (widget.isTournamentMode) return l10n.teamSelectionModeTournament;
     return widget.isSoloMode ? l10n.teamSelectionModeSolo : l10n.teamSelectionModeMulti;
@@ -152,357 +143,611 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final teams = Team.getPredefinedTeams();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(_selectedContinent ?? l10n.teamSelectionTitle),
-        centerTitle: true,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.3),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
-          ),
-        ),
-        leading: _selectedContinent != null
-            ? IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            setState(() {
-              _selectedContinent = null;
-            });
-          },
-        )
-            : null,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Chip(
-              label: Text(_getModeTitle(l10n)),
-              backgroundColor: AppColors.primary,
-              labelStyle: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(height: 30),
-          if (widget.isSoloMode)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                l10n.teamSelectionChooseTeams,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: const Offset(1.0, 1.0),
-                      blurRadius: 3.0,
-                      color: Colors.black54,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSelectedTeamCard(
-                      team: selectedTeam1,
-                      teamColor: AppColors.team1,
-                      label: widget.isSoloMode
-                          ? l10n.teamSelectionYourTeam
-                          : l10n.teamSelectionTeam1,
-                    ),
-                    _buildSelectedTeamCard(
-                      team: selectedTeam2,
-                      teamColor: AppColors.team2,
-                      label: widget.isSoloMode
-                          ? l10n.teamSelectionAITeam
-                          : l10n.teamSelectionTeam2,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _selectedContinent == null
-                  ? _buildContinentList()
-                  : _buildTeamsGridView(_teamsByContinent[_selectedContinent]!),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: selectedTeam1 != null && selectedTeam2 != null ? 1.0 : 0.5,
-              child: ElevatedButton(
-                onPressed:
-                selectedTeam1 != null && selectedTeam2 != null ? _startGame : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 8,
-                  shadowColor: AppColors.primary.withOpacity(0.5),
-                ),
-                child: Text(
-                  l10n.teamSelectionStart,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget pour afficher la liste des continents
-  Widget _buildContinentList() {
-    final continents = _teamsByContinent.keys.toList();
-    return ListView.builder(
-      itemCount: continents.length,
-      itemBuilder: (context, index) {
-        final continent = continents[index];
-        final continentTeams = _teamsByContinent[continent]!;
-        final displayTeam = continentTeams.isNotEmpty ? continentTeams.first : null;
-
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          child: InkWell(
-            onTap: () {
-              setState(() {
-                _selectedContinent = continent;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  if (displayTeam != null)
-                    Image.asset(
-                      displayTeam.flagImage,
-                      height: 50,
-                      width: 80,
-                      fit: BoxFit.contain,
-                    ),
-                  const SizedBox(width: 20),
-                  Text(
-                    continent,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          // Background gradient matching game aesthetic
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0D1F12),
+                  Color(0xFF1A3A22),
+                  Color(0xFF0F2916),
                 ],
               ),
             ),
           ),
-        );
-      },
-    );
-  }
 
-  // Widget pour afficher la grille des équipes d'un continent
-  Widget _buildTeamsGridView(List<Team> teams) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: teams.length,
-      itemBuilder: (context, index) {
-        final team = teams[index];
-        final bool isSelected =
-            team == selectedTeam1 || team == selectedTeam2;
-        final bool isDisabled =
-            !isSelected && (selectedTeam1 != null && selectedTeam2 != null);
+          // Decorative field lines
+          CustomPaint(
+            size: Size.infinite,
+            painter: _FieldDecorPainter(),
+          ),
 
-        return _buildTeamCard(team, isSelected, isDisabled);
-      },
-    );
-  }
-
-  Widget _buildSelectedTeamCard({
-    required Team? team,
-    required Color teamColor,
-    required String label,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      width: 150,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4)),
+          SafeArea(
+            child: _selectedContinent == null
+                ? _buildContinentView(context, l10n, teams)
+                : _buildTeamsGridView(context, l10n),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContinentView(BuildContext context, AppLocalizations l10n, List<Team> teams) {
+    return Column(
+      children: [
+        // Header
+        ScaleTransition(
+          scale: _headerAnimation,
+          child: _buildHeader(context, l10n),
+        ),
+
+        SizedBox(height: ResponsiveHelper.scale(context, 16)),
+
+        // Selected teams preview
+        if (selectedTeam1 != null || selectedTeam2 != null)
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.scale(context, 16)),
+            child: _buildSelectedTeamsPreview(context, l10n),
+          ),
+
+        SizedBox(height: ResponsiveHelper.scale(context, 16)),
+
+        // Continents list
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.scale(context, 16),
+                vertical: ResponsiveHelper.scale(context, 8)),
+            itemCount: _teamsByContinent.keys.length,
+            itemBuilder: (context, index) {
+              final continent = _teamsByContinent.keys.toList()[index];
+              final continentTeams = _teamsByContinent[continent]!;
+              final displayTeam =
+                  continentTeams.isNotEmpty ? continentTeams.first : null;
+
+              return _buildContinentCard(
+                  context, continent, displayTeam, index);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
+    return Padding(
+      padding: EdgeInsets.all(ResponsiveHelper.scale(context, 16)),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            label,
+            l10n.teamSelectionTitle,
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
+              fontSize: ResponsiveHelper.textScale(context, 26),
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 2,
+              shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
             ),
           ),
-          const SizedBox(height: 8),
-          if (team != null) ...[
-            Container(
-              height: 60,
-              width: 90,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: teamColor,
-                  width: 2,
-                ),
-              ),
-              child: Image.asset(
-                team.flagImage,
-                fit: BoxFit.contain,
-              ),
+          SizedBox(height: ResponsiveHelper.scale(context, 8)),
+          Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.scale(context, 12),
+                vertical: ResponsiveHelper.scale(context, 6)),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(
+                  ResponsiveHelper.scale(context, 20)),
             ),
-            const SizedBox(height: 8),
-            Text(
-              team.name,
+            child: Text(
+              _getModeTitle(l10n),
               style: TextStyle(
-                fontSize: 16,
+                fontSize: ResponsiveHelper.textScale(context, 13),
+                color: Color(0xFF4CAF50),
                 fontWeight: FontWeight.bold,
-                color: teamColor,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ] else ...[
-            Container(
-              height: 60,
-              width: 90,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey.shade200,
-              ),
-              child: const Icon(
-                Icons.flag,
-                size: 30,
-                color: Colors.grey,
+                letterSpacing: 1,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.teamSelectionToSelect,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTeamCard(Team team, bool isSelected, bool isDisabled) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
+  Widget _buildSelectedTeamsPreview(
+      BuildContext context, AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveHelper.scale(context, 16),
+          vertical: ResponsiveHelper.scale(context, 12)),
       decoration: BoxDecoration(
-        color: isSelected ? team.color.withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected
-              ? (team == selectedTeam1 ? AppColors.team1 : AppColors.team2)
-              : Colors.grey.shade300,
-          width: isSelected ? 2 : 1,
-        ),
-        boxShadow: [
-          if (isSelected)
-            BoxShadow(
-              color: team.color.withOpacity(0.3),
-              blurRadius: 10,
-              spreadRadius: 2,
+        color: Colors.white.withOpacity(0.07),
+        borderRadius:
+            BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.teamSelectionChooseTeams,
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: ResponsiveHelper.textScale(context, 12),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+          ),
+          SizedBox(height: ResponsiveHelper.scale(context, 8)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSelectedTeamPreview(
+                context,
+                selectedTeam1,
+                l10n.teamSelectionTeam1,
+                Color(0xFF2196F3),
+              ),
+              Icon(Icons.compare_arrows,
+                  color: Colors.white38,
+                  size: ResponsiveHelper.scale(context, 24)),
+              _buildSelectedTeamPreview(
+                context,
+                selectedTeam2,
+                l10n.teamSelectionTeam2,
+                Color(0xFFFF5722),
+              ),
+            ],
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => _handleTeamSelection(team),
-          child: Opacity(
-            opacity: isDisabled && !isSelected ? 0.5 : 1.0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  team.flagImage,
-                  height: 50,
-                  width: 80,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  team.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color:
-                    isDisabled && !isSelected ? Colors.grey : Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    );
+  }
+
+  Widget _buildSelectedTeamPreview(
+    BuildContext context,
+    Team? team,
+    String label,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: ResponsiveHelper.textScale(context, 11),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: ResponsiveHelper.scale(context, 4)),
+        if (team != null)
+          ClipRRect(
+            borderRadius:
+                BorderRadius.circular(ResponsiveHelper.scale(context, 4)),
+            child: Image.asset(
+              team.flagImage,
+              width: ResponsiveHelper.scale(context, 40),
+              height: ResponsiveHelper.scale(context, 28),
+              fit: BoxFit.cover,
+            ),
+          )
+        else
+          Container(
+            width: ResponsiveHelper.scale(context, 40),
+            height: ResponsiveHelper.scale(context, 28),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius:
+                  BorderRadius.circular(ResponsiveHelper.scale(context, 4)),
+            ),
+            child: Icon(Icons.flag_outlined,
+                color: Colors.white38,
+                size: ResponsiveHelper.scale(context, 14)),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildContinentCard(BuildContext context, String continent,
+      Team? displayTeam, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 300 + index * 50),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: child,
+        );
+      },
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedContinent = continent;
+          });
+        },
+        child: Container(
+          margin: EdgeInsets.only(bottom: ResponsiveHelper.scale(context, 12)),
+          padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.scale(context, 16),
+              vertical: ResponsiveHelper.scale(context, 14)),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.08),
+                Colors.white.withOpacity(0.03),
               ],
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: ResponsiveHelper.scale(context, 8),
+                offset: Offset(0, ResponsiveHelper.scale(context, 3)),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              if (displayTeam != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                      ResponsiveHelper.scale(context, 8)),
+                  child: Image.asset(
+                    displayTeam.flagImage,
+                    height: ResponsiveHelper.scale(context, 50),
+                    width: ResponsiveHelper.scale(context, 80),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              SizedBox(width: ResponsiveHelper.scale(context, 16)),
+              Expanded(
+                child: Text(
+                  continent,
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.textScale(context, 18),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios,
+                  color: Colors.white54,
+                  size: ResponsiveHelper.scale(context, 18)),
+            ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildTeamsGridView(BuildContext context, AppLocalizations l10n) {
+    final teams = _teamsByContinent[_selectedContinent]!;
+
+    return Column(
+      children: [
+        // Back button header
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            ResponsiveHelper.scale(context, 16),
+            ResponsiveHelper.scale(context, 16),
+            ResponsiveHelper.scale(context, 16),
+            0,
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedContinent = null;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(ResponsiveHelper.scale(context, 10)),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(
+                        ResponsiveHelper.scale(context, 12)),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Icon(Icons.arrow_back,
+                      color: Colors.white,
+                      size: ResponsiveHelper.scale(context, 20)),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    _selectedContinent ?? '',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.textScale(context, 20),
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                      shadows: [
+                        Shadow(color: Colors.black54, blurRadius: 8)
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: ResponsiveHelper.scale(context, 42)),
+            ],
+          ),
+        ),
+
+        SizedBox(height: ResponsiveHelper.scale(context, 16)),
+
+        // Teams grid
+        Expanded(
+          child: GridView.builder(
+            padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.scale(context, 16),
+                vertical: ResponsiveHelper.scale(context, 8)),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: ResponsiveHelper.scale(context, 12),
+              mainAxisSpacing: ResponsiveHelper.scale(context, 12),
+              childAspectRatio: 0.85,
+            ),
+            itemCount: teams.length,
+            itemBuilder: (context, index) {
+              final team = teams[index];
+              final isSelected =
+                  team == selectedTeam1 || team == selectedTeam2;
+              return _buildTeamCard(context, team, isSelected, index);
+            },
+          ),
+        ),
+
+        // Validate button
+        if (selectedTeam1 != null && selectedTeam2 != null)
+          Padding(
+            padding: EdgeInsets.all(ResponsiveHelper.scale(context, 20)),
+            child: _buildValidateButton(context, l10n),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTeamCard(
+      BuildContext context, Team team, bool isSelected, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 300 + index * 30),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: child,
+        );
+      },
+      child: GestureDetector(
+        onTap: () => _handleTeamSelection(team),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFFFFD700)
+                  : Colors.white.withOpacity(0.12),
+              width: isSelected
+                  ? ResponsiveHelper.scale(context, 2.5)
+                  : ResponsiveHelper.scale(context, 1),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isSelected
+                  ? [
+                    const Color(0xFFFFD700).withOpacity(0.2),
+                    const Color(0xFFFFA000).withOpacity(0.1),
+                  ]
+                  : [
+                    Colors.white.withOpacity(0.07),
+                    Colors.white.withOpacity(0.03),
+                  ],
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withOpacity(0.3),
+                      blurRadius: ResponsiveHelper.scale(context, 16),
+                      spreadRadius: ResponsiveHelper.scale(context, 2),
+                    )
+                  ]
+                : [],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Flag
+              Container(
+                width: ResponsiveHelper.scale(context, 60),
+                height: ResponsiveHelper.scale(context, 40),
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(ResponsiveHelper.scale(context, 6)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black38,
+                        blurRadius: ResponsiveHelper.scale(context, 6),
+                        offset: Offset(
+                            0, ResponsiveHelper.scale(context, 3)))
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius:
+                      BorderRadius.circular(ResponsiveHelper.scale(context, 6)),
+                  child: Image.asset(team.flagImage, fit: BoxFit.cover),
+                ),
+              ),
+              SizedBox(height: ResponsiveHelper.scale(context, 8)),
+              Text(
+                team.name,
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.textScale(context, 11),
+                  fontWeight:
+                      isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isSelected) ...[
+                SizedBox(height: ResponsiveHelper.scale(context, 4)),
+                Icon(Icons.check_circle,
+                    color: Color(0xFFFFD700),
+                    size: ResponsiveHelper.scale(context, 16)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildValidateButton(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.scale(context, 16),
+              vertical: ResponsiveHelper.scale(context, 10)),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.07),
+            borderRadius:
+                BorderRadius.circular(ResponsiveHelper.scale(context, 14)),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(ResponsiveHelper.scale(context, 4)),
+                child: Image.asset(selectedTeam1!.flagImage,
+                    width: ResponsiveHelper.scale(context, 36),
+                    height: ResponsiveHelper.scale(context, 24),
+                    fit: BoxFit.cover),
+              ),
+              SizedBox(width: ResponsiveHelper.scale(context, 8)),
+              Text(
+                selectedTeam1!.name,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.textScale(context, 12)),
+              ),
+              SizedBox(width: ResponsiveHelper.scale(context, 10)),
+              Icon(Icons.compare_arrows,
+                  color: Colors.white54,
+                  size: ResponsiveHelper.scale(context, 20)),
+              SizedBox(width: ResponsiveHelper.scale(context, 10)),
+              ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(ResponsiveHelper.scale(context, 4)),
+                child: Image.asset(selectedTeam2!.flagImage,
+                    width: ResponsiveHelper.scale(context, 36),
+                    height: ResponsiveHelper.scale(context, 24),
+                    fit: BoxFit.cover),
+              ),
+              SizedBox(width: ResponsiveHelper.scale(context, 8)),
+              Expanded(
+                child: Text(
+                  selectedTeam2!.name,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveHelper.textScale(context, 12)),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: ResponsiveHelper.scale(context, 12)),
+        SizedBox(
+          width: double.infinity,
+          height: ResponsiveHelper.scale(context, 56),
+          child: ElevatedButton(
+            onPressed: _startGame,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(ResponsiveHelper.scale(context, 16))),
+              elevation: 0,
+            ),
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFD700), Color(0xFFF57F17)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius:
+                    BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.sports_soccer,
+                        color: Colors.white,
+                        size: ResponsiveHelper.scale(context, 22)),
+                    SizedBox(width: ResponsiveHelper.scale(context, 10)),
+                    Text(
+                      l10n.teamSelectionStart,
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.textScale(context, 15),
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FieldDecorPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.04)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    // Center circle
+    canvas.drawCircle(
+        Offset(size.width / 2, size.height * 0.5), 80, paint);
+    // Half line
+    canvas.drawLine(Offset(0, size.height * 0.5),
+        Offset(size.width, size.height * 0.5), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

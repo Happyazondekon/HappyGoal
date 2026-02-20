@@ -1,10 +1,12 @@
 // notification_service.dart
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:happygoal/models/achievement.dart';
 import 'package:happygoal/services/achievement_service.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +15,44 @@ import 'dart:io' show Platform;
 
 
 class NotificationService {
+    /// Notification immédiate pour succès mode Hero (avec i18n)
+    Future<bool> sendHeroAchievementNotification(String achievementId, BuildContext? context) async {
+      if (!await areNotificationsEnabled()) return false;
+
+      final achievement = AchievementsList.getById(achievementId);
+      if (achievement == null) return false;
+
+      // Utiliser AppLocalizations si context fourni
+      String title = "🎉 Succès Hero débloqué !";
+      String subtitle = "Bravo ! ${achievement.title} : ${achievement.description}";
+      
+      if (context != null) {
+        final l10n = AppLocalizations.of(context);
+        if (l10n != null) {
+          title = l10n.notificationAchievementUnlocked;
+          subtitle = "${achievement.title} : ${achievement.description}";
+        }
+      }
+
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'happygoal_hero',
+        'Succès Hero',
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/img',
+        color: Color(0xFF2196F3), // Bleu
+      );
+
+      const NotificationDetails details = NotificationDetails(android: androidDetails);
+
+      await _flutterLocalNotificationsPlugin.show(
+        Random().nextInt(10000),
+        title,
+        subtitle,
+        details,
+      );
+      return true;
+    }
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -62,11 +102,42 @@ class NotificationService {
     "Performance parfaite ! Tu es imbattable 🌟"
   ];
 
+  /// Récupérer les messages motivationnels localisés
+  List<String> _getLocalizedMotivationalMessages(AppLocalizations? l10n) {
+    if (l10n == null) {
+      return _motivationalMessages;
+    }
+    return [
+      l10n.notificationMotivational1,
+      l10n.notificationMotivational2,
+      l10n.notificationMotivational3,
+      l10n.notificationMotivational4,
+      l10n.notificationMotivational5,
+      l10n.notificationMotivational6,
+      l10n.notificationMotivational7,
+      l10n.notificationMotivational8,
+      l10n.notificationMotivational9,
+      l10n.notificationMotivational10,
+    ];
+  }
+
+  /// Récupérer les messages de félicitations localisés
+  List<String> _getLocalizedCongratulationMessages(AppLocalizations? l10n) {
+    if (l10n == null) {
+      return _congratulationMessages;
+    }
+    return [
+      l10n.notificationCongratulation1,
+      l10n.notificationCongratulation2,
+      l10n.notificationCongratulation3,
+    ];
+  }
+
   /// Initialisation du service de notifications
   Future<void> initialize() async {
     try {
       // Initialiser les fuseaux horaires
-      tz.initializeTimeZones();
+      tz_data.initializeTimeZones();
 
       // Configuration Android
       const AndroidInitializationSettings initializationSettingsAndroid =
@@ -175,8 +246,8 @@ class NotificationService {
 
   // --- Logique principale de planification ---
 
-  /// Programmer les notifications récurrentes intelligentes
-  Future<bool> scheduleRecurringNotifications() async {
+  /// Programmer les notifications récurrentes intelligentes (avec i18n optionnel)
+  Future<bool> scheduleRecurringNotifications({BuildContext? context}) async {
     try {
       if (!await areNotificationsEnabled()) {
         return false;
@@ -186,6 +257,11 @@ class NotificationService {
 
       final now = DateTime.now();
       final deviceTimeZone = _getDeviceTimeZone();
+
+      // Récupérer les localisations si context fourni
+      final l10n = context != null ? AppLocalizations.of(context) : null;
+      final motivationalMessages = _getLocalizedMotivationalMessages(l10n);
+      final congratulationMessages = _getLocalizedCongratulationMessages(l10n);
 
       // Horaires stratégiques
       final notificationTimes = [
@@ -232,13 +308,13 @@ class NotificationService {
         // 2. Message de champion si tournois gagnés (aléatoire)
         else if (tournamentWins > 0 && Random().nextDouble() < 0.3) {
           title = "Le Champion est de retour ? 🏆";
-          message = _congratulationMessages[Random().nextInt(_congratulationMessages.length)];
+          message = congratulationMessages[Random().nextInt(congratulationMessages.length)];
         }
         // 3. Message classique motivationnel
         else {
           final opponent = _getRandomOpponent();
           title = userTeam != null ? "Match pour $userTeam ! ⚽" : "Prêt à tirer ? ⚽";
-          message = "Défiez $opponent ! ${_getRandomMotivationalMessage()}";
+          message = "Défiez $opponent ! ${motivationalMessages[Random().nextInt(motivationalMessages.length)]}";
         }
 
         final success = await _scheduleSingleNotification(
@@ -355,18 +431,14 @@ class NotificationService {
     }
   }
 
-  String _getRandomMotivationalMessage() {
-    return _motivationalMessages[Random().nextInt(_motivationalMessages.length)];
-  }
-
-  Future<void> setNotificationsEnabled(bool enabled) async {
+  Future<void> setNotificationsEnabled(bool enabled, {BuildContext? context}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_notificationEnabledKey, enabled);
 
     if (!enabled) {
       await cancelAllNotifications();
     } else {
-      await scheduleRecurringNotifications();
+      await scheduleRecurringNotifications(context: context);
     }
   }
 
@@ -379,9 +451,21 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.cancelAll();
   }
 
-  /// Notification immédiate pour victoire de tournoi
-  Future<bool> sendTournamentWinNotification() async {
+  /// Notification immédiate pour victoire de championnat (avec i18n)
+  Future<bool> sendTournamentWinNotification(BuildContext? context) async {
     if (!await areNotificationsEnabled()) return false;
+
+    // Utiliser AppLocalizations si context fourni
+    String title = "🏆 CHAMPIONNAT GAGNÉ !";
+    String subtitle = "Félicitations ! Vous avez remporté un championnat. Reviens vite défendre ton titre !";
+    
+    if (context != null) {
+      final l10n = AppLocalizations.of(context);
+      if (l10n != null) {
+        title = l10n.notificationTournamentWon;
+        subtitle = l10n.notificationCongratulation1;
+      }
+    }
 
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'happygoal_wins',
@@ -396,17 +480,17 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.show(
       Random().nextInt(10000),
-      "🏆 TOURNOI GAGNÉ !",
-      "Félicitations ! Vous avez écrit l'histoire. Revenez vite défendre votre titre !",
+      title,
+      subtitle,
       details,
     );
     return true;
   }
 
-  /// Vérifier au démarrage
-  Future<void> checkAndRescheduleNotifications() async {
+  /// Vérifier au démarrage et reprogrammer avec i18n optionnel
+  Future<void> checkAndRescheduleNotifications({BuildContext? context}) async {
     if (await areNotificationsEnabled()) {
-      await scheduleRecurringNotifications();
+      await scheduleRecurringNotifications(context: context);
     }
   }
 }

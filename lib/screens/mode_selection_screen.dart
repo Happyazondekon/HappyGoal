@@ -510,3 +510,77 @@ class ModeSelectionScreen extends StatelessWidget {
     );
   }
 }
+
+// Floating particle widget for decorative effect
+class FloatingParticle extends StatefulWidget {
+  final double size;
+  final Color color;
+  final Duration duration;
+
+  const FloatingParticle({
+    Key? key,
+    required this.size,
+    required this.color,
+    required this.duration,
+  }) : super(key: key);
+
+  @override
+  State<FloatingParticle> createState() => _FloatingParticleState();
+}
+
+class _FloatingParticleState extends State<FloatingParticle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    )..repeat(reverse: true);
+
+    _offsetAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -30),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.3,
+      end: 0.8,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _offsetAnimation,
+      child: FadeTransition(
+        opacity: _opacityAnimation,
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.color,
+            boxShadow: [
+              BoxShadow(
+                color: widget.color,
+                blurRadius: widget.size,
+                spreadRadius: widget.size * 0.5,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
