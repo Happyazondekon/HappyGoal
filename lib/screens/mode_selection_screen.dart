@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'home_screen.dart';
 import 'result_screen.dart';
 import 'team_selection_screen.dart';
 import 'difficulty_selection_screen.dart';
 import 'package:happygoal/utils/audio_manager.dart';
 import 'hero_mode_screen.dart';
+
 
 class ModeSelectionScreen extends StatelessWidget {
   const ModeSelectionScreen({Key? key}) : super(key: key);
@@ -81,9 +84,9 @@ class ModeSelectionScreen extends StatelessWidget {
                                       Colors.white,
                                     ],
                                   ).createShader(bounds),
-                                  child: const Text(
-                                    'Choisir un mode',
-                                    style: TextStyle(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.modeSelectionTitle,
+                                    style: const TextStyle(
                                       fontSize: 42,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
@@ -125,9 +128,9 @@ class ModeSelectionScreen extends StatelessWidget {
                               width: 1,
                             ),
                           ),
-                          child: const Text(
-                            'Sélectionnez votre défi',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.modeSelectionSubtitle,
+                            style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white,
                               fontWeight: FontWeight.w300,
@@ -159,8 +162,8 @@ class ModeSelectionScreen extends StatelessWidget {
                                 opacity: value,
                                 child: _buildModernModeCard(
                                   context,
-                                  title: 'MODE HERO',
-                                  subtitle: 'Progressez à travers 100 niveaux',
+                                  title: AppLocalizations.of(context)!.modeHeroTitle,
+                                  subtitle: AppLocalizations.of(context)!.modeHeroSubtitle,
                                   icon: Icons.star,
                                   gradient: const LinearGradient(
                                     colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
@@ -204,8 +207,8 @@ class ModeSelectionScreen extends StatelessWidget {
                                 opacity: value,
                                 child: _buildModernModeCard(
                                   context,
-                                  title: 'MODE MULTIJOUEUR',
-                                  subtitle: 'Défiez un ami',
+                                  title: AppLocalizations.of(context)!.modeMultiplayerTitle,
+                                  subtitle: AppLocalizations.of(context)!.modeMultiplayerSubtitle,
                                   icon: Icons.people,
                                   gradient: const LinearGradient(
                                     colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
@@ -249,8 +252,8 @@ class ModeSelectionScreen extends StatelessWidget {
                                 opacity: value,
                                 child: _buildModernModeCard(
                                   context,
-                                  title: 'MODE TOURNOI',
-                                  subtitle: 'Remportez le championnat',
+                                  title: AppLocalizations.of(context)!.modeTournamentTitle,
+                                  subtitle: AppLocalizations.of(context)!.modeTournamentSubtitle,
                                   icon: Icons.emoji_events,
                                   gradient: const LinearGradient(
                                     colors: [Color(0xFFFF9800), Color(0xFFE65100)],
@@ -351,9 +354,9 @@ class ModeSelectionScreen extends StatelessWidget {
                                   color: Colors.white,
                                   size: 24,
                                 ),
-                                label: const Text(
-                                  'Retour',
-                                  style: TextStyle(
+                                label: Text(
+                                  AppLocalizations.of(context)!.modeBack,
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,

@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/models/team.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
@@ -269,6 +271,10 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
             child: const Text('GÉNIAL !', style: TextStyle(color: Colors.black)),
           ),
+          Text(
+            AppLocalizations.of(context)!.resultGreat,
+            style: const TextStyle(color: Colors.black),
+          ),
         ],
       ),
     );
@@ -339,7 +345,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final bool isDefeat = widget.isSoloMode && !widget.isUserWinner;
     final Color primaryColor = isDefeat ? const Color(0xFF424242) : widget.winner.color;
-    final String resultTitle = isDefeat ? 'DÉFAITE' : 'VICTOIRE';
+    final String resultTitle = isDefeat ? AppLocalizations.of(context)!.resultDefeat : AppLocalizations.of(context)!.resultVictory;
 
     // Gradient colors based on result
     final List<Color> gradientColors = isDefeat
@@ -426,7 +432,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                     border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
                                   ),
                                   child: Text(
-                                    isDefeat ? "L'IA a remporté cette séance" : "Félicitations pour cette victoire !",
+                                    isDefeat ? AppLocalizations.of(context)!.resultDefeatSubtitle : AppLocalizations.of(context)!.resultVictorySubtitle,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.white.withOpacity(0.9),
@@ -446,11 +452,11 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
+                                      children:  [
                                         Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 16),
                                         SizedBox(width: 6),
                                         Text(
-                                          '+1 COIN',
+                                          AppLocalizations.of(context)!.resultCoin,
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
@@ -605,7 +611,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                       children: [
                                         Expanded(
                                           child: _buildActionButton(
-                                            text: 'REVANCHE',
+                                            text: AppLocalizations.of(context)!.resultRematch,
                                             icon: Icons.refresh,
                                             color: const Color(0xFF4CAF50),
                                             onPressed: _navigateToTeamSelection,
@@ -614,7 +620,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: _buildActionButton(
-                                            text: 'RETOUR AU MENU',
+                                            text: AppLocalizations.of(context)!.resultBackToMenu,
                                             icon: Icons.home,
                                             color: const Color(0xFF757575),
                                             onPressed: _navigateToModeSelection,
@@ -627,7 +633,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                       children: [
                                         Expanded(
                                           child: _buildActionButton(
-                                            text: 'CHANGER ÉQUIPE',
+                                            text: AppLocalizations.of(context)!.resultChangeTeam,
                                             icon: Icons.swap_horiz,
                                             color: primaryColor,
                                             onPressed: _navigateToTeamSelection,
@@ -636,7 +642,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: _buildActionButton(
-                                            text: 'RETOUR AU MENU',
+                                            text: AppLocalizations.of(context)!.resultBackToMenu,
                                             icon: Icons.home,
                                             color: const Color(0xFF757575),
                                             onPressed: _navigateToModeSelection,
@@ -778,7 +784,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         child: Column(
           children: [
             Text(
-              'TIRS AU BUT',
+              AppLocalizations.of(context)!.resultShots,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: team.color, letterSpacing: 1.2),
             ),
             const SizedBox(height: 6),
@@ -796,7 +802,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
-                  '(Derniers $_maxShotsToDisplay tirs)',
+                  AppLocalizations.of(context)!.resultLastShots(_maxShotsToDisplay),
                   style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic),
                 ),
               ),

@@ -7,6 +7,7 @@ import 'package:happygoal/models/game_state.dart';
 import 'mode_selection_screen.dart';
 import 'team_selection_screen.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'dart:convert'; // Pour json.encode et json.decode
 
 class TournamentModeScreen extends StatefulWidget {
@@ -61,8 +62,8 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
 
   Widget _buildStatsSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: ResponsiveHelper.scale(context, 20), vertical: ResponsiveHelper.scale(context, 12)),
+      padding: EdgeInsets.all(ResponsiveHelper.scale(context, 20)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -89,14 +90,14 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
             onTap: () => setState(() => _showStats = !_showStats),
             child: Row(
               children: [
-                const Icon(Icons.analytics, color: Colors.white, size: 24),
-                const SizedBox(width: 12),
+                Icon(Icons.analytics, color: Colors.white, size: ResponsiveHelper.scale(context, 24)),
+                SizedBox(width: ResponsiveHelper.scale(context, 12)),
                 Expanded(
                   child: Text(
                     'STATISTIQUES DU TOURNOI',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: ResponsiveHelper.textScale(context, 18),
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
@@ -106,7 +107,7 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                 Icon(
                   _showStats ? Icons.expand_less : Icons.expand_more,
                   color: Colors.white,
-                  size: 22,
+                  size: ResponsiveHelper.scale(context, 22),
                 ),
               ],
             ),

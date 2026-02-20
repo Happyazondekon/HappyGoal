@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:happygoal/screens/tutorial_settings_screen.dart';
 import 'package:happygoal/screens/achievements_screen.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/widgets/tutorial_overlay.dart';
 import 'mode_selection_screen.dart';
 import 'package:happygoal/widgets/audiosettings_widget.dart';
@@ -13,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:happygoal/widgets/coin_shop_dialog.dart';
 import 'dart:math' as math;
+import 'package:happygoal/l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // ANIMATION: Ballon flottant
@@ -186,7 +188,7 @@ class _PlayButtonState extends State<PlayButton>
       },
       child: SizedBox(
         width: double.infinity,
-        height: 72,
+        height: ResponsiveHelper.scale(context, 72),
         child: ElevatedButton(
           onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
@@ -205,16 +207,16 @@ class _PlayButtonState extends State<PlayButton>
               ),
               borderRadius: BorderRadius.circular(30),
             ),
-            child: const Center(
+            child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.sports_soccer, color: Colors.white, size: 28),
-                  SizedBox(width: 12),
+                  Icon(Icons.sports_soccer, color: Colors.white, size: ResponsiveHelper.scale(context, 28)),
+                  SizedBox(width: ResponsiveHelper.scale(context, 12)),
                   Text(
-                    'JOUER',
+                    AppLocalizations.of(context)!.playButton,
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: ResponsiveHelper.textScale(context, 24),
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: 3,
@@ -274,34 +276,34 @@ class _HomeScreenState extends State<HomeScreen>
   List<TutorialStep> _createTutorialSteps() {
     return [
       TutorialStep(
-        title: 'Bienvenue sur HappyGoal !',
-        description: 'Prêt pour une série de tirs au but ?',
+        title: AppLocalizations.of(context)!.welcomeMessage,
+        description: AppLocalizations.of(context)!.startAdventure,
         targetKey: _playButtonKey,
         position: TutorialPosition.top,
         customContent: Column(
           children: [
             const Icon(Icons.sports_soccer, size: 50, color: Colors.blue),
             const SizedBox(height: 10),
-            const Text('Prêt à marquer ?',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(AppLocalizations.of(context)!.startAdventure,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
       TutorialStep(
-        title: 'Boutique',
-        description: 'Vos coins sont ici. Touchez pour ouvrir la boutique !',
+        title: AppLocalizations.of(context)!.shop,
+        description: AppLocalizations.of(context)!.shopDescription,
         targetKey: _coinBalanceKey,
         position: TutorialPosition.bottom,
       ),
       TutorialStep(
-        title: 'Cadeau Quotidien',
-        description: 'Récupérez vos coins gratuits ici !',
+        title: AppLocalizations.of(context)!.dailyGift,
+        description: AppLocalizations.of(context)!.dailyGiftDescription,
         targetKey: _rewardButtonKey,
         position: TutorialPosition.top,
       ),
       TutorialStep(
-        title: 'Vos Succès',
-        description: 'Consultez vos achievements et récupérez vos récompenses !',
+        title: AppLocalizations.of(context)!.achievements,
+        description: AppLocalizations.of(context)!.achievementsDescription,
         targetKey: _achievementsButtonKey,
         position: TutorialPosition.top,
       ),
@@ -422,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen>
                       _buildTopChip(
                         key: _achievementsButtonKey,
                         icon: Icons.emoji_events,
-                        label: 'SUCCÈS',
+                        label: AppLocalizations.of(context)!.achievements,
                         gradient: const [Color(0xFFFFD700), Color(0xFFFFA000)],
                         onTap: _navigateToAchievements,
                       ),
@@ -444,9 +446,9 @@ class _HomeScreenState extends State<HomeScreen>
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ).createShader(bounds),
-                        child: const Text(
-                          'HappyGoal',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.appTitle,
+                          style: const TextStyle(
                             fontSize: 50,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -456,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'LE DÉFI DES TIRS AU BUT',
+                        AppLocalizations.of(context)!.subtitle,
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.white.withOpacity(0.55),
@@ -501,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: _buildIconAction(
                               key: _rewardButtonKey,
                               icon: Icons.card_giftcard,
-                              label: 'Cadeau',
+                              label: AppLocalizations.of(context)!.dailyGift,
                               color: const Color(0xFFE2FD31),
                               onTap: _showEarnRewardDialog,
                             ),
@@ -511,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: _buildIconAction(
                               key: _inviteButtonKey,
                               icon: Icons.group_add,
-                              label: 'Inviter',
+                              label: AppLocalizations.of(context)!.invite,
                               color: const Color(0xFFBCF1A4),
                               onTap: _inviteFriends,
                             ),
@@ -521,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: _buildIconAction(
                               key: _rulesButtonKey,
                               icon: Icons.menu_book,
-                              label: 'Règles',
+                              label: AppLocalizations.of(context)!.rules,
                               color: const Color(0xFFFFFFFF),
                               onTap: () => _showRulesDialog(context),
                             ),
@@ -531,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: _buildIconAction(
                               key: _settingsButtonKey,
                               icon: Icons.tune,
-                              label: 'Options',
+                              label: AppLocalizations.of(context)!.settings,
                               color: const Color(0xDBD15959),
                               onTap: () => _showSettingsDialog(context),
                             ),

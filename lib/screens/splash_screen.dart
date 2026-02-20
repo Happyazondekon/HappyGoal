@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'home_screen.dart';
 import 'package:happygoal/utils/remote_config_service.dart'; //
 
@@ -119,15 +121,15 @@ class _SplashScreenState extends State<SplashScreen>
           backgroundColor: const Color(0xFF0F3622),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
-            children: const [
-              Icon(Icons.system_update, color: Color(0xFFFFD700)),
-              SizedBox(width: 10),
-              Text("Mise à jour requise", style: TextStyle(color: Colors.white)),
-            ],
+              children: [
+                const Icon(Icons.system_update, color: Color(0xFFFFD700)),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context)!.splashRequiredUpdateTitle, style: const TextStyle(color: Colors.white)),
+              ],
           ),
-          content: const Text(
-            "Une nouvelle version de HappyGoal est disponible.\n\nCette mise à jour est obligatoire pour profiter des fonctionnalités en ligne et des tournois.\n\nVeuillez mettre à jour pour continuer.",
-            style: TextStyle(color: Colors.white70),
+          content: Text(
+            AppLocalizations.of(context)!.splashRequiredUpdateContent,
+            style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             ElevatedButton(
@@ -136,7 +138,7 @@ class _SplashScreenState extends State<SplashScreen>
                 backgroundColor: const Color(0xFFFFD700),
                 foregroundColor: Colors.black,
               ),
-              child: const Text("METTRE À JOUR MAINTENANT"),
+              child: Text(AppLocalizations.of(context)!.splashRequiredUpdateButton),
             ),
           ],
         ),
@@ -280,13 +282,19 @@ class _SplashScreenState extends State<SplashScreen>
                           children: [
                             ShaderMask(
                               shaderCallback: (bounds) => const LinearGradient(colors: [Colors.white, Color(0xFFE0E0E0), Colors.white]).createShader(bounds),
-                              child: const Text('HappyGoal', style: TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 3, shadows: [Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.white), Shadow(offset: Offset(0, 5), blurRadius: 15, color: Colors.black)])),
+                              child: Text(
+                                AppLocalizations.of(context)!.splashTitle,
+                                style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 3, shadows: [Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.white), Shadow(offset: Offset(0, 5), blurRadius: 15, color: Colors.black)]),
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
                               decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), color: Colors.white.withOpacity(0.15), border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))]),
-                              child: const Text('Le défi des tirs au but', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w400, letterSpacing: 1.2)),
+                              child: Text(
+                                AppLocalizations.of(context)!.splashSubtitle,
+                                style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w400, letterSpacing: 1.2),
+                              ),
                             ),
                           ],
                         ),
@@ -304,7 +312,10 @@ class _SplashScreenState extends State<SplashScreen>
                         builder: (context, child) {
                           return Opacity(
                             opacity: _progressController.value,
-                            child: const Text('Chargement...', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300, letterSpacing: 1.5)),
+                            child: Text(
+                              AppLocalizations.of(context)!.splashLoading,
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300, letterSpacing: 1.5),
+                            ),
                           );
                         },
                       ),

@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/screens/game_screen.dart';
@@ -221,7 +223,7 @@ class _HeroModeScreenState extends State<HeroModeScreen>
           height: 56,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF5277EF), Color(0xFF0F4A2D)],
+              colors: [Color(0xFFE2FD31), Color(0xFF0F4A2D)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -314,7 +316,7 @@ class _HeroModeScreenState extends State<HeroModeScreen>
 
   Widget _buildTopBorder() {
     return Container(
-      height: 30,
+      height: ResponsiveHelper.scale(context, 30),
       decoration: const BoxDecoration(
         color: Color(0xFFF5E6C8),
         borderRadius: BorderRadius.only(
@@ -334,8 +336,8 @@ class _HeroModeScreenState extends State<HeroModeScreen>
         children: List.generate(
           12,
               (i) => Container(
-            width: 20,
-            height: 20,
+            width: ResponsiveHelper.scale(context, 20),
+            height: ResponsiveHelper.scale(context, 20),
             decoration: BoxDecoration(
               color: i % 2 == 0
                   ? const Color(0xFFE8D5A3)
@@ -350,7 +352,7 @@ class _HeroModeScreenState extends State<HeroModeScreen>
 
   Widget _buildBottomBorder() {
     return Container(
-      height: 30,
+      height: ResponsiveHelper.scale(context, 30),
       decoration: const BoxDecoration(
         color: Color(0xFF8B4513),
         borderRadius: BorderRadius.only(
@@ -384,10 +386,10 @@ class _HeroModeScreenState extends State<HeroModeScreen>
           // Title
           Column(
             children: [
-              const Text(
-                'MODE HERO',
+              Text(
+                AppLocalizations.of(context)!.heroModeTitle,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: ResponsiveHelper.textScale(context, 18),
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: 2,
@@ -446,17 +448,17 @@ class _HeroModeScreenState extends State<HeroModeScreen>
         backgroundColor: const Color(0xFF1B2A1E),
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Changer de pays ?',
-            style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Vous perdrez votre progression. Voulez-vous recommencer ?',
-          style: TextStyle(color: Colors.white70),
+        title: Text(AppLocalizations.of(context)!.heroModeResetTitle,
+            style: const TextStyle(color: Colors.white)),
+        content: Text(
+          AppLocalizations.of(context)!.heroModeResetContent,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler',
-                style: TextStyle(color: Colors.white54)),
+            child: Text(AppLocalizations.of(context)!.heroModeResetCancel,
+                style: const TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -468,8 +470,8 @@ class _HeroModeScreenState extends State<HeroModeScreen>
             },
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700)),
-            child: const Text('Recommencer',
-                style: TextStyle(color: Colors.black)),
+            child: Text(AppLocalizations.of(context)!.heroModeResetConfirm,
+                style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -481,8 +483,8 @@ class _HeroModeScreenState extends State<HeroModeScreen>
       onTap: () {
         AdController.instance.showRewardDialog(
           context: context,
-          title: 'Récompense niveau $level',
-          description: 'Regardez une vidéo pour gagner ${AdController.instance.rewardCoins} coins !',
+          title: AppLocalizations.of(context)!.heroModeRewardTitle(level),
+          description: AppLocalizations.of(context)!.heroModeRewardDescription(AdController.instance.rewardCoins),
           rewardType: 'coins',
           rewardAmount: AdController.instance.rewardCoins,
           onRewardEarned: () {
@@ -491,7 +493,7 @@ class _HeroModeScreenState extends State<HeroModeScreen>
                 content: Row(children: [
                   const Icon(Icons.card_giftcard, color: Colors.white),
                   const SizedBox(width: 10),
-                  Text('+${AdController.instance.rewardCoins} coins ajoutés !'),
+                  Text(AppLocalizations.of(context)!.heroModeRewardAdded(AdController.instance.rewardCoins)),
                 ]),
                 backgroundColor: Colors.green,
               ),
@@ -499,8 +501,8 @@ class _HeroModeScreenState extends State<HeroModeScreen>
           },
           onAdFailed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Publicité indisponible ou erreur de chargement.'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.heroModeRewardAdUnavailable),
                 backgroundColor: Colors.red,
               ),
             );
@@ -621,9 +623,9 @@ class _HeroModeScreenState extends State<HeroModeScreen>
               color: const Color(0xFFFFD700),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              'FIN',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.heroModeEnd,
+              style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                   color: Colors.black,
@@ -654,9 +656,9 @@ class _HeroModeScreenState extends State<HeroModeScreen>
           child: const Icon(Icons.flag, color: Colors.white, size: 30),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'DÉBUT',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.heroModeStart,
+          style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
             color: Colors.white,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:happygoal/constants.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 
 class ScoreBoardWidget extends StatelessWidget {
   final Team team1;
@@ -24,7 +25,7 @@ class ScoreBoardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(ResponsiveHelper.scale(context, 12)),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -34,17 +35,17 @@ class ScoreBoardWidget extends StatelessWidget {
             Color(0xFFF5F5F5),
           ],
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 8)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            blurRadius: ResponsiveHelper.scale(context, 10),
+            offset: Offset(0, ResponsiveHelper.scale(context, 5)),
           ),
         ],
         border: Border.all(
           color: Colors.white,
-          width: 1,
+          width: ResponsiveHelper.scale(context, 1),
         ),
       ),
       child: Column(
@@ -53,45 +54,43 @@ class ScoreBoardWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildTeamHeader(team1, currentTeam == team1),
-              _buildScoreDisplay(),
-              _buildTeamHeader(team2, currentTeam == team2),
+              _buildTeamHeader(context, team1, currentTeam == team1),
+              _buildScoreDisplay(context),
+              _buildTeamHeader(context, team2, currentTeam == team2),
             ],
           ),
-
-          const SizedBox(height: 10),
-
+          SizedBox(height: ResponsiveHelper.scale(context, 10)),
           // Shot indicators
-          _buildShotIndicatorsRow(),
+          _buildShotIndicatorsRow(context),
         ],
       ),
     );
   }
 
-  Widget _buildTeamHeader(Team team, bool isActive) {
+  Widget _buildTeamHeader(BuildContext context, Team team, bool isActive) {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: EdgeInsets.all(ResponsiveHelper.scale(context, 4)),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
               color: isActive ? const Color(0xFF4B92DB) : Colors.transparent,
-              width: 2,
+              width: ResponsiveHelper.scale(context, 2),
             ),
           ),
           child: Image.asset(
             team.flagImage,
-            width: 36,
-            height: 36,
+            width: ResponsiveHelper.scale(context, 36),
+            height: ResponsiveHelper.scale(context, 36),
             fit: BoxFit.contain,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: ResponsiveHelper.scale(context, 4)),
         Text(
           team.name.toUpperCase(),
           style: TextStyle(
-            fontSize: 12,
+            fontSize: ResponsiveHelper.textScale(context, 12),
             fontWeight: FontWeight.bold,
             color: Colors.white,
             letterSpacing: 1.0,
@@ -101,9 +100,9 @@ class ScoreBoardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreDisplay() {
+  Widget _buildScoreDisplay(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.scale(context, 16), vertical: ResponsiveHelper.scale(context, 4)),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -111,26 +110,26 @@ class ScoreBoardWidget extends StatelessWidget {
             Color(0xFFF5F5F5),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 20)),
         boxShadow: [
           BoxShadow(
             color: Colors.blue.withOpacity(0.5),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            blurRadius: ResponsiveHelper.scale(context, 5),
+            offset: Offset(0, ResponsiveHelper.scale(context, 2)),
           ),
         ],
       ),
       child: Text(
         "${team1.score} - ${team2.score}",
-        style: const TextStyle(
-          fontSize: 24,
+        style: TextStyle(
+          fontSize: ResponsiveHelper.textScale(context, 24),
           fontWeight: FontWeight.bold,
           color: Colors.white,
           shadows: [
             Shadow(
-              blurRadius: 5,
+              blurRadius: ResponsiveHelper.scale(context, 5),
               color: Colors.black,
-              offset: Offset(0, 1),
+              offset: Offset(0, ResponsiveHelper.scale(context, 1)),
             ),
           ],
         ),
@@ -138,60 +137,60 @@ class ScoreBoardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildShotIndicatorsRow() {
+  Widget _buildShotIndicatorsRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildTeamShots(team1Results, AppColors.team1),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+        _buildTeamShots(context, team1Results, AppColors.team1),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.scale(context, 8)),
           child: Text(
             "TIRS",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 11,
+              fontSize: ResponsiveHelper.textScale(context, 11),
               letterSpacing: 1.0,
             ),
           ),
         ),
-        _buildTeamShots(team2Results, AppColors.team2),
+        _buildTeamShots(context, team2Results, AppColors.team2),
       ],
     );
   }
 
-  Widget _buildTeamShots(List<bool> results, Color color) {
+  Widget _buildTeamShots(BuildContext context, List<bool> results, Color color) {
     return Row(
       children: [
         for (int i = 0; i < results.length; i++)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: _buildShotIndicator(results[i], color),
+            padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.scale(context, 2)),
+            child: _buildShotIndicator(context, results[i], color),
           ),
         for (int i = results.length; i < shotsPerTeam; i++)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: _buildEmptyShotIndicator(),
+            padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.scale(context, 2)),
+            child: _buildEmptyShotIndicator(context),
           ),
       ],
     );
   }
 
-  Widget _buildShotIndicator(bool isGoal, Color color) {
+  Widget _buildShotIndicator(BuildContext context, bool isGoal, Color color) {
     return Container(
-      width: 16,
-      height: 16,
+      width: ResponsiveHelper.scale(context, 16),
+      height: ResponsiveHelper.scale(context, 16),
       decoration: BoxDecoration(
         color: isGoal ? color : Colors.red[400],
         shape: BoxShape.circle,
         border: Border.all(
           color: Colors.white,
-          width: 1.5,
+          width: ResponsiveHelper.scale(context, 1.5),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
+            blurRadius: ResponsiveHelper.scale(context, 2),
+            offset: Offset(0, ResponsiveHelper.scale(context, 1)),
           ),
         ],
       ),
@@ -199,22 +198,22 @@ class ScoreBoardWidget extends StatelessWidget {
         child: Icon(
           isGoal ? Icons.check : Icons.close,
           color: Colors.white,
-          size: 10,
+          size: ResponsiveHelper.scale(context, 10),
         ),
       ),
     );
   }
 
-  Widget _buildEmptyShotIndicator() {
+  Widget _buildEmptyShotIndicator(BuildContext context) {
     return Container(
-      width: 16,
-      height: 16,
+      width: ResponsiveHelper.scale(context, 16),
+      height: ResponsiveHelper.scale(context, 16),
       decoration: BoxDecoration(
         color: Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(
           color: Colors.white.withOpacity(1),
-          width: 1,
+          width: ResponsiveHelper.scale(context, 1),
         ),
       ),
     );

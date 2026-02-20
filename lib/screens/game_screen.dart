@@ -6,6 +6,7 @@ import 'package:happygoal/constants.dart' hide ShotDirection;
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/screens/game_controller.dart';
 import 'package:happygoal/services/hero_challenge_evaluator.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/widgets/goal_post_widget.dart';
 import 'package:happygoal/widgets/goalkeeper_controller_widget.dart';
 import 'package:happygoal/widgets/score_board_widget.dart';
@@ -137,13 +138,13 @@ class _GameScreenState extends State<GameScreen>
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.swipe_up, color: Colors.green, size: 30),
-                SizedBox(width: 10),
+              children: [
+                Icon(Icons.swipe_up, color: Colors.green, size: ResponsiveHelper.scale(context, 30)),
+                SizedBox(width: ResponsiveHelper.scale(context, 10)),
                 Text(
                   'Swipe pour marquer !',
                   style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                      fontSize: ResponsiveHelper.textScale(context, 16), fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -215,13 +216,13 @@ class _GameScreenState extends State<GameScreen>
 
   Widget _buildTipRow(IconData icon, String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.scale(context, 2)),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Colors.blue),
-          const SizedBox(width: 8),
+          Icon(icon, size: ResponsiveHelper.scale(context, 16), color: Colors.blue),
+          SizedBox(width: ResponsiveHelper.scale(context, 8)),
           Expanded(
-              child: Text(text, style: const TextStyle(fontSize: 14))),
+              child: Text(text, style: TextStyle(fontSize: ResponsiveHelper.textScale(context, 14)))),
         ],
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:happygoal/models/achievement.dart';
 import 'package:happygoal/services/achievement_service.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/utils/audio_manager.dart';
 
 class AchievementsScreen extends StatefulWidget {

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/models/hero_challenge.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class HeroTransitionScreen extends StatefulWidget {
   final Team myTeam;
@@ -225,7 +227,7 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
           const Icon(Icons.star, color: Colors.white, size: 18),
           const SizedBox(width: 8),
           Text(
-            'CHAPITRE ${widget.level}',
+            AppLocalizations.of(context)!.heroTransitionChapter(widget.level),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
@@ -271,8 +273,8 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
                   ),
                 ],
               ),
-              child: const Text(
-                'VS',
+              child:  Text(
+                AppLocalizations.of(context)!.heroTransitionVS,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
@@ -358,9 +360,9 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
               border: Border.all(
                   color: const Color(0xFF4CAF50).withOpacity(0.5)),
             ),
-            child: const Text(
-              'VOUS',
-              style: TextStyle(
+            child:  Text(
+              AppLocalizations.of(context)!.heroTransitionYou,
+              style: const TextStyle(
                   color: Color(0xFF4CAF50),
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -409,13 +411,13 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+             Row(
               children: [
-                Icon(Icons.history, color: Color(0xFFFFD700), size: 14),
-                SizedBox(width: 6),
+                const Icon(Icons.history, color: Color(0xFFFFD700), size: 14),
+                const SizedBox(width: 6),
                 Text(
-                  'VOTRE MEILLEUR RÉSULTAT',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.heroTransitionBestResult,
+                  style: const TextStyle(
                     color: Color(0xFFFFD700),
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -509,15 +511,15 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
                 ),
               ],
             ),
-            child: const Center(
+            child:  Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
                   SizedBox(width: 8),
                   Text(
-                    'COMMENCER LE MATCH',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.heroTransitionStart,
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
@@ -535,11 +537,11 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
 
   String _getStory(int level, Team myTeam, Team opponent) {
     if (level == 1) {
-      return "L'aventure commence ! Tu représentes ${myTeam.name} et ton premier adversaire est ${opponent.name}. Montre ton talent !";
+      return AppLocalizations.of(context)!.heroTransitionStoryStart(myTeam.name, opponent.name);
     } else if (level == 100) {
-      return "Le défi ultime ! Après un parcours légendaire, tu affrontes ${opponent.name} pour la gloire éternelle.";
+      return AppLocalizations.of(context)!.heroTransitionStoryEnd(opponent.name);
     } else {
-      return "Niveau $level : ${myTeam.name} affronte ${opponent.name} dans un duel décisif. Prouve ta valeur !";
+      return AppLocalizations.of(context)!.heroTransitionStoryLevel(level, myTeam.name, opponent.name);
     }
   }
 }

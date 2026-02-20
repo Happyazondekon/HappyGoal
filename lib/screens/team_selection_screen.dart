@@ -1,6 +1,8 @@
 // lib/screens/team_selection_screen.dart
 import 'package:flutter/material.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'game_screen.dart';
@@ -60,9 +62,11 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     }
 
     if (widget.isTournamentMode) {
-      _modeTitle = 'Mode Tournoi';
+      _modeTitle = AppLocalizations.of(context)!.teamSelectionModeTournament;
     } else {
-      _modeTitle = widget.isSoloMode ? 'Mode Solo' : 'Mode Multijoueur';
+      _modeTitle = widget.isSoloMode
+          ? AppLocalizations.of(context)!.teamSelectionModeSolo
+          : AppLocalizations.of(context)!.teamSelectionModeMulti;
     }
 
     _controller = AnimationController(
@@ -141,7 +145,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner deux équipes')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.teamSelectionSelectTwo)),
       );
     }
   }
@@ -152,6 +156,8 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(_selectedContinent ?? 'Sélection des équipes'),
+        // Replace with localized title
+        // title: Text(_selectedContinent ?? AppLocalizations.of(context)!.teamSelectionTitle),
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
@@ -190,7 +196,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Choisissez votre équipe et l\'équipe adverse contrôlée par l\'ordinateur',
+                AppLocalizations.of(context)!.teamSelectionChooseTeams,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -216,12 +222,16 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                     _buildSelectedTeamCard(
                       team: selectedTeam1,
                       teamColor: AppColors.team1,
-                      label: widget.isSoloMode ? 'Votre Équipe' : 'Équipe 1',
+                      label: widget.isSoloMode
+                          ? AppLocalizations.of(context)!.teamSelectionYourTeam
+                          : AppLocalizations.of(context)!.teamSelectionTeam1,
                     ),
                     _buildSelectedTeamCard(
                       team: selectedTeam2,
                       teamColor: AppColors.team2,
-                      label: widget.isSoloMode ? 'Équipe IA' : 'Équipe 2',
+                      label: widget.isSoloMode
+                          ? AppLocalizations.of(context)!.teamSelectionAITeam
+                          : AppLocalizations.of(context)!.teamSelectionTeam2,
                     ),
                   ],
                 ),
@@ -253,9 +263,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                   elevation: 8,
                   shadowColor: AppColors.primary.withOpacity(0.5),
                 ),
-                child: const Text(
-                  'COMMENCER LE MATCH',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.teamSelectionStart,
+                  style: const TextStyle(
                     fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -418,7 +428,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             ),
             const SizedBox(height: 8),
             Text(
-              'À sélectionner',
+              AppLocalizations.of(context)!.teamSelectionToSelect,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,

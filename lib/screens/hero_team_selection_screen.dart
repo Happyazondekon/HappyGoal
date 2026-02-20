@@ -1,5 +1,8 @@
+
 import 'package:flutter/material.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/models/team.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 
 class HeroTeamSelectionScreen extends StatefulWidget {
   final Function(String countryCode) onCountrySelected;
@@ -77,35 +80,38 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                 // Header
                 ScaleTransition(
                   scale: _headerAnimation,
-                  child: _buildHeader(),
+                  child: _buildHeader(context),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: ResponsiveHelper.scale(context, 16)),
 
                 // Subtitle
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveHelper.scale(context, 24)),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.scale(context, 16),
+                        vertical: ResponsiveHelper.scale(context, 10)),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.07),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
                       border:
                       Border.all(color: Colors.white.withOpacity(0.12)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.info_outline,
-                            color: Colors.white54, size: 16),
-                        SizedBox(width: 8),
+                            color: Colors.white54,
+                            size: ResponsiveHelper.scale(context, 16)),
+                        SizedBox(width: ResponsiveHelper.scale(context, 8)),
                         Flexible(
                           child: Text(
-                            'Choisissez le pays que vous représenterez dans votre aventure Hero',
+                            AppLocalizations.of(context)!.heroTeamSelectSubtitle,
                             style: TextStyle(
                               color: Colors.white60,
-                              fontSize: 13,
+                              fontSize: ResponsiveHelper.textScale(context, 13),
                               fontStyle: FontStyle.italic,
                             ),
                             textAlign: TextAlign.center,
@@ -116,25 +122,26 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: ResponsiveHelper.scale(context, 16)),
 
                 // Team grid
                 Expanded(
                   child: GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.scale(context, 16),
+                        vertical: ResponsiveHelper.scale(context, 8)),
                     gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                    SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
+                      crossAxisSpacing: ResponsiveHelper.scale(context, 12),
+                      mainAxisSpacing: ResponsiveHelper.scale(context, 12),
                       childAspectRatio: 0.85,
                     ),
                     itemCount: teams.length,
                     itemBuilder: (context, index) {
                       final team = teams[index];
                       final isSelected = _localSelected == team.name;
-                      return _buildTeamCard(team, isSelected, index);
+                      return _buildTeamCard(context, team, isSelected, index);
                     },
                   ),
                 ),
@@ -142,8 +149,8 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                 // Validate button
                 if (_localSelected != null)
                   Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: _buildValidateButton(),
+                    padding: EdgeInsets.all(ResponsiveHelper.scale(context, 20)),
+                    child: _buildValidateButton(context),
                   ),
               ],
             ),
@@ -153,32 +160,38 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        ResponsiveHelper.scale(context, 16),
+        ResponsiveHelper.scale(context, 16),
+        ResponsiveHelper.scale(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(ResponsiveHelper.scale(context, 10)),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 12)),
                 border: Border.all(color: Colors.white24),
               ),
-              child:
-              const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: Icon(Icons.arrow_back,
+                  color: Colors.white,
+                  size: ResponsiveHelper.scale(context, 20)),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Column(
                 children: [
                   Text(
-                    'CHOISISSEZ',
+                    AppLocalizations.of(context)!.heroTeamSelectHeader1,
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: ResponsiveHelper.textScale(context, 22),
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: 3,
@@ -188,9 +201,9 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                     ),
                   ),
                   Text(
-                    'VOTRE PAYS',
+                    AppLocalizations.of(context)!.heroTeamSelectHeader2,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: ResponsiveHelper.textScale(context, 14),
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF4CAF50),
                       letterSpacing: 4,
@@ -200,13 +213,13 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
               ),
             ),
           ),
-          const SizedBox(width: 42), // Balance the back button
+          SizedBox(width: ResponsiveHelper.scale(context, 42)), // Balance the back button
         ],
       ),
     );
   }
 
-  Widget _buildTeamCard(Team team, bool isSelected, int index) {
+  Widget _buildTeamCard(BuildContext context, Team team, bool isSelected, int index) {
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + index * 30),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -223,12 +236,12 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
             border: Border.all(
               color: isSelected
                   ? const Color(0xFFFFD700)
                   : Colors.white.withOpacity(0.12),
-              width: isSelected ? 2.5 : 1,
+              width: isSelected ? ResponsiveHelper.scale(context, 2.5) : ResponsiveHelper.scale(context, 1),
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -247,8 +260,8 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                 ? [
               BoxShadow(
                 color: const Color(0xFFFFD700).withOpacity(0.3),
-                blurRadius: 16,
-                spreadRadius: 2,
+                blurRadius: ResponsiveHelper.scale(context, 16),
+                spreadRadius: ResponsiveHelper.scale(context, 2),
               )
             ]
                 : [],
@@ -258,27 +271,27 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
             children: [
               // Flag
               Container(
-                width: 60,
-                height: 40,
+                width: ResponsiveHelper.scale(context, 60),
+                height: ResponsiveHelper.scale(context, 40),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: const [
+                  borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 6)),
+                  boxShadow: [
                     BoxShadow(
                         color: Colors.black38,
-                        blurRadius: 6,
-                        offset: Offset(0, 3))
+                        blurRadius: ResponsiveHelper.scale(context, 6),
+                        offset: Offset(0, ResponsiveHelper.scale(context, 3)))
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 6)),
                   child: Image.asset(team.flagImage, fit: BoxFit.cover),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: ResponsiveHelper.scale(context, 8)),
               Text(
                 team.name,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: ResponsiveHelper.textScale(context, 11),
                   fontWeight:
                   isSelected ? FontWeight.bold : FontWeight.w500,
                   color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
@@ -288,9 +301,10 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                 overflow: TextOverflow.ellipsis,
               ),
               if (isSelected) ...[
-                const SizedBox(height: 4),
-                const Icon(Icons.check_circle,
-                    color: Color(0xFFFFD700), size: 16),
+                SizedBox(height: ResponsiveHelper.scale(context, 4)),
+                Icon(Icons.check_circle,
+                    color: Color(0xFFFFD700),
+                    size: ResponsiveHelper.scale(context, 16)),
               ],
             ],
           ),
@@ -299,7 +313,7 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
     );
   }
 
-  Widget _buildValidateButton() {
+  Widget _buildValidateButton(BuildContext context) {
     final teams = Team.getPredefinedTeams();
     final selectedTeam =
     teams.firstWhere((t) => t.name == _localSelected);
@@ -308,41 +322,49 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
       children: [
         // Selected team preview
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.scale(context, 16),
+              vertical: ResponsiveHelper.scale(context, 10)),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.07),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 14)),
             border: Border.all(color: Colors.white24),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 4)),
                 child: Image.asset(selectedTeam.flagImage,
-                    width: 36, height: 24, fit: BoxFit.cover),
+                    width: ResponsiveHelper.scale(context, 36),
+                    height: ResponsiveHelper.scale(context, 24),
+                    fit: BoxFit.cover),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: ResponsiveHelper.scale(context, 10)),
               Text(
                 selectedTeam.name,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.textScale(context, 13)),
               ),
-              const SizedBox(width: 10),
-              const Icon(Icons.check, color: Color(0xFF4CAF50), size: 18),
+              SizedBox(width: ResponsiveHelper.scale(context, 10)),
+              Icon(Icons.check,
+                  color: Color(0xFF4CAF50),
+                  size: ResponsiveHelper.scale(context, 18)),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: ResponsiveHelper.scale(context, 12)),
         SizedBox(
           width: double.infinity,
-          height: 56,
+          height: ResponsiveHelper.scale(context, 56),
           child: ElevatedButton(
             onPressed: () => widget.onCountrySelected(_localSelected!),
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 16))),
               elevation: 0,
             ),
             child: Ink(
@@ -352,19 +374,20 @@ class _HeroTeamSelectionScreenState extends State<HeroTeamSelectionScreen>
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
               ),
-              child: const Center(
+              child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.sports_soccer,
-                        color: Colors.white, size: 22),
-                    SizedBox(width: 10),
+                        color: Colors.white,
+                        size: ResponsiveHelper.scale(context, 22)),
+                    SizedBox(width: ResponsiveHelper.scale(context, 10)),
                     Text(
-                      'COMMENCER L\'AVENTURE',
+                      AppLocalizations.of(context)!.heroTeamSelectStart,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: ResponsiveHelper.textScale(context, 15),
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                         letterSpacing: 1.5,

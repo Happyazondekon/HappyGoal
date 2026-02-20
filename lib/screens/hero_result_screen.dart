@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/models/team.dart';
 import 'package:happygoal/models/hero_challenge.dart';
 import 'package:happygoal/services/hero_challenge_evaluator.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 
 class HeroResultScreen extends StatefulWidget {
   final Team myTeam;
@@ -299,7 +301,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
             border: Border.all(color: Colors.white24),
           ),
           child: Text(
-            'CHAPITRE ${widget.level}',
+            AppLocalizations.of(context)!.heroResultChapter(widget.level),
             style: const TextStyle(
               fontSize: 12,
               color: Colors.white54,
@@ -324,7 +326,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
             ],
           ).createShader(bounds),
           child: Text(
-            _isVictory ? 'VICTOIRE !' : 'DÉFAITE',
+            _isVictory ? AppLocalizations.of(context)!.heroResultVictory : AppLocalizations.of(context)!.heroResultDefeat,
             style: const TextStyle(
               fontSize: 44,
               fontWeight: FontWeight.w900,
@@ -336,8 +338,8 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         const SizedBox(height: 8),
         Text(
           _isVictory
-              ? 'Excellent ! Continuez votre aventure'
-              : 'Pas de panique, réessayez !',
+              ? AppLocalizations.of(context)!.heroResultVictorySubtitle
+              : AppLocalizations.of(context)!.heroResultDefeatSubtitle,
           style: const TextStyle(
             color: Colors.white54,
             fontSize: 14,
@@ -409,7 +411,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildTeamInfo(widget.myTeam, 'VOUS'),
+            _buildTeamInfo(widget.myTeam, AppLocalizations.of(context)!.heroResultYou),
             Column(
               children: [
                 Container(
@@ -433,13 +435,13 @@ class _HeroResultScreenState extends State<HeroResultScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Niveau ${widget.level}',
+                  AppLocalizations.of(context)!.heroResultLevel(widget.level),
                   style: const TextStyle(
                       color: Colors.white38, fontSize: 11),
                 ),
               ],
             ),
-            _buildTeamInfo(widget.opponent, 'ADV.'),
+            _buildTeamInfo(widget.opponent, AppLocalizations.of(context)!.heroResultOpponent),
           ],
         ),
       ),
@@ -503,12 +505,12 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+             Row(
               children: [
                 Icon(Icons.flag_outlined, color: Color(0xFFFFD700), size: 16),
                 SizedBox(width: 8),
                 Text(
-                  'OBJECTIFS',
+                  AppLocalizations.of(context)!.heroResultObjectives,
                   style: TextStyle(
                     color: Color(0xFFFFD700),
                     fontSize: 11,
@@ -696,7 +698,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
           Expanded(
             flex: 2,
             child: _buildButton(
-              label: _isVictory ? 'NIVEAU SUIVANT' : 'RETOUR',
+              label: _isVictory ? AppLocalizations.of(context)!.heroResultNextLevel : AppLocalizations.of(context)!.heroResultBack,
               icon: _isVictory
                   ? Icons.arrow_forward_rounded
                   : Icons.home_rounded,

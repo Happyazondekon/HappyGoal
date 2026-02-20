@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:happygoal/utils/tutorial_manager.dart';
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/utils/responsive_helper.dart';
 
 class TutorialSettingsScreen extends StatefulWidget {
   const TutorialSettingsScreen({Key? key}) : super(key: key);
