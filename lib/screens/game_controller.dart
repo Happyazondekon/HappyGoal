@@ -9,6 +9,7 @@ import 'package:happygoal/stats_service.dart';
 import 'package:happygoal/utils/audio_manager.dart';
 import 'package:happygoal/utils/ad_controller.dart';
 import 'result_screen.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class GameController {
   late GameState _gameState;
@@ -369,8 +370,8 @@ class GameController {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('TIR RATÉ !', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                    Text('Seconde chance disponible', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                    Text(AppLocalizations.of(context!)!.gameMissedShot, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(AppLocalizations.of(context!)!.gameSecondChance, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
                   ],
                 ),
               ),
@@ -382,7 +383,7 @@ class GameController {
           children: [
             const Icon(Icons.sports_soccer, size: 50, color: Colors.white70),
             const SizedBox(height: 14),
-            Text('Utiliser un rembobinage ?\n(Restants: ${AdController.instance.currentRewindCount})',
+            Text(AppLocalizations.of(context!)!.gameUseRewind(AdController.instance.currentRewindCount),
                 textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.9))),
           ],
         ),
@@ -392,20 +393,22 @@ class GameController {
               Navigator.of(dialogContext).pop();
               _continueAfterShotResult();
             },
-            child: const Text('Continuer', style: TextStyle(color: Colors.white70)),
+            child: Text(AppLocalizations.of(context!)!.gameContinue, style: const TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               bool success = await rewindLastShot();
               if (success && mounted(context!)) {
-                ScaffoldMessenger.of(context!).showSnackBar(const SnackBar(content: Text('Tir rembobiné !'), backgroundColor: Colors.green));
+                ScaffoldMessenger.of(context!).showSnackBar(
+                  SnackBar(content: Text(AppLocalizations.of(context!)!.gameRewindSuccess), backgroundColor: Colors.green),
+                );
               } else {
                 _continueAfterShotResult();
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Rembobiner', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context!)!.gameRewind, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -557,7 +560,7 @@ class GameController {
         ScaffoldMessenger.of(context!).showSnackBar(
           SnackBar(
             content: Text(
-              'Prochain match: ${_gameState.tournamentState!.getPhaseName()}',
+              AppLocalizations.of(context!)!.gameNextMatch(_gameState.tournamentState!.getPhaseName()),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             duration: const Duration(seconds: 2),
@@ -609,14 +612,14 @@ class GameController {
 
   String getResultText() {
     if (_gameState.isGoalScored) {
-      if (_gameState.shotEffect == 'lob') return "BUT sur LOB 🎯";
-      if (_gameState.shotEffect == 'curve') return "BUT avec EFFET 🔥";
-      if (_gameState.shotEffect == 'knuckle') return "BUT KNUCKLE ⚡";
-      if (_gameState.shotPower < 30) return "BUT en douceur 💨";
-      return "BUUUUT!";
+      if (_gameState.shotEffect == 'lob') return AppLocalizations.of(context!)!.gameResultLob;
+      if (_gameState.shotEffect == 'curve') return AppLocalizations.of(context!)!.gameResultCurve;
+      if (_gameState.shotEffect == 'knuckle') return AppLocalizations.of(context!)!.gameResultKnuckle;
+      if (_gameState.shotPower < 30) return AppLocalizations.of(context!)!.gameResultSoft;
+      return AppLocalizations.of(context!)!.gameResultGoal;
     } else {
-      if (_gameState.shotPower < 20) return "TIR TROP FAIBLE 😢";
-      return "ARRÊT DU GARDIEN!";
+      if (_gameState.shotPower < 20) return AppLocalizations.of(context!)!.gameResultWeakShot;
+      return AppLocalizations.of(context!)!.gameResultSaved;
     }
   }
 

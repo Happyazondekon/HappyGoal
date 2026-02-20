@@ -1,9 +1,12 @@
+import 'package:happygoal/l10n/app_localizations.dart';
 // lib/widgets/swipe_shot_widget.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:happygoal/models/game_state.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
+
 
 /// Callback appelé quand l'utilisateur a terminé son swipe.
 /// [direction] : ShotDirection.left / center / right
@@ -116,10 +119,14 @@ class _SwipeShotWidgetState extends State<SwipeShotWidget>
 
   String _effectLabel(String effect) {
     switch (effect) {
-      case ShotEffect.curve:   return 'Effet';
-      case ShotEffect.lob:     return 'Lob';
-      case ShotEffect.knuckle: return 'Knuckle';
-      default:                 return 'Normal';
+      case ShotEffect.curve:
+        return AppLocalizations.of(context)!.swipeShotEffectCurve;
+      case ShotEffect.lob:
+        return AppLocalizations.of(context)!.swipeShotEffectLob;
+      case ShotEffect.knuckle:
+        return AppLocalizations.of(context)!.swipeShotEffectKnuckle;
+      default:
+        return AppLocalizations.of(context)!.swipeShotEffectNormal;
     }
   }
 
@@ -388,9 +395,9 @@ class _SwipeShotWidgetState extends State<SwipeShotWidget>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
-              child: const Text(
-                'GLISSE VERS LE HAUT',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.swipeShotHint,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,

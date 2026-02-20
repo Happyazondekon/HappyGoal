@@ -9,6 +9,7 @@ import 'team_selection_screen.dart';
 import 'package:happygoal/constants.dart';
 import 'package:happygoal/utils/responsive_helper.dart';
 import 'dart:convert'; // Pour json.encode et json.decode
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class TournamentModeScreen extends StatefulWidget {
   const TournamentModeScreen({Key? key}) : super(key: key);
@@ -94,7 +95,7 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                 SizedBox(width: ResponsiveHelper.scale(context, 12)),
                 Expanded(
                   child: Text(
-                    'STATISTIQUES DU TOURNOI',
+                    AppLocalizations.of(context)!.tournamentStatsTitle,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: ResponsiveHelper.textScale(context, 18),
@@ -121,7 +122,7 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  'Dernier: ${_formatDate(_tournamentStats.lastTournamentDate!)}',
+                  AppLocalizations.of(context)!.tournamentStatsLast(_formatDate(_tournamentStats.lastTournamentDate!)),
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -173,9 +174,9 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     elevation: 6,
                   ),
-                  child: const Text(
-                    'Réinitialiser',
-                    style: TextStyle(fontSize: 14),
+                  child: Text(
+                    AppLocalizations.of(context)!.tournamentStatsReset,
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
               ),
@@ -183,7 +184,7 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
           ] else ...[
             const SizedBox(height: 10),
             Text(
-              'Cliquez pour voir vos performances',
+              AppLocalizations.of(context)!.tournamentStatsClickToView,
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
@@ -203,17 +204,17 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildCompactStatItem('🏆', 'Joués', '${_tournamentStats.tournamentsPlayed}')),
-            Expanded(child: _buildCompactStatItem('✅', 'Gagnés', '${_tournamentStats.tournamentsWon}')),
-            Expanded(child: _buildCompactStatItem('📈', 'Victoire', _tournamentStats.getFormattedWinRate())),
+            Expanded(child: _buildCompactStatItem('🏆', AppLocalizations.of(context)!.tournamentStatsPlayed, '${_tournamentStats.tournamentsPlayed}')),
+            Expanded(child: _buildCompactStatItem('✅', AppLocalizations.of(context)!.tournamentStatsWon, '${_tournamentStats.tournamentsWon}')),
+            Expanded(child: _buildCompactStatItem('📈', AppLocalizations.of(context)!.tournamentStatsVictory, _tournamentStats.getFormattedWinRate())),
           ],
         ),
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: _buildCompactStatItem('↩️', 'Rewinds', '${_tournamentStats.totalRewindsUsed}')),
-            Expanded(child: _buildCompactStatItem('⚽', 'Buts', '${_tournamentStats.totalGoalsScored}')),
-            Expanded(child: _buildCompactStatItem('💪', 'Matchs', '${_tournamentStats.totalMatchesWon}')),
+            Expanded(child: _buildCompactStatItem('↩️', AppLocalizations.of(context)!.tournamentStatsRewinds, '${_tournamentStats.totalRewindsUsed}')),
+            Expanded(child: _buildCompactStatItem('⚽', AppLocalizations.of(context)!.tournamentStatsGoals, '${_tournamentStats.totalGoalsScored}')),
+            Expanded(child: _buildCompactStatItem('💪', AppLocalizations.of(context)!.tournamentStatsMatches, '${_tournamentStats.totalMatchesWon}')),
           ],
         ),
       ],
@@ -268,15 +269,15 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
 
   String _getMotivationalMessage() {
     if (_tournamentStats.tournamentsPlayed == 0) {
-      return 'Commencez votre premier tournoi ! 🚀';
+      return AppLocalizations.of(context)!.tournamentStatsMotivationStart;
     } else if (_tournamentStats.winRate > 0.7) {
-      return 'Excellent taux de victoire ! Vous êtes un champion ! 🏆';
+      return AppLocalizations.of(context)!.tournamentStatsMotivationChampion;
     } else if (_tournamentStats.winRate > 0.5) {
-      return 'Bon taux de victoire ! Continuez comme ça ! 💪';
+      return AppLocalizations.of(context)!.tournamentStatsMotivationGood;
     } else if (_tournamentStats.winRate > 0.3) {
-      return 'Chaque tournoi est une nouvelle opportunité ! 🔥';
+      return AppLocalizations.of(context)!.tournamentStatsMotivationOpportunity;
     } else {
-      return 'La persévérance est la clé du succès ! Ne lâchez rien ! ⚽';
+      return AppLocalizations.of(context)!.tournamentStatsMotivationPerseverance;
     }
   }
 
@@ -285,20 +286,20 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          'Réinitialiser les statistiques',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          AppLocalizations.of(context)!.tournamentStatsResetTitle,
+          style: const TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          'Êtes-vous sûr de vouloir réinitialiser toutes vos statistiques de tournoi ? Cette action est irréversible.',
-          style: TextStyle(color: Colors.white70),
+        content: Text(
+          AppLocalizations.of(context)!.tournamentStatsResetContent,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Annuler',
-              style: TextStyle(color: Colors.white),
+            child: Text(
+              AppLocalizations.of(context)!.tournamentStatsResetCancel,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
@@ -310,15 +311,15 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Statistiques réinitialisées avec succès'),
+                  content: Text(AppLocalizations.of(context)!.tournamentStatsResetSuccess),
                   backgroundColor: Colors.green,
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            child: const Text(
-              'Réinitialiser',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              AppLocalizations.of(context)!.tournamentStatsResetConfirm,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -471,9 +472,9 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Flexible(
-                                child: const Text(
-                                  'TOURNOI HAPPY',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(context)!.tournamentHappyTitle,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
@@ -506,22 +507,22 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                             ),
                             child: Column(
                               children: [
-                                const Text(
-                                  'Parcours vers la gloire',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.tournamentPathToGlory,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 15),
-                                _buildTournamentPhase('🥅', 'HUITIÈMES', 'DE FINALE', Colors.blue),
+                                _buildTournamentPhase('🥅', AppLocalizations.of(context)!.tournamentPhaseRoundOf16, '', Colors.blue),
                                 const SizedBox(height: 8),
-                                _buildTournamentPhase('⚽', 'QUARTS', 'DE FINALE', Colors.green),
+                                _buildTournamentPhase('⚽', AppLocalizations.of(context)!.tournamentPhaseQuarterFinals, '', Colors.green),
                                 const SizedBox(height: 8),
-                                _buildTournamentPhase('🏆', 'DEMI-', 'FINALES', Colors.orange),
+                                _buildTournamentPhase('🏆', AppLocalizations.of(context)!.tournamentPhaseSemiFinals, '', Colors.orange),
                                 const SizedBox(height: 8),
-                                _buildTournamentPhase('👑', 'GRANDE', 'FINALE', Colors.amber),
+                                _buildTournamentPhase('👑', AppLocalizations.of(context)!.tournamentPhaseFinal, '', Colors.amber),
                               ],
                             ),
                           ),
@@ -555,7 +556,7 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                                       const SizedBox(width: 14),
                                       Flexible(
                                         child: Text(
-                                          'VOTRE ÉQUIPE',
+                                          AppLocalizations.of(context)!.tournamentYourTeam,
                                           style: TextStyle(
                                             color: Colors.grey[700],
                                             fontSize: 18,
@@ -613,9 +614,9 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                                                   color: selectedTeam!.color,
                                                   borderRadius: BorderRadius.circular(20),
                                                 ),
-                                                child: const Text(
-                                                  'PRÊT AU COMBAT',
-                                                  style: TextStyle(
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.tournamentReadyToFight,
+                                                  style: const TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.bold,
@@ -672,7 +673,9 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                                   const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      selectedTeam == null ? 'CHOISIR VOTRE ÉQUIPE' : 'CHANGER D\'ÉQUIPE',
+                                      selectedTeam == null
+                                        ? AppLocalizations.of(context)!.tournamentChooseTeam
+                                        : AppLocalizations.of(context)!.tournamentChangeTeam,
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.white,
@@ -701,9 +704,9 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(color: Colors.amber.withOpacity(0.5)),
                                     ),
-                                    child: const Text(
-                                      '⚡ 4 MATCHES POUR LA VICTOIRE ⚡',
-                                      style: TextStyle(
+                                    child: Text(
+                                      AppLocalizations.of(context)!.tournamentFourMatches,
+                                      style: const TextStyle(
                                         color: Colors.amber,
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -726,13 +729,13 @@ class _TournamentModeScreenState extends State<TournamentModeScreen> {
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Icon(Icons.play_arrow, color: Colors.white, size: 28),
-                                        SizedBox(width: 12),
+                                      children: [
+                                        const Icon(Icons.play_arrow, color: Colors.white, size: 28),
+                                        const SizedBox(width: 12),
                                         Flexible(
                                           child: Text(
-                                            'LANCER LE TOURNOI',
-                                            style: TextStyle(
+                                            AppLocalizations.of(context)!.tournamentStart,
+                                            style: const TextStyle(
                                               fontSize: 20,
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,

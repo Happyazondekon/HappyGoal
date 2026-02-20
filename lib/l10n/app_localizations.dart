@@ -664,6 +664,1158 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last {count} shots'**
   String resultLastShots(Object count);
+
+  /// No description provided for @tournamentStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TOURNAMENT STATISTICS'**
+  String get tournamentStatsTitle;
+
+  /// No description provided for @tournamentStatsLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Last: {date}'**
+  String tournamentStatsLast(Object date);
+
+  /// No description provided for @tournamentStatsPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Played'**
+  String get tournamentStatsPlayed;
+
+  /// No description provided for @tournamentStatsWon.
+  ///
+  /// In en, this message translates to:
+  /// **'Won'**
+  String get tournamentStatsWon;
+
+  /// No description provided for @tournamentStatsVictory.
+  ///
+  /// In en, this message translates to:
+  /// **'Victory'**
+  String get tournamentStatsVictory;
+
+  /// No description provided for @tournamentStatsRewinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewinds'**
+  String get tournamentStatsRewinds;
+
+  /// No description provided for @tournamentStatsGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get tournamentStatsGoals;
+
+  /// No description provided for @tournamentStatsMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get tournamentStatsMatches;
+
+  /// No description provided for @tournamentStatsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get tournamentStatsReset;
+
+  /// No description provided for @tournamentStatsResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset statistics'**
+  String get tournamentStatsResetTitle;
+
+  /// No description provided for @tournamentStatsResetContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reset all your tournament statistics? This action is irreversible.'**
+  String get tournamentStatsResetContent;
+
+  /// No description provided for @tournamentStatsResetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get tournamentStatsResetCancel;
+
+  /// No description provided for @tournamentStatsResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get tournamentStatsResetConfirm;
+
+  /// No description provided for @tournamentStatsResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics successfully reset'**
+  String get tournamentStatsResetSuccess;
+
+  /// No description provided for @tournamentStatsClickToView.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to view your performance'**
+  String get tournamentStatsClickToView;
+
+  /// No description provided for @tournamentStatsMotivationStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your first tournament! 🚀'**
+  String get tournamentStatsMotivationStart;
+
+  /// No description provided for @tournamentStatsMotivationChampion.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent win rate! You are a champion! 🏆'**
+  String get tournamentStatsMotivationChampion;
+
+  /// No description provided for @tournamentStatsMotivationGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good win rate! Keep it up! 💪'**
+  String get tournamentStatsMotivationGood;
+
+  /// No description provided for @tournamentStatsMotivationOpportunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Every tournament is a new opportunity! 🔥'**
+  String get tournamentStatsMotivationOpportunity;
+
+  /// No description provided for @tournamentStatsMotivationPerseverance.
+  ///
+  /// In en, this message translates to:
+  /// **'Perseverance is the key to success! Never give up! ⚽'**
+  String get tournamentStatsMotivationPerseverance;
+
+  /// No description provided for @tournamentHappyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HAPPY TOURNAMENT'**
+  String get tournamentHappyTitle;
+
+  /// No description provided for @tournamentPathToGlory.
+  ///
+  /// In en, this message translates to:
+  /// **'Path to glory'**
+  String get tournamentPathToGlory;
+
+  /// No description provided for @tournamentPhaseRoundOf16.
+  ///
+  /// In en, this message translates to:
+  /// **'ROUND OF 16'**
+  String get tournamentPhaseRoundOf16;
+
+  /// No description provided for @tournamentPhaseQuarterFinals.
+  ///
+  /// In en, this message translates to:
+  /// **'QUARTER FINALS'**
+  String get tournamentPhaseQuarterFinals;
+
+  /// No description provided for @tournamentPhaseSemiFinals.
+  ///
+  /// In en, this message translates to:
+  /// **'SEMI-FINALS'**
+  String get tournamentPhaseSemiFinals;
+
+  /// No description provided for @tournamentPhaseFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'GRAND FINAL'**
+  String get tournamentPhaseFinal;
+
+  /// No description provided for @tournamentYourTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR TEAM'**
+  String get tournamentYourTeam;
+
+  /// No description provided for @tournamentReadyToFight.
+  ///
+  /// In en, this message translates to:
+  /// **'READY TO FIGHT'**
+  String get tournamentReadyToFight;
+
+  /// No description provided for @tournamentFourMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'⚡ 4 MATCHES FOR VICTORY ⚡'**
+  String get tournamentFourMatches;
+
+  /// No description provided for @tournamentChooseTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE YOUR TEAM'**
+  String get tournamentChooseTeam;
+
+  /// No description provided for @tournamentChangeTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'CHANGE TEAM'**
+  String get tournamentChangeTeam;
+
+  /// No description provided for @tournamentNotEnoughTeams.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough teams for a full tournament'**
+  String get tournamentNotEnoughTeams;
+
+  /// No description provided for @tournamentStart.
+  ///
+  /// In en, this message translates to:
+  /// **'START TOURNAMENT'**
+  String get tournamentStart;
+
+  /// No description provided for @tournamentResultChampion.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAMPION!'**
+  String get tournamentResultChampion;
+
+  /// No description provided for @tournamentResultGoodPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'GOOD PERFORMANCE!'**
+  String get tournamentResultGoodPerformance;
+
+  /// No description provided for @tournamentResultDefeat.
+  ///
+  /// In en, this message translates to:
+  /// **'DEFEAT'**
+  String get tournamentResultDefeat;
+
+  /// No description provided for @tournamentResultTournamentWon.
+  ///
+  /// In en, this message translates to:
+  /// **'TOURNAMENT WON'**
+  String get tournamentResultTournamentWon;
+
+  /// No description provided for @tournamentResultEliminated.
+  ///
+  /// In en, this message translates to:
+  /// **'ELIMINATED'**
+  String get tournamentResultEliminated;
+
+  /// No description provided for @tournamentResultEndOfJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'END OF JOURNEY'**
+  String get tournamentResultEndOfJourney;
+
+  /// No description provided for @tournamentResultCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'+25 COINS'**
+  String get tournamentResultCoins;
+
+  /// No description provided for @tournamentResultResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TOURNAMENT RESULTS'**
+  String get tournamentResultResultsTitle;
+
+  /// No description provided for @tournamentResultChampionBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 CHAMPION'**
+  String get tournamentResultChampionBadge;
+
+  /// No description provided for @tournamentResultFighterBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'⚔️ FIGHTER'**
+  String get tournamentResultFighterBadge;
+
+  /// No description provided for @tournamentResultEliminatedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'💔 ELIMINATED'**
+  String get tournamentResultEliminatedBadge;
+
+  /// No description provided for @tournamentResultWins.
+  ///
+  /// In en, this message translates to:
+  /// **'WINS'**
+  String get tournamentResultWins;
+
+  /// No description provided for @tournamentResultLosses.
+  ///
+  /// In en, this message translates to:
+  /// **'LOSSES'**
+  String get tournamentResultLosses;
+
+  /// No description provided for @tournamentResultTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL'**
+  String get tournamentResultTotal;
+
+  /// No description provided for @tournamentResultBackHome.
+  ///
+  /// In en, this message translates to:
+  /// **'BACK TO HOME'**
+  String get tournamentResultBackHome;
+
+  /// No description provided for @tournamentResultNewTournament.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW TOURNAMENT'**
+  String get tournamentResultNewTournament;
+
+  /// No description provided for @tournamentResultAchievementsUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements Unlocked!'**
+  String get tournamentResultAchievementsUnlocked;
+
+  /// No description provided for @tournamentResultSuccessGreat.
+  ///
+  /// In en, this message translates to:
+  /// **'GREAT!'**
+  String get tournamentResultSuccessGreat;
+
+  /// No description provided for @tournamentResultSnackChampion.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAMPION! +25 COINS WON!'**
+  String get tournamentResultSnackChampion;
+
+  /// No description provided for @gameResultLob.
+  ///
+  /// In en, this message translates to:
+  /// **'GOAL on LOB 🎯'**
+  String get gameResultLob;
+
+  /// No description provided for @gameResultCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'GOAL with CURVE 🔥'**
+  String get gameResultCurve;
+
+  /// No description provided for @gameResultKnuckle.
+  ///
+  /// In en, this message translates to:
+  /// **'KNUCKLE GOAL ⚡'**
+  String get gameResultKnuckle;
+
+  /// No description provided for @gameResultSoft.
+  ///
+  /// In en, this message translates to:
+  /// **'SOFT GOAL 💨'**
+  String get gameResultSoft;
+
+  /// No description provided for @gameResultGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'GOOOAL!'**
+  String get gameResultGoal;
+
+  /// No description provided for @gameResultWeakShot.
+  ///
+  /// In en, this message translates to:
+  /// **'SHOT TOO WEAK 😢'**
+  String get gameResultWeakShot;
+
+  /// No description provided for @gameResultSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'GOALKEEPER SAVE!'**
+  String get gameResultSaved;
+
+  /// No description provided for @gameNextMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match: {phase}'**
+  String gameNextMatch(Object phase);
+
+  /// No description provided for @gameMissedShot.
+  ///
+  /// In en, this message translates to:
+  /// **'MISSED SHOT!'**
+  String get gameMissedShot;
+
+  /// No description provided for @gameSecondChance.
+  ///
+  /// In en, this message translates to:
+  /// **'Second chance available'**
+  String get gameSecondChance;
+
+  /// No description provided for @gameUseRewind.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a rewind?\n(Remaining: {count})'**
+  String gameUseRewind(Object count);
+
+  /// No description provided for @gameContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get gameContinue;
+
+  /// No description provided for @gameRewind.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewind'**
+  String get gameRewind;
+
+  /// No description provided for @gameRewindSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Shot rewound!'**
+  String get gameRewindSuccess;
+
+  /// No description provided for @gameRewindFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewind failed!'**
+  String get gameRewindFailed;
+
+  /// No description provided for @gameRoundReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Round reset!'**
+  String get gameRoundReset;
+
+  /// No description provided for @gameGoalScored.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal scored!'**
+  String get gameGoalScored;
+
+  /// No description provided for @gameGoalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal saved!'**
+  String get gameGoalSaved;
+
+  /// No description provided for @gameWhistle.
+  ///
+  /// In en, this message translates to:
+  /// **'Whistle!'**
+  String get gameWhistle;
+
+  /// No description provided for @coinInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Treasury'**
+  String get coinInfoTitle;
+
+  /// No description provided for @coinInfoBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Balance'**
+  String get coinInfoBalance;
+
+  /// No description provided for @coinInfoAdReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad Reward'**
+  String get coinInfoAdReward;
+
+  /// No description provided for @coinInfoShop.
+  ///
+  /// In en, this message translates to:
+  /// **'SHOP'**
+  String get coinInfoShop;
+
+  /// No description provided for @coinInfoShopAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} coins added!'**
+  String coinInfoShopAdded(Object coins);
+
+  /// No description provided for @coinInfoShopUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad unavailable.'**
+  String get coinInfoShopUnavailable;
+
+  /// No description provided for @coinInfoShopGift.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Gift'**
+  String get coinInfoShopGift;
+
+  /// No description provided for @coinInfoShopGiftDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch a video to earn {coins} coins!'**
+  String coinInfoShopGiftDesc(Object coins);
+
+  /// No description provided for @coinInfoShopPubFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Ad'**
+  String get coinInfoShopPubFree;
+
+  /// No description provided for @coinInfoShopUseCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your coins to buy rewinds!'**
+  String get coinInfoShopUseCoins;
+
+  /// No description provided for @settingsOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get settingsOptions;
+
+  /// No description provided for @settingsClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get settingsClose;
+
+  /// No description provided for @rulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Rules'**
+  String get rulesTitle;
+
+  /// No description provided for @rules1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Choose a direction to shoot.'**
+  String get rules1;
+
+  /// No description provided for @rules2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. The goalkeeper dives randomly.'**
+  String get rules2;
+
+  /// No description provided for @rules3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Score 5 goals to win!'**
+  String get rules3;
+
+  /// No description provided for @rules4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Use rewinds if you miss.'**
+  String get rules4;
+
+  /// No description provided for @rulesUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get rulesUnderstood;
+
+  /// No description provided for @inviteShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'HappyGoal! ⚽\n\nCome take penalties and challenge me!\nDownload: https://play.google.com/store/apps/details?id=com.heyhappy.happygoal'**
+  String get inviteShareText;
+
+  /// No description provided for @inviteShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'HappyGoal'**
+  String get inviteShareSubject;
+
+  /// No description provided for @achievementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievementsTitle;
+
+  /// No description provided for @achievementsUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} / {total} unlocked'**
+  String achievementsUnlocked(Object total, Object unlocked);
+
+  /// No description provided for @achievementsCategoryMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get achievementsCategoryMatches;
+
+  /// No description provided for @achievementsCategoryGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get achievementsCategoryGoals;
+
+  /// No description provided for @achievementsCategoryTournaments.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournaments'**
+  String get achievementsCategoryTournaments;
+
+  /// No description provided for @achievementsCategorySpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'Special'**
+  String get achievementsCategorySpecial;
+
+  /// No description provided for @achievementsCategorySkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get achievementsCategorySkills;
+
+  /// No description provided for @achievementsStatWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins'**
+  String get achievementsStatWins;
+
+  /// No description provided for @achievementsProgressGlobal.
+  ///
+  /// In en, this message translates to:
+  /// **'Global Progress'**
+  String get achievementsProgressGlobal;
+
+  /// No description provided for @achievementsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No achievements in this category'**
+  String get achievementsNone;
+
+  /// No description provided for @achievementsClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed'**
+  String get achievementsClaimed;
+
+  /// No description provided for @achievementsReward.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} coins'**
+  String achievementsReward(Object coins);
+
+  /// No description provided for @achievementsSnackClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} coins claimed!'**
+  String achievementsSnackClaimed(Object coins);
+
+  /// No description provided for @achievementsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{target}'**
+  String achievementsProgress(Object current, Object target);
+
+  /// No description provided for @achievementsRarityCommon.
+  ///
+  /// In en, this message translates to:
+  /// **'Common'**
+  String get achievementsRarityCommon;
+
+  /// No description provided for @achievementsRarityRare.
+  ///
+  /// In en, this message translates to:
+  /// **'Rare'**
+  String get achievementsRarityRare;
+
+  /// No description provided for @achievementsRarityEpic.
+  ///
+  /// In en, this message translates to:
+  /// **'Epic'**
+  String get achievementsRarityEpic;
+
+  /// No description provided for @achievementsRarityLegendary.
+  ///
+  /// In en, this message translates to:
+  /// **'Legendary'**
+  String get achievementsRarityLegendary;
+
+  /// No description provided for @achievementsBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get achievementsBack;
+
+  /// No description provided for @achievementsCompletionPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String achievementsCompletionPercent(Object percent);
+
+  /// No description provided for @achievementsProgressBar.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String achievementsProgressBar(Object percent);
+
+  /// No description provided for @tutorialSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorials'**
+  String get tutorialSettingsTitle;
+
+  /// No description provided for @tutorialSettingsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorial management'**
+  String get tutorialSettingsHeader;
+
+  /// No description provided for @tutorialSettingsHeaderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tutorial display for each screen. Tutorials marked as \'Seen\' will no longer show automatically.'**
+  String get tutorialSettingsHeaderDesc;
+
+  /// No description provided for @tutorialSettingsHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home screen'**
+  String get tutorialSettingsHome;
+
+  /// No description provided for @tutorialSettingsModeSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode selection'**
+  String get tutorialSettingsModeSelection;
+
+  /// No description provided for @tutorialSettingsTeamSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Team selection'**
+  String get tutorialSettingsTeamSelection;
+
+  /// No description provided for @tutorialSettingsGameSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo game'**
+  String get tutorialSettingsGameSolo;
+
+  /// No description provided for @tutorialSettingsGameMulti.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplayer game'**
+  String get tutorialSettingsGameMulti;
+
+  /// No description provided for @tutorialSettingsTournament.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament mode'**
+  String get tutorialSettingsTournament;
+
+  /// No description provided for @tutorialSettingsHomeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide to main features'**
+  String get tutorialSettingsHomeDesc;
+
+  /// No description provided for @tutorialSettingsModeSelectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation of game modes'**
+  String get tutorialSettingsModeSelectionDesc;
+
+  /// No description provided for @tutorialSettingsTeamSelectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How to choose your teams'**
+  String get tutorialSettingsTeamSelectionDesc;
+
+  /// No description provided for @tutorialSettingsGameSoloDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Gameplay against AI'**
+  String get tutorialSettingsGameSoloDesc;
+
+  /// No description provided for @tutorialSettingsGameMultiDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-player game'**
+  String get tutorialSettingsGameMultiDesc;
+
+  /// No description provided for @tutorialSettingsTournamentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament navigation'**
+  String get tutorialSettingsTournamentDesc;
+
+  /// No description provided for @tutorialSettingsSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Seen'**
+  String get tutorialSettingsSeen;
+
+  /// No description provided for @tutorialSettingsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get tutorialSettingsNew;
+
+  /// No description provided for @tutorialSettingsWillShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Will show automatically'**
+  String get tutorialSettingsWillShow;
+
+  /// No description provided for @tutorialSettingsReactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get tutorialSettingsReactivate;
+
+  /// No description provided for @tutorialSettingsResetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all tutorials'**
+  String get tutorialSettingsResetAll;
+
+  /// No description provided for @tutorialSettingsResetConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm reset'**
+  String get tutorialSettingsResetConfirmTitle;
+
+  /// No description provided for @tutorialSettingsResetConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reset all tutorials? They will show again on your next visits.'**
+  String get tutorialSettingsResetConfirmContent;
+
+  /// No description provided for @tutorialSettingsResetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get tutorialSettingsResetCancel;
+
+  /// No description provided for @tutorialSettingsResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get tutorialSettingsResetConfirm;
+
+  /// No description provided for @tutorialSettingsResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'All tutorials have been reset'**
+  String get tutorialSettingsResetSuccess;
+
+  /// No description provided for @tutorialSettingsResetSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorial \'{title}\' reset'**
+  String tutorialSettingsResetSingle(Object title);
+
+  /// No description provided for @tutorialSettingsWidgetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorials'**
+  String get tutorialSettingsWidgetTitle;
+
+  /// No description provided for @tutorialSettingsWidgetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage guide display'**
+  String get tutorialSettingsWidgetSubtitle;
+
+  /// No description provided for @audioSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Settings'**
+  String get audioSettingsTitle;
+
+  /// No description provided for @audioSettingsSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound effects'**
+  String get audioSettingsSound;
+
+  /// No description provided for @audioSettingsMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Background music'**
+  String get audioSettingsMusic;
+
+  /// No description provided for @audioSettingsBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue music in background'**
+  String get audioSettingsBackground;
+
+  /// No description provided for @audioSettingsBackgroundDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Music continues when you leave the app'**
+  String get audioSettingsBackgroundDesc;
+
+  /// No description provided for @audioSettingsVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get audioSettingsVolume;
+
+  /// No description provided for @coinShopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get coinShopTitle;
+
+  /// No description provided for @coinShopLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to store\n(Loading...)'**
+  String get coinShopLoading;
+
+  /// No description provided for @coinShopSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Successful!'**
+  String get coinShopSuccessTitle;
+
+  /// No description provided for @coinShopSuccessCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} Coins added'**
+  String coinShopSuccessCoins(Object coins);
+
+  /// No description provided for @coinShopSuccessThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your support!'**
+  String get coinShopSuccessThanks;
+
+  /// No description provided for @coinShopSuccessButton.
+  ///
+  /// In en, this message translates to:
+  /// **'AWESOME!'**
+  String get coinShopSuccessButton;
+
+  /// No description provided for @coinShopClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get coinShopClose;
+
+  /// No description provided for @coinShopBestOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST OFFER'**
+  String get coinShopBestOffer;
+
+  /// No description provided for @coinShopBonus10.
+  ///
+  /// In en, this message translates to:
+  /// **'+10% BONUS'**
+  String get coinShopBonus10;
+
+  /// No description provided for @coinShopPromo17.
+  ///
+  /// In en, this message translates to:
+  /// **'+17% PROMO'**
+  String get coinShopPromo17;
+
+  /// No description provided for @goalkeeperSwipeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SLIDE THE GOALKEEPER'**
+  String get goalkeeperSwipeLabel;
+
+  /// No description provided for @goalkeeperSwipeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'DIVE LEFT'**
+  String get goalkeeperSwipeLeft;
+
+  /// No description provided for @goalkeeperSwipeSlightLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'SLIGHTLY LEFT'**
+  String get goalkeeperSwipeSlightLeft;
+
+  /// No description provided for @goalkeeperSwipeRight.
+  ///
+  /// In en, this message translates to:
+  /// **'DIVE RIGHT'**
+  String get goalkeeperSwipeRight;
+
+  /// No description provided for @goalkeeperSwipeSlightRight.
+  ///
+  /// In en, this message translates to:
+  /// **'SLIGHTLY RIGHT'**
+  String get goalkeeperSwipeSlightRight;
+
+  /// No description provided for @goalkeeperSwipeCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'CENTER'**
+  String get goalkeeperSwipeCenter;
+
+  /// No description provided for @goalkeeperSwipeDived.
+  ///
+  /// In en, this message translates to:
+  /// **'DIVED!'**
+  String get goalkeeperSwipeDived;
+
+  /// No description provided for @goalkeeperSwipeZoneLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get goalkeeperSwipeZoneLeft;
+
+  /// No description provided for @goalkeeperSwipeZoneCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get goalkeeperSwipeZoneCenter;
+
+  /// No description provided for @goalkeeperSwipeZoneRight.
+  ///
+  /// In en, this message translates to:
+  /// **'R'**
+  String get goalkeeperSwipeZoneRight;
+
+  /// No description provided for @rewindLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit reached'**
+  String get rewindLimitTitle;
+
+  /// No description provided for @rewindLimitDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have used all your allowed rewinds for this match.'**
+  String get rewindLimitDesc;
+
+  /// No description provided for @rewindLimitInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Information:'**
+  String get rewindLimitInfo;
+
+  /// No description provided for @rewindLimitMax.
+  ///
+  /// In en, this message translates to:
+  /// **'• Maximum {max} rewinds per match'**
+  String rewindLimitMax(Object max);
+
+  /// No description provided for @rewindLimitUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'• Used: {used}/{max}'**
+  String rewindLimitUsed(Object max, Object used);
+
+  /// No description provided for @rewindLimitTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'• Total rewinds: {total}'**
+  String rewindLimitTotal(Object total);
+
+  /// No description provided for @rewindLimitReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rewinds will reset for the next match!'**
+  String get rewindLimitReset;
+
+  /// No description provided for @rewindLimitUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'Understood'**
+  String get rewindLimitUnderstood;
+
+  /// No description provided for @rewindLimitRefill.
+  ///
+  /// In en, this message translates to:
+  /// **'Refill'**
+  String get rewindLimitRefill;
+
+  /// No description provided for @coinsNeededTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need Coins?'**
+  String get coinsNeededTitle;
+
+  /// No description provided for @coinsNeededDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch an ad to earn {amount} coins!'**
+  String coinsNeededDesc(Object amount);
+
+  /// No description provided for @coinsEarnedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'+{amount} coins earned!'**
+  String coinsEarnedSnack(Object amount);
+
+  /// No description provided for @adUnavailableSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad not available'**
+  String get adUnavailableSnack;
+
+  /// No description provided for @coinSystemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin System'**
+  String get coinSystemTitle;
+
+  /// No description provided for @coinSystemDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your virtual currency:'**
+  String get coinSystemDesc;
+
+  /// No description provided for @coinSystemBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'📊 Your balance'**
+  String get coinSystemBalance;
+
+  /// No description provided for @coinSystemRewindCost.
+  ///
+  /// In en, this message translates to:
+  /// **'🔄 Rewind cost'**
+  String get coinSystemRewindCost;
+
+  /// No description provided for @coinSystemAdReward.
+  ///
+  /// In en, this message translates to:
+  /// **'🎥 Ad reward'**
+  String get coinSystemAdReward;
+
+  /// No description provided for @freeAdButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Ad'**
+  String get freeAdButton;
+
+  /// No description provided for @buyCoinsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Coins'**
+  String get buyCoinsButton;
+
+  /// No description provided for @buyRewindButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Replay'**
+  String get buyRewindButton;
+
+  /// No description provided for @swipeShotHint.
+  ///
+  /// In en, this message translates to:
+  /// **'SWIPE UP'**
+  String get swipeShotHint;
+
+  /// No description provided for @swipeShotEffectNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get swipeShotEffectNormal;
+
+  /// No description provided for @swipeShotEffectCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'Curve'**
+  String get swipeShotEffectCurve;
+
+  /// No description provided for @swipeShotEffectLob.
+  ///
+  /// In en, this message translates to:
+  /// **'Lob'**
+  String get swipeShotEffectLob;
+
+  /// No description provided for @swipeShotEffectKnuckle.
+  ///
+  /// In en, this message translates to:
+  /// **'Knuckle'**
+  String get swipeShotEffectKnuckle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

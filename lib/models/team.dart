@@ -49,31 +49,31 @@ class Team {
         continent: 'Europe',
       ),
       Team(
-        name: 'Allemagne',
+        name: 'Deutschland',
         color: Colors.greenAccent,
         flagImage: 'assets/images/flags/germany_flag.png',
         continent: 'Europe',
       ),
       Team(
-        name: 'Espagne',
+        name: 'España',
         color: Colors.red,
         flagImage: 'assets/images/flags/spain_flag.png',
         continent: 'Europe',
       ),
       Team(
-        name: 'Italie',
+        name: 'Italia',
         color: Colors.green,
         flagImage: 'assets/images/flags/italy_flag.png',
         continent: 'Europe',
       ),
       Team(
-        name: 'Russie',
+        name: 'Россия',
         color: Colors.blue,
         flagImage: 'assets/images/flags/russia_flag.png',
         continent: 'Europe',
       ),
       Team(
-        name: 'Angleterre',
+        name: 'England',
         color: Colors.white70,
         flagImage: 'assets/images/flags/england_flag.png',
         continent: 'Europe',
@@ -85,27 +85,27 @@ class Team {
         continent: 'Europe',
       ),
       Team(
-        name: 'Belgique',
+        name: 'België',
         color: Colors.black,
         flagImage: 'assets/images/flags/belgium_flag.png',
         continent: 'Europe',
       ),
 
-      // Amérique
+      // América
       Team(
-        name: 'Argentine',
+        name: 'Argentina',
         color: Colors.lightBlueAccent,
         flagImage: 'assets/images/flags/argentina_flag.png',
         continent: 'Amérique',
       ),
       Team(
-        name: 'Brésil',
+        name: 'Brasil',
         color: Colors.yellow,
         flagImage: 'assets/images/flags/brasil_flag.png',
         continent: 'Amérique',
       ),
       Team(
-        name: 'USA',
+        name: 'United States',
         color: Colors.red,
         flagImage: 'assets/images/flags/usa_flag.png',
         continent: 'Amérique',
@@ -125,7 +125,7 @@ class Team {
         continent: 'Afrique',
       ),
       Team(
-        name: 'Nigéria',
+        name: 'Nigeria',
         color: Colors.green,
         flagImage: 'assets/images/flags/nigeria_flag.png',
         continent: 'Afrique',
@@ -157,25 +157,25 @@ class Team {
 
       // Asie
       Team(
-        name: 'Japon',
+        name: '日本',
         color: Colors.greenAccent,
         flagImage: 'assets/images/flags/japan_flag.png',
         continent: 'Asie',
       ),
       Team(
-        name: 'Corée du Sud',
+        name: '대한민국',
         color: Colors.red,
         flagImage: 'assets/images/flags/south_korea_flag.png',
         continent: 'Asie',
       ),
       Team(
-        name: 'Chine',
+        name: '中国',
         color: Colors.red,
         flagImage: 'assets/images/flags/china_flag.png',
         continent: 'Asie',
       ),
       Team(
-        name: 'Arabie Saoudite',
+        name: 'المملكة العربية السعودية',
         color: Colors.green,
         flagImage: 'assets/images/flags/saudi_arabia_flag.png',
         continent: 'Asie',
@@ -183,7 +183,7 @@ class Team {
 
       // Océanie
       Team(
-        name: 'Australie',
+        name: 'Australia',
         color: Colors.blue,
         flagImage: 'assets/images/flags/australia_flag.png',
         continent: 'Océanie',

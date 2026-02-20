@@ -7,6 +7,7 @@ import 'package:happygoal/utils/ad_controller.dart';
 import 'package:happygoal/utils/iap_products.dart';
 import 'package:happygoal/utils/audio_manager.dart'; // Pour le son de succès
 import 'package:happygoal/constants.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class CoinShopDialog extends StatefulWidget {
   const CoinShopDialog({Key? key}) : super(key: key);
@@ -74,16 +75,15 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Icône animée ou statique
                     const CircleAvatar(
                       radius: 35,
                       backgroundColor: Color(0xFF4CAF50),
                       child: Icon(Icons.check, color: Colors.white, size: 40),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Paiement Réussi !",
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.coinShopSuccessTitle,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -91,7 +91,7 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "+$coins Coins ajoutés",
+                      AppLocalizations.of(context)!.coinShopSuccessCoins(coins.toString()),
                       style: const TextStyle(
                         fontSize: 18,
                         color: Color(0xFF1B5E20),
@@ -99,18 +99,18 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
-                      "Merci pour votre soutien !",
+                    Text(
+                      AppLocalizations.of(context)!.coinShopSuccessThanks,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pop(); // Ferme le dialogue succès
-                          Navigator.of(context).pop(); // Ferme la boutique (optionnel, si tu veux revenir au jeu)
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50),
@@ -119,7 +119,10 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text("SUPER !", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          AppLocalizations.of(context)!.coinShopSuccessButton,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -140,23 +143,23 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
       backgroundColor: AppColors.primary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
-        children: const [
-          Icon(Icons.storefront, color: Colors.white, size: 30),
-          SizedBox(width: 10),
-          Text('Boutique', style: TextStyle(color: Colors.white)),
+        children: [
+          const Icon(Icons.storefront, color: Colors.white, size: 30),
+          const SizedBox(width: 10),
+          Text(AppLocalizations.of(context)!.coinShopTitle, style: const TextStyle(color: Colors.white)),
         ],
       ),
       content: Container(
         width: double.maxFinite,
         constraints: const BoxConstraints(maxHeight: 400),
         child: products.isEmpty
-            ? const SizedBox(
+            ? SizedBox(
           height: 100,
           child: Center(
             child: Text(
-              "Connexion au magasin...\n(Chargement...)",
+              AppLocalizations.of(context)!.coinShopLoading,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70),
+              style: const TextStyle(color: Colors.white70),
             ),
           ),
         )
@@ -172,7 +175,7 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Fermer', style: TextStyle(color: Colors.white70)),
+          child: Text(AppLocalizations.of(context)!.coinShopClose, style: const TextStyle(color: Colors.white70)),
         ),
       ],
     );
@@ -184,9 +187,9 @@ class _CoinShopDialogState extends State<CoinShopDialog> {
     String? bonusText;
     Color bonusColor = Colors.redAccent;
 
-    if (product.id == IAPProducts.coinPackMedium) { bonusText = "+10% BONUS"; bonusColor = Colors.blue; }
-    if (product.id == IAPProducts.coinPackLarge) { bonusText = "+17% PROMO"; bonusColor = Colors.orange; }
-    if (product.id == IAPProducts.coinPackGiant) { bonusText = "MEILLEURE OFFRE"; bonusColor = const Color(0xFFFFD700); }
+    if (product.id == IAPProducts.coinPackMedium) { bonusText = AppLocalizations.of(context)!.coinShopBonus10; bonusColor = Colors.blue; }
+    if (product.id == IAPProducts.coinPackLarge) { bonusText = AppLocalizations.of(context)!.coinShopPromo17; bonusColor = Colors.orange; }
+    if (product.id == IAPProducts.coinPackGiant) { bonusText = AppLocalizations.of(context)!.coinShopBestOffer; bonusColor = const Color(0xFFFFD700); }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

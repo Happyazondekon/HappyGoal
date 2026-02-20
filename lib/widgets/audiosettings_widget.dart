@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:happygoal/utils/audio_manager.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class AudioSettingsWidget extends StatefulWidget {
   const AudioSettingsWidget({Key? key}) : super(key: key);
@@ -41,9 +42,9 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Paramètres audio',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.audioSettingsTitle,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -52,7 +53,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
 
           // Effets sonores
           SwitchListTile(
-            title: const Text('Effets sonores'),
+            title: Text(AppLocalizations.of(context)!.audioSettingsSound),
             value: _isSoundEnabled,
             onChanged: (value) {
               setState(() {
@@ -69,7 +70,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
 
           // Musique de fond
           SwitchListTile(
-            title: const Text('Musique de fond'),
+            title: Text(AppLocalizations.of(context)!.audioSettingsMusic),
             value: _isMusicEnabled,
             onChanged: (value) {
               setState(() {
@@ -81,8 +82,8 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
 
           // Lecture en arrière-plan
           SwitchListTile(
-            title: const Text('Continuer la musique en arrière-plan'),
-            subtitle: const Text('La musique continue lorsque vous quittez l\'application'),
+            title: Text(AppLocalizations.of(context)!.audioSettingsBackground),
+            subtitle: Text(AppLocalizations.of(context)!.audioSettingsBackgroundDesc),
             value: _playInBackground,
             onChanged: (value) {
               setState(() {

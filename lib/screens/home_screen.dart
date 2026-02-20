@@ -334,10 +334,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _inviteFriends() {
     AnalyticsService.logAdEvent('invite_friends');
-    final String shareText =
-        'HappyGoal ! ⚽\n\nViens tirer des penalties et défie-moi !\n'
-        'Télécharge : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
-    Share.share(shareText, subject: 'HappyGoal');
+    final String shareText = AppLocalizations.of(context)!.inviteShareText;
+    Share.share(shareText, subject: AppLocalizations.of(context)!.inviteShareSubject);
   }
 
   void _rateApp() async {
@@ -682,23 +680,21 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         backgroundColor: const Color(0xFF1B2A1E),
-        title: const Row(
+        title: Row(
           children: [
-            Text('🪙', style: TextStyle(fontSize: 26)),
-            SizedBox(width: 10),
-            Text('Trésorerie', style: TextStyle(color: Colors.white)),
+            const Text('🪙', style: TextStyle(fontSize: 26)),
+            const SizedBox(width: 10),
+            Text(AppLocalizations.of(context)!.coinInfoTitle, style: const TextStyle(color: Colors.white)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildCoinInfoItem(
-                '💰 Votre Solde', '${AdController.instance.currentCoinCount} coins'),
-            _buildCoinInfoItem(
-                '🎁 Gain Pub', '+${AdController.instance.rewardCoins} coins'),
+            _buildCoinInfoItem(AppLocalizations.of(context)!.coinInfoBalance, '${AdController.instance.currentCoinCount} coins'),
+            _buildCoinInfoItem(AppLocalizations.of(context)!.coinInfoAdReward, '+${AdController.instance.rewardCoins} coins'),
             const SizedBox(height: 10),
             Text(
-              'Utilisez vos coins pour acheter des rembobinages !',
+              AppLocalizations.of(context)!.coinInfoShopUseCoins,
               style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
               textAlign: TextAlign.center,
             ),
@@ -711,7 +707,7 @@ class _HomeScreenState extends State<HomeScreen>
               _showEarnRewardDialog();
             },
             icon: const Icon(Icons.play_circle, color: Colors.white70),
-            label: const Text('Pub Gratuit', style: TextStyle(color: Colors.white70)),
+            label: Text(AppLocalizations.of(context)!.coinInfoShopPubFree, style: const TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -725,10 +721,7 @@ class _HomeScreenState extends State<HomeScreen>
               backgroundColor: const Color(0xFFFFD700),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
-            child: const Text(
-              'BOUTIQUE',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+            child: Text(AppLocalizations.of(context)!.coinInfoShop, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -753,8 +746,8 @@ class _HomeScreenState extends State<HomeScreen>
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
       context: context,
-      title: 'Cadeau quotidien',
-      description: 'Regardez une vidéo pour gagner ${AdController.instance.rewardCoins} coins !',
+      title: AppLocalizations.of(context)!.coinInfoShopGift,
+      description: AppLocalizations.of(context)!.coinInfoShopGiftDesc(AdController.instance.rewardCoins),
       rewardType: 'coins',
       rewardAmount: AdController.instance.rewardCoins,
       onRewardEarned: () {
@@ -764,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen>
             content: Row(children: [
               const Icon(Icons.card_giftcard, color: Colors.white),
               const SizedBox(width: 10),
-              Text('+${AdController.instance.rewardCoins} coins ajoutés !'),
+              Text(AppLocalizations.of(context)!.coinInfoShopAdded(AdController.instance.rewardCoins)),
             ]),
             backgroundColor: Colors.green,
           ),
@@ -772,8 +765,8 @@ class _HomeScreenState extends State<HomeScreen>
       },
       onAdFailed: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La publicité est indisponible.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.coinInfoShopUnavailable),
             backgroundColor: Colors.orange,
           ),
         );
@@ -799,12 +792,12 @@ class _HomeScreenState extends State<HomeScreen>
                     colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
                   ),
                 ),
-                child: const Row(
+                child:  Row(
                   children: [
                     Icon(Icons.tune, color: Colors.white),
                     SizedBox(width: 12),
-                    Text('Options',
-                        style: TextStyle(
+                    Text(AppLocalizations.of(context)!.settingsOptions,
+                        style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white)),
@@ -826,8 +819,8 @@ class _HomeScreenState extends State<HomeScreen>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('Fermer',
-                          style: TextStyle(color: Colors.white)),
+                      child: Text(AppLocalizations.of(context)!.settingsClose,
+                          style: const TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -856,12 +849,12 @@ class _HomeScreenState extends State<HomeScreen>
                   colors: [Color(0xFF00695C), Color(0xFF00897B)],
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.menu_book, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Règles du Jeu',
-                      style: TextStyle(
+                  const Icon(Icons.menu_book, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Text(AppLocalizations.of(context)!.rulesTitle,
+                      style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white)),
@@ -873,10 +866,10 @@ class _HomeScreenState extends State<HomeScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _ruleItem('1', 'Choisissez une direction pour tirer.'),
-                  _ruleItem('2', 'Le gardien plonge aléatoirement.'),
-                  _ruleItem('3', 'Marquez 5 buts pour gagner !'),
-                  _ruleItem('4', 'Utilisez les rembobinages si vous ratez.'),
+                  _ruleItem('1', AppLocalizations.of(context)!.rules1),
+                  _ruleItem('2', AppLocalizations.of(context)!.rules2),
+                  _ruleItem('3', AppLocalizations.of(context)!.rules3),
+                  _ruleItem('4', AppLocalizations.of(context)!.rules4),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -887,8 +880,8 @@ class _HomeScreenState extends State<HomeScreen>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('Compris !',
-                          style: TextStyle(
+                      child: Text(AppLocalizations.of(context)!.rulesUnderstood,
+                          style: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
                   ),

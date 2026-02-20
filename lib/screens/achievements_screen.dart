@@ -6,6 +6,7 @@ import 'package:happygoal/services/achievement_service.dart';
 import 'package:happygoal/constants.dart';
 import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/utils/audio_manager.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({Key? key}) : super(key: key);
@@ -46,15 +47,15 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   String _getCategoryName(AchievementCategory category) {
     switch (category) {
       case AchievementCategory.matches:
-        return 'Matchs';
+        return AppLocalizations.of(context)!.achievementsCategoryMatches;
       case AchievementCategory.goals:
-        return 'Buts';
+        return AppLocalizations.of(context)!.achievementsCategoryGoals;
       case AchievementCategory.tournaments:
-        return 'Tournois';
+        return AppLocalizations.of(context)!.achievementsCategoryTournaments;
       case AchievementCategory.special:
-        return 'Spéciaux';
+        return AppLocalizations.of(context)!.achievementsCategorySpecial;
       case AchievementCategory.skills:
-        return 'Compétences';
+        return AppLocalizations.of(context)!.achievementsCategorySkills;
     }
   }
 
@@ -174,16 +175,16 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Succès',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.achievementsTitle,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      '$unlockedCount / $totalAchievements débloqués',
+                      AppLocalizations.of(context)!.achievementsUnlocked(unlockedCount, totalAchievements),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.8),
@@ -195,7 +196,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               _buildStatBadge(
                 Icons.emoji_events,
                 '${stats['total_matches_won'] ?? 0}',
-                'Victoires',
+                AppLocalizations.of(context)!.achievementsStatWins,
               ),
             ],
           ),
@@ -244,16 +245,16 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Progression globale',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.achievementsProgressGlobal,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
-              '${(progress * 100).toStringAsFixed(0)}%',
+              AppLocalizations.of(context)!.achievementsCompletionPercent((progress * 100).toStringAsFixed(0)),
               style: const TextStyle(
                 color: Color(0xFFFFD700),
                 fontSize: 12,
@@ -282,7 +283,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     if (achievements.isEmpty) {
       return Center(
         child: Text(
-          'Aucun succès dans cette catégorie',
+          AppLocalizations.of(context)!.achievementsNone,
           style: TextStyle(
             color: Colors.white.withOpacity(0.6),
             fontSize: 16,
@@ -308,6 +309,22 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     final isUnlocked = progress.isUnlocked;
     final percentage = progress.getProgressPercentage(achievement.targetValue);
     final rarityColor = Achievement.getRarityColor(achievement.rarity);
+
+    String rarityText;
+    switch (achievement.rarity) {
+      case AchievementRarity.common:
+        rarityText = AppLocalizations.of(context)!.achievementsRarityCommon;
+        break;
+      case AchievementRarity.rare:
+        rarityText = AppLocalizations.of(context)!.achievementsRarityRare;
+        break;
+      case AchievementRarity.epic:
+        rarityText = AppLocalizations.of(context)!.achievementsRarityEpic;
+        break;
+      case AchievementRarity.legendary:
+        rarityText = AppLocalizations.of(context)!.achievementsRarityLegendary;
+        break;
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -396,7 +413,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                Achievement.getRarityText(achievement.rarity),
+                                rarityText,
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -436,7 +453,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${progress.currentValue}/${achievement.targetValue}',
+                              AppLocalizations.of(context)!.achievementsProgress(progress.currentValue, achievement.targetValue),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.white.withOpacity(0.8),
@@ -463,8 +480,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             const SizedBox(width: 6),
                             Text(
                               progress.rewardClaimed
-                                  ? 'Réclamé'
-                                  : '+${achievement.rewardCoins} coins',
+                                ? AppLocalizations.of(context)!.achievementsClaimed
+                                : AppLocalizations.of(context)!.achievementsReward(achievement.rewardCoins),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: progress.rewardClaimed
@@ -504,7 +521,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             children: [
               const Icon(Icons.monetization_on, color: Colors.white),
               const SizedBox(width: 10),
-              Text('+${achievement.rewardCoins} coins réclamés !'),
+              Text(AppLocalizations.of(context)!.achievementsSnackClaimed(achievement.rewardCoins)),
             ],
           ),
           backgroundColor: const Color(0xFFFFD700),

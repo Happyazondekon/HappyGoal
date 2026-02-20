@@ -1,3 +1,4 @@
+import 'package:happygoal/l10n/app_localizations.dart';
 // rewind_reward_widget.dart
 import 'package:flutter/material.dart';
 import 'package:happygoal/models/game_state.dart';
@@ -276,12 +277,12 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xFF1B6B3A),
         title: Row(
-          children: const [
-            Icon(Icons.warning, color: Color(0xFFFF9800), size: 28),
-            SizedBox(width: 10),
+          children: [
+            const Icon(Icons.warning, color: Color(0xFFFF9800), size: 28),
+            const SizedBox(width: 10),
             Text(
-              'Limite atteinte',
-              style: TextStyle(color: Colors.white),
+              AppLocalizations.of(context)!.rewindLimitTitle,
+              style: const TextStyle(color: Colors.white),
             ),
           ],
         ),
@@ -289,9 +290,9 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Vous avez utilisé tous vos rembobinages autorisés pour ce match.',
-              style: TextStyle(fontSize: 16, color: Colors.white),
+            Text(
+              AppLocalizations.of(context)!.rewindLimitDesc,
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 15),
             Container(
@@ -309,7 +310,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
                       Icon(Icons.info, color: Colors.white.withOpacity(0.8), size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Informations:',
+                        AppLocalizations.of(context)!.rewindLimitInfo,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white.withOpacity(0.9),
@@ -318,18 +319,18 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text('• Maximum $maxRewinds rembobinages par match',
+                  Text(AppLocalizations.of(context)!.rewindLimitMax(maxRewinds.toString()),
                       style: TextStyle(color: Colors.white.withOpacity(0.8))),
-                  Text('• Utilisés: $usedInGame/$maxRewinds',
+                  Text(AppLocalizations.of(context)!.rewindLimitUsed(usedInGame.toString(), maxRewinds.toString()),
                       style: TextStyle(color: Colors.white.withOpacity(0.8))),
-                  Text('• Rembobinages totaux: ${AdController.instance.currentRewindCount}',
+                  Text(AppLocalizations.of(context)!.rewindLimitTotal(AdController.instance.currentRewindCount.toString()),
                       style: TextStyle(color: Colors.white.withOpacity(0.8))),
                 ],
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              'Vos rembobinages se réinitialiseront au prochain match !',
+              AppLocalizations.of(context)!.rewindLimitReset,
               style: TextStyle(color: Colors.white.withOpacity(0.9)),
             ),
           ],
@@ -337,20 +338,19 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Compris', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.rewindLimitUnderstood, style: const TextStyle(color: Colors.white)),
           ),
-          // Option pour acheter plus de stock (utile pour les prochains matchs)
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _openCoinShop(); // ⭐ NOUVEAU: Redirige vers la boutique
+              _openCoinShop();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
             ),
-            child: const Text(
-              'Faire le plein',
-              style: TextStyle(color: Colors.white),
+            child: Text(
+              AppLocalizations.of(context)!.rewindLimitRefill,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -361,8 +361,8 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
   void _showEarnRewardDialog() {
     AdController.instance.showRewardDialog(
         context: context,
-        title: 'Besoin de Coins ?',
-        description: 'Regardez une publicité pour gagner ${AdController.instance.rewardCoins} coins !',
+        title: AppLocalizations.of(context)!.coinsNeededTitle,
+        description: AppLocalizations.of(context)!.coinsNeededDesc(AdController.instance.rewardCoins.toString()),
         rewardType: 'coins',
         rewardAmount: AdController.instance.rewardCoins,
         onRewardEarned: () {
@@ -374,7 +374,7 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
                   children: [
                     const Icon(Icons.monetization_on, color: Colors.white),
                     const SizedBox(width: 10),
-                    Text('+${AdController.instance.rewardCoins} coins gagnés !'),
+                    Text(AppLocalizations.of(context)!.coinsEarnedSnack(AdController.instance.rewardCoins.toString())),
                   ],
                 ),
                 backgroundColor: const Color(0xFFFFD700),
@@ -385,20 +385,19 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
         onAdFailed: () {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Row(
                   children: [
-                    Icon(Icons.warning, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text('Publicité non disponible'),
+                    const Icon(Icons.warning, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Text(AppLocalizations.of(context)!.adUnavailableSnack),
                   ],
                 ),
-                backgroundColor: Color(0xFFFF9800),
+                backgroundColor: const Color(0xFFFF9800),
               ),
             );
           }
         },
-        // ⭐ NOUVEAU : Ajouter un bouton "Acheter" dans le dialogue de récompense si la pub échoue ou si l'utilisateur préfère payer
         onDeclined: () {
           // Optionnel : ne rien faire ou proposer l'achat
         }
@@ -423,12 +422,12 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xFF1B6B3A),
         title: Row(
-          children: const [
-            Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 28),
-            SizedBox(width: 10),
+          children: [
+            const Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 28),
+            const SizedBox(width: 10),
             Text(
-              'Système de Coins',
-              style: TextStyle(color: Colors.white),
+              AppLocalizations.of(context)!.coinSystemTitle,
+              style: const TextStyle(color: Colors.white),
             ),
           ],
         ),
@@ -436,9 +435,9 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Gérez votre monnaie virtuelle :',
-              style: TextStyle(fontSize: 16, color: Colors.white),
+            Text(
+              AppLocalizations.of(context)!.coinSystemDesc,
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 15),
             Container(
@@ -451,40 +450,35 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoItem('📊 Votre solde', '${AdController.instance.currentCoinCount} coins'),
-                  _buildInfoItem('🔄 Coût rembobinage', '${AdController.instance.rewindCost} coins'),
+                  _buildInfoItem(AppLocalizations.of(context)!.coinSystemBalance, '${AdController.instance.currentCoinCount} coins'),
+                  _buildInfoItem(AppLocalizations.of(context)!.coinSystemRewindCost, '${AdController.instance.rewindCost} coins'),
                   const Divider(color: Colors.white30),
-                  _buildInfoItem('🎥 Gain Publicité', '+${AdController.instance.rewardCoins} coins'),
+                  _buildInfoItem(AppLocalizations.of(context)!.coinSystemAdReward, '+${AdController.instance.rewardCoins} coins'),
                 ],
               ),
             ),
           ],
         ),
         actions: [
-          // Bouton 1 : Regarder une pub (Gratuit)
           TextButton.icon(
             onPressed: () {
               Navigator.of(context).pop();
               _showEarnRewardDialog();
             },
             icon: const Icon(Icons.play_circle_fill, color: Colors.white),
-            label: const Text('Pub Gratuite', style: TextStyle(color: Colors.white)),
+            label: Text(AppLocalizations.of(context)!.freeAdButton, style: const TextStyle(color: Colors.white)),
           ),
-
-          // Bouton 2 : Acheter des Coins (IAP) - ⭐ NOUVEAU
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _openCoinShop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700), // Or
+              backgroundColor: const Color(0xFFFFD700),
               foregroundColor: Colors.black,
             ),
-            child: const Text('Acheter Coins'),
+            child: Text(AppLocalizations.of(context)!.buyCoinsButton),
           ),
-
-          // Bouton 3 : Acheter Rembobinage (Avec solde virtuel)
           if (AdController.instance.currentCoinCount >= AdController.instance.rewindCost)
             ElevatedButton(
               onPressed: () {
@@ -495,9 +489,9 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
               ),
-              child: const Text(
-                'Acheter Replay',
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                AppLocalizations.of(context)!.buyRewindButton,
+                style: const TextStyle(color: Colors.white),
               ),
             ),
         ],

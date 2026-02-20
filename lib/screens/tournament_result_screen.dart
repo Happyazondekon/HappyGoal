@@ -12,6 +12,7 @@ import 'package:happygoal/utils/responsive_helper.dart';
 import 'package:happygoal/utils/ad_controller.dart';
 import 'package:happygoal/services/achievement_service.dart'; // ⭐ Import Service
 import 'package:happygoal/models/achievement.dart'; // ⭐ Import Modèle
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class TournamentResultScreen extends StatefulWidget {
   final Team userTeam;
@@ -179,13 +180,13 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: const [
+            children: [
               Icon(Icons.emoji_events, color: Colors.white, size: 28),
-              SizedBox(width: 15),
+              const SizedBox(width: 15),
               Expanded(
                 child: Text(
-                  '🎉 CHAMPION! +25 COINS GAGNÉS!',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.tournamentResultSnackChampion,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -228,10 +229,10 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
         backgroundColor: const Color(0xFF0F3622),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
-          children: const [
-            Icon(Icons.emoji_events, color: Color(0xFFFFD700)),
-            SizedBox(width: 10),
-            Text('Succès Débloqués !', style: TextStyle(color: Colors.white)),
+          children: [
+            Icon(Icons.emoji_events, color: const Color(0xFFFFD700)),
+            const SizedBox(width: 10),
+            Text(AppLocalizations.of(context)!.tournamentResultAchievementsUnlocked, style: const TextStyle(color: Colors.white)),
           ],
         ),
         content: Column(
@@ -279,7 +280,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700)),
-            child: const Text('GÉNIAL !', style: TextStyle(color: Colors.black)),
+            child: Text(AppLocalizations.of(context)!.tournamentResultSuccessGreat, style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -351,7 +352,6 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
                       position: _slideAnimation,
                       child: _buildResultsCard(),
                     ),
-
 
                     const SizedBox(height: 40),
 
@@ -441,9 +441,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
   }
 
   Widget _buildResultTitle() {
-    // Champion seulement si 4 victoires (tous les matches gagnés)
     bool isChampion = widget.userWins == 4;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
@@ -475,8 +473,11 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
           ),
           const SizedBox(height: 10),
           Text(
-            isChampion ? 'CHAMPION!' :
-            widget.userWins > widget.aiWins ? 'BONNE PERFORMANCE!' : 'DÉFAITE',
+            isChampion
+              ? AppLocalizations.of(context)!.tournamentResultChampion
+              : widget.userWins > widget.aiWins
+                ? AppLocalizations.of(context)!.tournamentResultGoodPerformance
+                : AppLocalizations.of(context)!.tournamentResultDefeat,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -493,8 +494,11 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
           ),
           const SizedBox(height: 5),
           Text(
-            isChampion ? 'TOURNOI REMPORTÉ' :
-            widget.userWins > widget.aiWins ? 'ÉLIMINÉ' : 'FIN DU PARCOURS',
+            isChampion
+              ? AppLocalizations.of(context)!.tournamentResultTournamentWon
+              : widget.userWins > widget.aiWins
+                ? AppLocalizations.of(context)!.tournamentResultEliminated
+                : AppLocalizations.of(context)!.tournamentResultEndOfJourney,
             style: TextStyle(
               fontSize: 16,
               color: Colors.white.withOpacity(0.9),
@@ -502,7 +506,6 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               fontWeight: FontWeight.w500,
             ),
           ),
-          // 🎁 AFFICHAGE DES COINS GAGNÉS SI CHAMPION
           if (isChampion) ...[
             const SizedBox(height: 10),
             Container(
@@ -514,12 +517,12 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Icon(Icons.monetization_on, color: Colors.white, size: 24),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    '+25 COINS',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.tournamentResultCoins,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -540,7 +543,6 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
     bool isChampion = widget.userWins == 4;
 
     return Container(
-
       child: Center(
         child: isChampion
             ? Lottie.asset(
@@ -580,7 +582,6 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
       ),
       child: Column(
         children: [
-          // En-tête de la carte
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -591,7 +592,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               ),
               const SizedBox(width: 10),
               Text(
-                'RÉSULTATS DU TOURNOI',
+                AppLocalizations.of(context)!.tournamentResultResultsTitle,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -601,19 +602,11 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
               ),
             ],
           ),
-
           const SizedBox(height: 25),
-
-          // Informations de l'équipe
           _buildTeamInfo(),
-
           const SizedBox(height: 20),
-
           Divider(color: Colors.grey[300], thickness: 1),
-
           const SizedBox(height: 20),
-
-          // Statistiques des matchs
           _buildMatchStats(),
         ],
       ),
@@ -675,8 +668,11 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
-                    widget.userWins == 4 ? '🏆 CHAMPION' :
-                    widget.userWins > widget.aiWins ? '⚔️ COMBATTANT' : '💔 ÉLIMINÉ',
+                    widget.userWins == 4
+                      ? AppLocalizations.of(context)!.tournamentResultChampionBadge
+                      : widget.userWins > widget.aiWins
+                        ? AppLocalizations.of(context)!.tournamentResultFighterBadge
+                        : AppLocalizations.of(context)!.tournamentResultEliminatedBadge,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -731,7 +727,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
       children: [
         Expanded(
           child: _buildStatCard(
-            'VICTOIRES',
+            AppLocalizations.of(context)!.tournamentResultWins,
             widget.userWins.toString(),
             Colors.green,
             Icons.emoji_events,
@@ -740,7 +736,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
         const SizedBox(width: 15),
         Expanded(
           child: _buildStatCard(
-            'DÉFAITES',
+            AppLocalizations.of(context)!.tournamentResultLosses,
             widget.aiWins.toString(),
             Colors.red,
             Icons.close,
@@ -749,7 +745,7 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
         const SizedBox(width: 15),
         Expanded(
           child: _buildStatCard(
-            'TOTAL',
+            AppLocalizations.of(context)!.tournamentResultTotal,
             '${widget.userWins + widget.aiWins}',
             AppColors.primary,
             Icons.sports_soccer,
@@ -823,9 +819,9 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
                 size: 24,
               ),
               const SizedBox(width: 12),
-              const Text(
-                'RETOUR À L\'ACCUEIL',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.tournamentResultBackHome,
+                style: const TextStyle(
                   fontSize: 18,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -865,9 +861,9 @@ class _TournamentResultScreenState extends State<TournamentResultScreen>
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'NOUVEAU TOURNOI',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.tournamentResultNewTournament,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

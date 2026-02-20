@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:happygoal/utils/tutorial_manager.dart';
 import 'package:happygoal/constants.dart';
 import 'package:happygoal/utils/responsive_helper.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 
 class TutorialSettingsScreen extends StatefulWidget {
   const TutorialSettingsScreen({Key? key}) : super(key: key);
@@ -16,22 +17,22 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
   Map<String, bool> tutorialStatus = {};
   bool isLoading = true;
 
-  final Map<String, String> tutorialTitles = {
-    'home_screen': 'Écran d\'accueil',
-    'mode_selection': 'Sélection du mode',
-    'team_selection': 'Sélection des équipes',
-    'game_screen_solo': 'Jeu solo',
-    'game_screen_multi': 'Jeu multijoueur',
-    'tournament_mode': 'Mode tournoi',
+  Map<String, String> get tutorialTitles => {
+    'home_screen': AppLocalizations.of(context)!.tutorialSettingsHome,
+    'mode_selection': AppLocalizations.of(context)!.tutorialSettingsModeSelection,
+    'team_selection': AppLocalizations.of(context)!.tutorialSettingsTeamSelection,
+    'game_screen_solo': AppLocalizations.of(context)!.tutorialSettingsGameSolo,
+    'game_screen_multi': AppLocalizations.of(context)!.tutorialSettingsGameMulti,
+    'tournament_mode': AppLocalizations.of(context)!.tutorialSettingsTournament,
   };
 
-  final Map<String, String> tutorialDescriptions = {
-    'home_screen': 'Guide des fonctionnalités principales',
-    'mode_selection': 'Explication des différents modes de jeu',
-    'team_selection': 'Comment choisir vos équipes',
-    'game_screen_solo': 'Mécaniques de jeu contre l\'IA',
-    'game_screen_multi': 'Jeu à deux joueurs',
-    'tournament_mode': 'Navigation dans le tournoi',
+  Map<String, String> get tutorialDescriptions => {
+    'home_screen': AppLocalizations.of(context)!.tutorialSettingsHomeDesc,
+    'mode_selection': AppLocalizations.of(context)!.tutorialSettingsModeSelectionDesc,
+    'team_selection': AppLocalizations.of(context)!.tutorialSettingsTeamSelectionDesc,
+    'game_screen_solo': AppLocalizations.of(context)!.tutorialSettingsGameSoloDesc,
+    'game_screen_multi': AppLocalizations.of(context)!.tutorialSettingsGameMultiDesc,
+    'tournament_mode': AppLocalizations.of(context)!.tutorialSettingsTournamentDesc,
   };
 
   @override
@@ -66,7 +67,7 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Tutoriel "${tutorialTitles[tutorialName]}" réinitialisé'),
+        content: Text(AppLocalizations.of(context)!.tutorialSettingsResetSingle(tutorialTitles[tutorialName]!)),
         backgroundColor: AppColors.primary,
       ),
     );
@@ -76,20 +77,17 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmer la réinitialisation'),
-        content: const Text(
-          'Êtes-vous sûr de vouloir réinitialiser tous les tutoriels ? '
-              'Ils s\'afficheront à nouveau lors de vos prochaines visites.',
-        ),
+        title: Text(AppLocalizations.of(context)!.tutorialSettingsResetConfirmTitle),
+        content: Text(AppLocalizations.of(context)!.tutorialSettingsResetConfirmContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: Text(AppLocalizations.of(context)!.tutorialSettingsResetCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Confirmer', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.tutorialSettingsResetConfirm, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -101,8 +99,8 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tous les tutoriels ont été réinitialisés'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.tutorialSettingsResetSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -115,7 +113,7 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Tutoriels'),
+        title: Text(AppLocalizations.of(context)!.tutorialSettingsTitle),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -153,9 +151,9 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
                       size: 24,
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Gestion des tutoriels',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.tutorialSettingsHeader,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -164,10 +162,9 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Gérez l\'affichage des tutoriels pour chaque écran. '
-                      'Les tutoriels marqués comme "Vu" ne s\'afficheront plus automatiquement.',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.tutorialSettingsHeaderDesc,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black54,
                     height: 1.4,
@@ -236,7 +233,7 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                hasBeenShown ? 'Vu' : 'Nouveau',
+                                hasBeenShown ? AppLocalizations.of(context)!.tutorialSettingsSeen : AppLocalizations.of(context)!.tutorialSettingsNew,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -260,9 +257,9 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
                                   size: 18,
                                   color: Colors.blue,
                                 ),
-                                label: const Text(
-                                  'Réactiver',
-                                  style: TextStyle(color: Colors.blue),
+                                label: Text(
+                                  AppLocalizations.of(context)!.tutorialSettingsReactivate,
+                                  style: const TextStyle(color: Colors.blue),
                                 ),
                               )
                             else
@@ -275,9 +272,9 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
                                   color: Colors.blue.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Text(
-                                  'S\'affichera automatiquement',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(context)!.tutorialSettingsWillShow,
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.blue,
                                   ),
@@ -300,7 +297,7 @@ class _TutorialSettingsScreenState extends State<TutorialSettingsScreen> {
             child: ElevatedButton.icon(
               onPressed: _resetAllTutorials,
               icon: const Icon(Icons.restart_alt),
-              label: const Text('Réinitialiser tous les tutoriels'),
+              label: Text(AppLocalizations.of(context)!.tutorialSettingsResetAll),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
@@ -330,11 +327,11 @@ class TutorialSettingsWidget extends StatelessWidget {
           Icons.school,
           color: Colors.blue,
         ),
-        title: const Text(
-          'Tutoriels',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Text(
+          AppLocalizations.of(context)!.tutorialSettingsWidgetTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: const Text('Gérer l\'affichage des guides'),
+        subtitle: Text(AppLocalizations.of(context)!.tutorialSettingsWidgetSubtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
           Navigator.of(context).push(

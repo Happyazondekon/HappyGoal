@@ -1,3 +1,4 @@
+import 'package:happygoal/l10n/app_localizations.dart';
 // lib/widgets/goalkeeper_swipe_widget.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -194,7 +195,6 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Flèche gauche animée
             Opacity(
               opacity: 0.4 + _hintAnim.value * 0.6,
               child: Transform.translate(
@@ -213,9 +213,9 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
                 border:
                 Border.all(color: Colors.white.withOpacity(0.2), width: 1),
               ),
-              child: const Text(
-                'GLISSE LE GARDIEN',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.goalkeeperSwipeLabel,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -224,7 +224,6 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
               ),
             ),
             const SizedBox(width: 8),
-            // Flèche droite animée
             Opacity(
               opacity: 0.4 + _hintAnim.value * 0.6,
               child: Transform.translate(
@@ -362,9 +361,9 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _zoneMarker('G', const Color(0xFF2196F3)),
-        _zoneMarker('C', const Color(0xFF4CAF50)),
-        _zoneMarker('D', const Color(0xFF2196F3)),
+        _zoneMarker(AppLocalizations.of(context)!.goalkeeperSwipeZoneLeft, const Color(0xFF2196F3)),
+        _zoneMarker(AppLocalizations.of(context)!.goalkeeperSwipeZoneCenter, const Color(0xFF4CAF50)),
+        _zoneMarker(AppLocalizations.of(context)!.goalkeeperSwipeZoneRight, const Color(0xFF2196F3)),
       ],
     );
   }
@@ -433,15 +432,19 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
     Color color;
 
     if (direction == ShotDirection.left) {
-      label = dist > 0.3 ? 'PLONGEON GAUCHE' : 'LÉGÈREMENT GAUCHE';
+      label = dist > 0.3
+          ? AppLocalizations.of(context)!.goalkeeperSwipeLeft
+          : AppLocalizations.of(context)!.goalkeeperSwipeSlightLeft;
       icon = Icons.arrow_back_rounded;
       color = const Color(0xFF2196F3);
     } else if (direction == ShotDirection.right) {
-      label = dist > 0.3 ? 'PLONGEON DROITE' : 'LÉGÈREMENT DROITE';
+      label = dist > 0.3
+          ? AppLocalizations.of(context)!.goalkeeperSwipeRight
+          : AppLocalizations.of(context)!.goalkeeperSwipeSlightRight;
       icon = Icons.arrow_forward_rounded;
       color = const Color(0xFF2196F3);
     } else {
-      label = 'CENTRE';
+      label = AppLocalizations.of(context)!.goalkeeperSwipeCenter;
       icon = Icons.arrow_upward_rounded;
       color = const Color(0xFF4CAF50);
     }
@@ -460,7 +463,7 @@ class _GoalkeeperSwipeWidgetState extends State<GoalkeeperSwipeWidget>
           Icon(icon, color: color, size: 14),
           const SizedBox(width: 6),
           Text(
-            _diveSent ? 'PLONGÉE !' : label,
+            _diveSent ? AppLocalizations.of(context)!.goalkeeperSwipeDived : label,
             style: TextStyle(
               color: _diveSent ? Colors.white : color,
               fontSize: 11,
