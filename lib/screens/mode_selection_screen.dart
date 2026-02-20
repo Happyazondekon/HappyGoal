@@ -3,26 +3,57 @@ import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/screens/tournament_mode_screen.dart';
 import 'package:happygoal/constants.dart';
 import 'package:happygoal/utils/responsive_helper.dart';
+import 'dart:math' as math;
 import 'home_screen.dart';
-import 'result_screen.dart';
 import 'team_selection_screen.dart';
-import 'difficulty_selection_screen.dart';
 import 'package:happygoal/utils/audio_manager.dart';
 import 'hero_mode_screen.dart';
 
-
-class ModeSelectionScreen extends StatelessWidget {
+class ModeSelectionScreen extends StatefulWidget {
   const ModeSelectionScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+  State<ModeSelectionScreen> createState() => _ModeSelectionScreenState();
+}
 
+class _ModeSelectionScreenState extends State<ModeSelectionScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _entryController;
+  late AnimationController _glowController;
+  late Animation<double> _glowAnim;
+
+  final List<_ModeCardData> _modes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..forward();
+
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _glowAnim =
+        Tween<double>(begin: 0.5, end: 1.0).animate(_glowController);
+  }
+
+  @override
+  void dispose() {
+    _entryController.dispose();
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Arrière-plan dégradé moderne
+          // ── Fond sombre cohérent avec Hero screens ───────────────────
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -36,249 +67,151 @@ class ModeSelectionScreen extends StatelessWidget {
             ),
           ),
 
-          // Particules flottantes
-          ...List.generate(12, (index) {
-            return Positioned(
-              left: (index * 35.0) % screenWidth,
-              top: (index * 50.0) % screenHeight,
-              child: FloatingParticle(
-                size: 2.0 + (index % 3),
-                color: Colors.white.withOpacity(0.1 + (index % 3) * 0.1),
-                duration: Duration(seconds: 4 + (index % 3)),
-              ),
-            );
-          }),
-
-          // Lignes de terrain stylisées
-          CustomPaint(
-            size: Size(screenWidth, screenHeight),
-
+          // ── Spotlight animé ───────────────────────────────────────────
+          AnimatedBuilder(
+            animation: _glowAnim,
+            builder: (context, _) {
+              return Center(
+                child: Container(
+                  width: 350,
+                  height: 350,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white
+                            .withOpacity(0.03 * _glowAnim.value),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
 
-          // Contenu principal
+          // ── Terrain décoratif ─────────────────────────────────────────
+          CustomPaint(
+            size: Size.infinite,
+            painter: _ModeFieldPainter(),
+          ),
+
+          // ── Contenu ───────────────────────────────────────────────────
           SafeArea(
             child: Column(
               children: [
-                // Header moderne
+                // ── HEADER ──────────────────────────────────────────────
+                _buildHeader(context),
+
+                SizedBox(height: ResponsiveHelper.scale(context, 8)),
+
+                // ── MODE CARDS ───────────────────────────────────────────
                 Expanded(
-                  flex: 2,
-                  child: Container(
-                    width: double.infinity,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Animation du titre
-                        TweenAnimationBuilder(
-                          duration: const Duration(milliseconds: 800),
-                          tween: Tween<double>(begin: 0, end: 1),
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(0, 30 * (1 - value)),
-                              child: Opacity(
-                                opacity: value,
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) => const LinearGradient(
-                                    colors: [
-                                      Colors.white,
-                                      Color(0xFFE0E0E0),
-                                      Colors.white,
-                                    ],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.modeSelectionTitle,
-                                    style: const TextStyle(
-                                      fontSize: 42,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: 2,
-                                      shadows: [
-                                        Shadow(
-                                          offset: Offset(0, 0),
-                                          blurRadius: 20,
-                                          color: Colors.white,
-                                        ),
-                                        Shadow(
-                                          offset: Offset(0, 5),
-                                          blurRadius: 15,
-                                          color: Colors.black,
-                                        ),
-                                      ],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Sous-titre moderne
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.white.withOpacity(0.1),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            AppLocalizations.of(context)!.modeSelectionSubtitle,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Section des modes
-                Expanded(
-                  flex: 4,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.scale(context, 20)),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Mode Hero avec animation
-                        TweenAnimationBuilder(
-                          duration: Duration(milliseconds: 600 + (0 * 200)),
-                          tween: Tween<double>(begin: 0, end: 1),
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(50 * (1 - value), 0),
-                              child: Opacity(
-                                opacity: value,
-                                child: _buildModernModeCard(
-                                  context,
-                                  title: AppLocalizations.of(context)!.modeHeroTitle,
-                                  subtitle: AppLocalizations.of(context)!.modeHeroSubtitle,
-                                  icon: Icons.star,
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-                                  ),
-                                  onPressed: () {
-                                    AudioManager.playSound('click');
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                            HeroModeScreen(), // À créer
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          return SlideTransition(
-                                            position: Tween<Offset>(
-                                              begin: const Offset(1.0, 0.0),
-                                              end: const Offset(0.0, 0.0),
-                                            ).animate(animation),
-                                            child: child,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                        _buildAnimatedModeCard(
+                          context,
+                          index: 0,
+                          icon: Icons.star_rounded,
+                          title: AppLocalizations.of(context)!.modeHeroTitle,
+                          subtitle:
+                          AppLocalizations.of(context)!.modeHeroSubtitle,
+                          gradientColors: const [
+                            Color(0xFFFFD700),
+                            Color(0xFFF57F17)
+                          ],
+                          accentColor: const Color(0xFFFFD700),
+                          badge: AppLocalizations.of(context)!.modeHeroTitle,
+                          onTap: () {
+                            AudioManager.playSound('click');
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, _) =>
+                                    SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(1.0, 0.0),
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: HeroModeScreen(),
+                                    ),
+                                transitionDuration:
+                                const Duration(milliseconds: 300),
                               ),
                             );
                           },
                         ),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: ResponsiveHelper.scale(context, 14)),
 
-                        // Mode Multijoueur avec animation
-                        TweenAnimationBuilder(
-                          duration: Duration(milliseconds: 600 + (1 * 200)),
-                          tween: Tween<double>(begin: 0, end: 1),
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(50 * (1 - value), 0),
-                              child: Opacity(
-                                opacity: value,
-                                child: _buildModernModeCard(
-                                  context,
-                                  title: AppLocalizations.of(context)!.modeMultiplayerTitle,
-                                  subtitle: AppLocalizations.of(context)!.modeMultiplayerSubtitle,
-                                  icon: Icons.people,
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
-                                  ),
-                                  onPressed: () {
-                                    AudioManager.playSound('click');
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                        const TeamSelectionScreen(isSoloMode: false),
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          return SlideTransition(
-                                            position: Tween<Offset>(
-                                              begin: const Offset(1.0, 0.0),
-                                              end: const Offset(0.0, 0.0),
-                                            ).animate(animation),
-                                            child: child,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                        _buildAnimatedModeCard(
+                          context,
+                          index: 1,
+                          icon: Icons.people_rounded,
+                          title: AppLocalizations.of(context)!
+                              .modeMultiplayerTitle,
+                          subtitle: AppLocalizations.of(context)!
+                              .modeMultiplayerSubtitle,
+                          gradientColors: const [
+                            Color(0xFF2196F3),
+                            Color(0xFF1565C0)
+                          ],
+                          accentColor: const Color(0xFF2196F3),
+                          onTap: () {
+                            AudioManager.playSound('click');
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, _) =>
+                                    SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(1.0, 0.0),
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: const TeamSelectionScreen(
+                                          isSoloMode: false),
+                                    ),
+                                transitionDuration:
+                                const Duration(milliseconds: 300),
                               ),
                             );
                           },
                         ),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: ResponsiveHelper.scale(context, 14)),
 
-                        // Mode Tournoi avec animation
-                        TweenAnimationBuilder(
-                          duration: Duration(milliseconds: 600 + (2 * 200)),
-                          tween: Tween<double>(begin: 0, end: 1),
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(50 * (1 - value), 0),
-                              child: Opacity(
-                                opacity: value,
-                                child: _buildModernModeCard(
-                                  context,
-                                  title: AppLocalizations.of(context)!.modeTournamentTitle,
-                                  subtitle: AppLocalizations.of(context)!.modeTournamentSubtitle,
-                                  icon: Icons.emoji_events,
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFF9800), Color(0xFFE65100)],
-                                  ),
-                                  onPressed: () {
-                                    AudioManager.playSound('click');
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                        const TournamentModeScreen(),
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          return SlideTransition(
-                                            position: Tween<Offset>(
-                                              begin: const Offset(1.0, 0.0),
-                                              end: const Offset(0.0, 0.0),
-                                            ).animate(animation),
-                                            child: child,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                        _buildAnimatedModeCard(
+                          context,
+                          index: 2,
+                          icon: Icons.emoji_events_rounded,
+                          title: AppLocalizations.of(context)!
+                              .modeTournamentTitle,
+                          subtitle: AppLocalizations.of(context)!
+                              .modeTournamentSubtitle,
+                          gradientColors: const [
+                            Color(0xFFDC143C),
+                            Color(0xFF8B0000)
+                          ],
+                          accentColor: const Color(0xFFDC143C),
+                          onTap: () {
+                            AudioManager.playSound('click');
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, _) =>
+                                    SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(1.0, 0.0),
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: const TournamentModeScreen(),
+                                    ),
+                                transitionDuration:
+                                const Duration(milliseconds: 300),
                               ),
                             );
                           },
@@ -288,91 +221,16 @@ class ModeSelectionScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Bouton retour moderne
-                Expanded(
-                  flex: 1,
-                  child: Center(
-                    child: TweenAnimationBuilder(
-                      duration: const Duration(milliseconds: 1000),
-                      tween: Tween<double>(begin: 0, end: 1),
-                      builder: (context, value, child) {
-                        return Transform.translate(
-                          offset: Offset(0, 30 * (1 - value)),
-                          child: Opacity(
-                            opacity: value,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  AudioManager.playSound('click');
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) =>
-                                      const HomeScreen(),
-                                      transitionDuration: const Duration(milliseconds: 300),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        return SlideTransition(
-                                          position: Tween<Offset>(
-                                            begin: const Offset(-1.0, 0.0),
-                                            end: const Offset(0.0, 0.0),
-                                          ).animate(animation),
-                                          child: child,
-                                        );
-                                      },
-                                    ),
-                                        (route) => false,
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withOpacity(0.15),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                    side: BorderSide(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                icon: const Icon(
-                                  Icons.arrow_back,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
-                                label: Text(
-                                  AppLocalizations.of(context)!.modeBack,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                // ── BOUTON RETOUR ────────────────────────────────────────
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    ResponsiveHelper.scale(context, 20),
+                    ResponsiveHelper.scale(context, 8),
+                    ResponsiveHelper.scale(context, 20),
+                    ResponsiveHelper.scale(context, 24),
                   ),
+                  child: _buildBackButton(context),
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -381,137 +239,331 @@ class ModeSelectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildModernModeCard(
-      BuildContext context, {
-        required String title,
-        required String subtitle,
-        required IconData icon,
-        required Gradient gradient,
-        required VoidCallback onPressed,
-      }) {
-    return Container(
-      width: double.infinity,
-      height: 100,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Material(
-        borderRadius: BorderRadius.circular(25),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: onPressed,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              gradient: gradient,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
+  Widget _buildHeader(BuildContext context) {
+    return FadeTransition(
+      opacity:
+      CurvedAnimation(parent: _entryController, curve: Curves.easeOut),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          ResponsiveHelper.scale(context, 20),
+          ResponsiveHelper.scale(context, 20),
+          ResponsiveHelper.scale(context, 20),
+          0,
+        ),
+        child: Column(
+          children: [
+            // Badge chapitre style Hero
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.scale(context, 20),
+                vertical: ResponsiveHelper.scale(context, 8),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.07),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Icône avec effet de lueur
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 0),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 32,
-                      color: Colors.white,
-                    ),
+                  Icon(
+                    Icons.sports_soccer,
+                    color: const Color(0xFF4CAF50),
+                    size: ResponsiveHelper.scale(context, 16),
                   ),
-
-                  const SizedBox(width: 20),
-
-                  // Textes
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w400,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  SizedBox(width: ResponsiveHelper.scale(context, 8)),
+                  Text(
+                    AppLocalizations.of(context)!.modeSelectionTitle,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.textScale(context, 13),
+                      color: Colors.white70,
+                      letterSpacing: 3,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-
-                  // Flèche avec animation
-                  TweenAnimationBuilder(
-                    duration: const Duration(seconds: 2),
-                    tween: Tween<double>(begin: 0, end: 1),
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(5 * value, 0),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.2),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      );
-                    },
                   ),
                 ],
               ),
             ),
+            SizedBox(height: ResponsiveHelper.scale(context, 12)),
+
+            // Titre principal
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFFFFD700), Colors.white, Color(0xFFFFD700)],
+              ).createShader(bounds),
+              child: Text(
+                AppLocalizations.of(context)!.modeSelectionSubtitle,
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.textScale(context, 28),
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedModeCard(
+      BuildContext context, {
+        required int index,
+        required IconData icon,
+        required String title,
+        required String subtitle,
+        required List<Color> gradientColors,
+        required Color accentColor,
+        required VoidCallback onTap,
+        String? badge,
+      }) {
+    final delay = 200 + index * 150;
+
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: delay + 500),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(60 * (1 - value), 0),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: _buildModeCard(
+        context,
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        gradientColors: gradientColors,
+        accentColor: accentColor,
+        badge: badge,
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildModeCard(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String subtitle,
+        required List<Color> gradientColors,
+        required Color accentColor,
+        required VoidCallback onTap,
+        String? badge,
+      }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(ResponsiveHelper.scale(context, 18)),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(ResponsiveHelper.scale(context, 20)),
+          border: Border.all(
+              color: accentColor.withOpacity(0.25),
+              width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Icône dans un cercle dégradé
+            Container(
+              width: ResponsiveHelper.scale(context, 60),
+              height: ResponsiveHelper.scale(context, 60),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: gradientColors.first.withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: ResponsiveHelper.scale(context, 28),
+                shadows: const [Shadow(color: Colors.black26, blurRadius: 8)],
+              ),
+            ),
+
+            SizedBox(width: ResponsiveHelper.scale(context, 16)),
+
+            // Textes
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.textScale(context, 18),
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (badge != null) ...[
+                        SizedBox(width: ResponsiveHelper.scale(context, 8)),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: ResponsiveHelper.scale(context, 6),
+                            vertical: ResponsiveHelper.scale(context, 2),
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: gradientColors),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '★',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: ResponsiveHelper.textScale(context, 10),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  SizedBox(height: ResponsiveHelper.scale(context, 4)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.textScale(context, 13),
+                      color: Colors.white.withOpacity(0.5),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(width: ResponsiveHelper.scale(context, 10)),
+
+            // Flèche
+            Container(
+              width: ResponsiveHelper.scale(context, 36),
+              height: ResponsiveHelper.scale(context, 36),
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: accentColor.withOpacity(0.3), width: 1),
+              ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: accentColor,
+                size: ResponsiveHelper.scale(context, 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        AudioManager.playSound('click');
+        Navigator.pushAndRemoveUntil(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, _) => SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(-1.0, 0.0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: const HomeScreen(),
+            ),
+            transitionDuration: const Duration(milliseconds: 300),
           ),
+              (route) => false,
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          vertical: ResponsiveHelper.scale(context, 14),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.06),
+          borderRadius:
+          BorderRadius.circular(ResponsiveHelper.scale(context, 16)),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white60,
+              size: ResponsiveHelper.scale(context, 20),
+            ),
+            SizedBox(width: ResponsiveHelper.scale(context, 10)),
+            Text(
+              AppLocalizations.of(context)!.modeBack,
+              style: TextStyle(
+                fontSize: ResponsiveHelper.textScale(context, 15),
+                fontWeight: FontWeight.w600,
+                color: Colors.white60,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// Floating particle widget for decorative effect
+// ── Painter décoration terrain ────────────────────────────────────────────────
+
+class _ModeFieldPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.025)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+
+    // Grand cercle en bas
+    canvas.drawCircle(
+        Offset(size.width / 2, size.height * 0.9), size.width * 0.28, paint);
+
+    // Lignes diagonales légères
+    for (int i = 0; i < 4; i++) {
+      canvas.drawLine(
+        Offset(size.width * 0.2 * i, 0),
+        Offset(size.width * 0.2 * i + 60, size.height * 0.3),
+        paint..color = Colors.white.withOpacity(0.015),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Floating particle widget gardé pour compatibilité si utilisé ailleurs
 class FloatingParticle extends StatefulWidget {
   final double size;
   final Color color;
@@ -571,16 +623,27 @@ class _FloatingParticleState extends State<FloatingParticle>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: widget.color,
-            boxShadow: [
-              BoxShadow(
-                color: widget.color,
-                blurRadius: widget.size,
-                spreadRadius: widget.size * 0.5,
-              ),
-            ],
           ),
         ),
       ),
     );
   }
+}
+
+class _ModeCardData {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<Color> gradientColors;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  _ModeCardData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.gradientColors,
+    required this.accentColor,
+    required this.onTap,
+  });
 }
