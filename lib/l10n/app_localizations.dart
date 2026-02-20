@@ -2290,6 +2290,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Knuckle'**
   String get shotEffectKnuckle;
+
+  /// No description provided for @achievementTournament1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'First Trophy'**
+  String get achievementTournament1Title;
+
+  /// No description provided for @achievementTournament1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Win your first championship'**
+  String get achievementTournament1Desc;
+
+  /// No description provided for @achievementTournament5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cup Collector'**
+  String get achievementTournament5Title;
+
+  /// No description provided for @achievementTournament5Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Win 5 championships'**
+  String get achievementTournament5Desc;
+
+  /// No description provided for @achievementTournament10Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Championship Emperor'**
+  String get achievementTournament10Title;
+
+  /// No description provided for @achievementTournament10Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Win 10 championships'**
+  String get achievementTournament10Desc;
+
+  /// No description provided for @achievementHeroLevel5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hero in the Making'**
+  String get achievementHeroLevel5Title;
+
+  /// No description provided for @achievementHeroLevel5Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach level 5 in Hero mode'**
+  String get achievementHeroLevel5Desc;
+
+  /// No description provided for @achievementHeroLevel10Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed Hero'**
+  String get achievementHeroLevel10Title;
+
+  /// No description provided for @achievementHeroLevel10Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach level 10 in Hero mode'**
+  String get achievementHeroLevel10Desc;
+
+  /// No description provided for @achievementHero3stars4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfectionist'**
+  String get achievementHero3stars4Title;
+
+  /// No description provided for @achievementHero3stars4Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get 3 stars on 4 different Hero mode levels'**
+  String get achievementHero3stars4Desc;
+
+  /// No description provided for @achievementHero3stars10Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Super Perfectionist'**
+  String get achievementHero3stars10Title;
+
+  /// No description provided for @achievementHero3stars10Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get 3 stars on 10 different Hero mode levels'**
+  String get achievementHero3stars10Desc;
+
+  /// No description provided for @achievementHeroAllStarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hero Legend'**
+  String get achievementHeroAllStarsTitle;
+
+  /// No description provided for @achievementHeroAllStarsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get all stars on every Hero mode level'**
+  String get achievementHeroAllStarsDesc;
+
+  /// No description provided for @rarityCommon.
+  ///
+  /// In en, this message translates to:
+  /// **'COMMON'**
+  String get rarityCommon;
+
+  /// No description provided for @rarityRare.
+  ///
+  /// In en, this message translates to:
+  /// **'RARE'**
+  String get rarityRare;
+
+  /// No description provided for @rarityEpic.
+  ///
+  /// In en, this message translates to:
+  /// **'EPIC'**
+  String get rarityEpic;
+
+  /// No description provided for @rarityLegendary.
+  ///
+  /// In en, this message translates to:
+  /// **'LEGENDARY'**
+  String get rarityLegendary;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

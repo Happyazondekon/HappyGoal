@@ -1163,4 +1163,64 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shotEffectKnuckle => 'Knuckle';
+
+  @override
+  String get achievementTournament1Title => 'Premier Trophée';
+
+  @override
+  String get achievementTournament1Desc => 'Remportez votre premier championnat';
+
+  @override
+  String get achievementTournament5Title => 'Collectionneur de Coupes';
+
+  @override
+  String get achievementTournament5Desc => 'Remportez 5 championnats';
+
+  @override
+  String get achievementTournament10Title => 'Empereur des Championnats';
+
+  @override
+  String get achievementTournament10Desc => 'Remportez 10 championnats';
+
+  @override
+  String get achievementHeroLevel5Title => 'Héros en Devenir';
+
+  @override
+  String get achievementHeroLevel5Desc => 'Atteignez le niveau 5 en mode Hero';
+
+  @override
+  String get achievementHeroLevel10Title => 'Héros Confirmé';
+
+  @override
+  String get achievementHeroLevel10Desc => 'Atteignez le niveau 10 en mode Hero';
+
+  @override
+  String get achievementHero3stars4Title => 'Perfectionniste';
+
+  @override
+  String get achievementHero3stars4Desc => 'Obtenez 3 étoiles sur 4 niveaux différents en mode Hero';
+
+  @override
+  String get achievementHero3stars10Title => 'Super Perfectionniste';
+
+  @override
+  String get achievementHero3stars10Desc => 'Obtenez 3 étoiles sur 10 niveaux différents en mode Hero';
+
+  @override
+  String get achievementHeroAllStarsTitle => 'Légende du Hero';
+
+  @override
+  String get achievementHeroAllStarsDesc => 'Obtenez toutes les étoiles sur tous les niveaux du mode Hero';
+
+  @override
+  String get rarityCommon => 'COMMUN';
+
+  @override
+  String get rarityRare => 'RARE';
+
+  @override
+  String get rarityEpic => 'ÉPIQUE';
+
+  @override
+  String get rarityLegendary => 'LÉGENDAIRE';
 }

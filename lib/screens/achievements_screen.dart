@@ -76,7 +76,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final achievements = _service.getAllWithProgress();
+    final achievements = _service.getAllWithProgressLocalized(context);
     final completionPercentage = _service.getCompletionPercentage();
     final stats = _service.getPlayerStats();
 
@@ -310,21 +310,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     final percentage = progress.getProgressPercentage(achievement.targetValue);
     final rarityColor = Achievement.getRarityColor(achievement.rarity);
 
-    String rarityText;
-    switch (achievement.rarity) {
-      case AchievementRarity.common:
-        rarityText = AppLocalizations.of(context)!.achievementsRarityCommon;
-        break;
-      case AchievementRarity.rare:
-        rarityText = AppLocalizations.of(context)!.achievementsRarityRare;
-        break;
-      case AchievementRarity.epic:
-        rarityText = AppLocalizations.of(context)!.achievementsRarityEpic;
-        break;
-      case AchievementRarity.legendary:
-        rarityText = AppLocalizations.of(context)!.achievementsRarityLegendary;
-        break;
-    }
+    final String rarityText = Achievement.getRarityText(achievement.rarity, context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -480,8 +466,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             const SizedBox(width: 6),
                             Text(
                               progress.rewardClaimed
-                                ? AppLocalizations.of(context)!.achievementsClaimed
-                                : AppLocalizations.of(context)!.achievementsReward(achievement.rewardCoins),
+                                  ? AppLocalizations.of(context)!.achievementsClaimed
+                                  : AppLocalizations.of(context)!.achievementsReward(achievement.rewardCoins),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: progress.rewardClaimed

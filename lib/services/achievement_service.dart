@@ -16,26 +16,28 @@ class AchievementService {
 
   // Statistiques du joueur (AVEC LES NOUVEAUX COMPTEURS)
   Map<String, int> _playerStats = {
-    'total_matches_played': 0,
-    'total_matches_won': 0,
-    'total_goals_scored': 0,
-    'total_shots_taken': 0,
     'tournaments_won': 0,
     'tournaments_played': 0,
-    'perfect_wins': 0,
-    'comebacks': 0,
-    'no_rewind_wins': 0,
-    'daily_streak': 0,
-    'last_play_date': 0,
-    // --- Nouveaux compteurs ---
-    'current_win_streak': 0,
-    'best_win_streak': 0,
-    'clean_sheets': 0,
-    'goals_curve': 0,
-    'goals_lob': 0,
-    'goals_knuckle': 0,
-    'total_rewinds_used': 0,
+    // --- HERO MODE ---
+    'hero_max_level': 0, // Le plus haut niveau atteint en mode Hero
+    'hero_3stars_levels': 0, // Nombre de niveaux où le joueur a obtenu 3 étoiles
+    'hero_all_stars': 0, // 1 si toutes les étoiles de tous les niveaux sont obtenues
   };
+  /// À appeler quand le joueur termine un niveau Hero (pour mettre à jour la progression Hero)
+  Future<void> recordHeroLevel({required int level, required bool got3Stars, required bool allStarsCompleted, int total3StarsLevels = 0}) async {
+    if (level > (_playerStats['hero_max_level'] ?? 0)) {
+      _playerStats['hero_max_level'] = level;
+    }
+    if (got3Stars) {
+      // On suppose que total3StarsLevels est le nombre total de niveaux à 3 étoiles (à passer lors de l'appel)
+      _playerStats['hero_3stars_levels'] = total3StarsLevels;
+    }
+    if (allStarsCompleted) {
+      _playerStats['hero_all_stars'] = 1;
+    }
+    await _saveStats();
+    await _checkAchievements();
+  }
 
   Map<String, AchievementProgress> _progress = {};
 
@@ -200,61 +202,39 @@ class AchievementService {
   Future<List<Achievement>> _checkAchievements() async {
     List<Achievement> newlyUnlocked = [];
 
+
     for (var achievement in AchievementsList.all) {
       final progress = _progress[achievement.id];
       if (progress == null || progress.isUnlocked) continue;
 
       int currentValue = 0;
 
-      // Logique mise à jour pour tous les nouveaux types
-      switch (achievement.category) {
-        case AchievementCategory.matches:
-          if (achievement.id.startsWith('win_')) {
-            currentValue = _playerStats['total_matches_won'] ?? 0;
-          } else if (achievement.id.startsWith('streak_')) {
-            currentValue = _playerStats['current_win_streak'] ?? 0;
-          }
+      switch (achievement.id) {
+      // --- Championnat (tournois) ---
+        case 'tournament_1':
+        case 'tournament_5':
+        case 'tournament_10':
+          currentValue = _playerStats['tournaments_won'] ?? 0;
           break;
 
-        case AchievementCategory.goals:
-          if (achievement.id.startsWith('goals_')) {
-            currentValue = _playerStats['total_goals_scored'] ?? 0;
-          }
+      // --- Mode Hero ---
+        case 'hero_level_5':
+          currentValue = _playerStats['hero_max_level'] ?? 0;
           break;
-
-        case AchievementCategory.tournaments:
-          if (achievement.id.startsWith('tournament_')) {
-            currentValue = _playerStats['tournaments_won'] ?? 0;
-          }
+        case 'hero_level_10':
+          currentValue = _playerStats['hero_max_level'] ?? 0;
           break;
-
-        case AchievementCategory.skills:
-          if (achievement.id == 'perfect_match') {
-            currentValue = _playerStats['perfect_wins'] ?? 0;
-          } else if (achievement.id == 'comeback_king') {
-            currentValue = _playerStats['comebacks'] ?? 0;
-          } else if (achievement.id == 'no_rewind') {
-            currentValue = _playerStats['no_rewind_wins'] ?? 0;
-          } else if (achievement.id.startsWith('clean_sheet')) {
-            currentValue = _playerStats['clean_sheets'] ?? 0;
-          } else if (achievement.id.startsWith('score_curve')) {
-            currentValue = _playerStats['goals_curve'] ?? 0;
-          } else if (achievement.id.startsWith('score_lob')) {
-            currentValue = _playerStats['goals_lob'] ?? 0;
-          } else if (achievement.id.startsWith('score_knuckle')) {
-            currentValue = _playerStats['goals_knuckle'] ?? 0;
-          }
+        case 'hero_3stars_4levels':
+          currentValue = _playerStats['hero_3stars_levels'] ?? 0;
           break;
-
-        case AchievementCategory.special:
-          if (achievement.id == 'daily_streak_7') {
-            currentValue = _playerStats['daily_streak'] ?? 0;
-          } else if (achievement.id == 'coin_collector' || achievement.id == 'rich_kid') {
-            currentValue = AdController.instance.currentCoinCount;
-          } else if (achievement.id.startsWith('rewind_user')) {
-            currentValue = _playerStats['total_rewinds_used'] ?? 0;
-          }
+        case 'hero_3stars_10levels':
+          currentValue = _playerStats['hero_3stars_levels'] ?? 0;
           break;
+        case 'hero_all_stars':
+          currentValue = _playerStats['hero_all_stars'] ?? 0;
+          break;
+        default:
+          currentValue = 0;
       }
 
       progress.currentValue = currentValue;
@@ -291,6 +271,16 @@ class AchievementService {
 
   List<MapEntry<Achievement, AchievementProgress>> getAllWithProgress() {
     return AchievementsList.all.map((achievement) {
+      final progress = _progress[achievement.id] ??
+          AchievementProgress(achievementId: achievement.id);
+      return MapEntry(achievement, progress);
+    }).toList();
+  }
+
+  /// Version localisée pour les widgets — retourne les achievements avec
+  /// titres et descriptions dans la langue active.
+  List<MapEntry<Achievement, AchievementProgress>> getAllWithProgressLocalized(BuildContext context) {
+    return AchievementsList.getAllLocalized(context).map((achievement) {
       final progress = _progress[achievement.id] ??
           AchievementProgress(achievementId: achievement.id);
       return MapEntry(achievement, progress);

@@ -1163,4 +1163,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shotEffectKnuckle => 'Knuckle';
+
+  @override
+  String get achievementTournament1Title => 'First Trophy';
+
+  @override
+  String get achievementTournament1Desc => 'Win your first championship';
+
+  @override
+  String get achievementTournament5Title => 'Cup Collector';
+
+  @override
+  String get achievementTournament5Desc => 'Win 5 championships';
+
+  @override
+  String get achievementTournament10Title => 'Championship Emperor';
+
+  @override
+  String get achievementTournament10Desc => 'Win 10 championships';
+
+  @override
+  String get achievementHeroLevel5Title => 'Hero in the Making';
+
+  @override
+  String get achievementHeroLevel5Desc => 'Reach level 5 in Hero mode';
+
+  @override
+  String get achievementHeroLevel10Title => 'Confirmed Hero';
+
+  @override
+  String get achievementHeroLevel10Desc => 'Reach level 10 in Hero mode';
+
+  @override
+  String get achievementHero3stars4Title => 'Perfectionist';
+
+  @override
+  String get achievementHero3stars4Desc => 'Get 3 stars on 4 different Hero mode levels';
+
+  @override
+  String get achievementHero3stars10Title => 'Super Perfectionist';
+
+  @override
+  String get achievementHero3stars10Desc => 'Get 3 stars on 10 different Hero mode levels';
+
+  @override
+  String get achievementHeroAllStarsTitle => 'Hero Legend';
+
+  @override
+  String get achievementHeroAllStarsDesc => 'Get all stars on every Hero mode level';
+
+  @override
+  String get rarityCommon => 'COMMON';
+
+  @override
+  String get rarityRare => 'RARE';
+
+  @override
+  String get rarityEpic => 'EPIC';
+
+  @override
+  String get rarityLegendary => 'LEGENDARY';
 }
