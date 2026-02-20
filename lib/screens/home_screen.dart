@@ -15,6 +15,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:happygoal/widgets/coin_shop_dialog.dart';
 import 'dart:math' as math;
 import 'package:happygoal/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:happygoal/l10n/locale_provider.dart';
 
 // ---------------------------------------------------------------------------
 // ANIMATION: Ballon flottant
@@ -269,7 +271,12 @@ class _HomeScreenState extends State<HomeScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final size = MediaQuery.of(context).size;
       _particles = List.generate(40, (_) => _Particle(size.width, size.height));
-      showTutorialIfNeeded('home_screen', _createTutorialSteps());
+      // AppLocalizations.of(context) n'est pas sûr en initState, donc on attend le build effectif
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          showTutorialIfNeeded('home_screen', _createTutorialSteps());
+        }
+      });
     });
   }
 
@@ -808,6 +815,45 @@ class _HomeScreenState extends State<HomeScreen>
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
+                    // Sélecteur de langue
+                    Row(
+                      children: [
+                        Icon(Icons.language, color: Colors.white),
+                        SizedBox(width: 12),
+                        Text(AppLocalizations.of(context)!.language,
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                        SizedBox(width: 16),
+                        Builder(
+                          builder: (context) {
+                            final localeProvider = Provider.of<LocaleProvider>(context);
+                            return DropdownButton<Locale>(
+                              value: localeProvider.locale,
+                              dropdownColor: const Color(0xFF1B2A1E),
+                              style: const TextStyle(color: Colors.white),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: Locale('fr'),
+                                  child: Text('Français'),
+                                ),
+                                DropdownMenuItem(
+                                  value: Locale('en'),
+                                  child: Text('English'),
+                                ),
+                              ],
+                              onChanged: (Locale? locale) {
+                                if (locale != null) {
+                                  localeProvider.setLocale(locale);
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
                     const AudioSettingsWidget(),
                     const SizedBox(height: 15),
                     const TutorialSettingsWidget(),

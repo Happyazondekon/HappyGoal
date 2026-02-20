@@ -96,25 +96,25 @@ class Team {
         name: 'Argentina',
         color: Colors.lightBlueAccent,
         flagImage: 'assets/images/flags/argentina_flag.png',
-        continent: 'Amérique',
+        continent: 'América',
       ),
       Team(
         name: 'Brasil',
         color: Colors.yellow,
         flagImage: 'assets/images/flags/brasil_flag.png',
-        continent: 'Amérique',
+        continent: 'América',
       ),
       Team(
         name: 'United States',
         color: Colors.red,
         flagImage: 'assets/images/flags/usa_flag.png',
-        continent: 'Amérique',
+        continent: 'América',
       ),
       Team(
         name: 'Canada',
         color: Colors.red,
         flagImage: 'assets/images/flags/canada_flag.png',
-        continent: 'Amérique',
+        continent: 'América',
       ),
 
       // Afrique
@@ -122,37 +122,37 @@ class Team {
         name: 'Bénin',
         color: Colors.yellow,
         flagImage: 'assets/images/flags/benin_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
       Team(
         name: 'Nigeria',
         color: Colors.green,
         flagImage: 'assets/images/flags/nigeria_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
       Team(
         name: 'Togo',
         color: Colors.red,
         flagImage: 'assets/images/flags/togo_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
       Team(
         name: 'Niger',
         color: Colors.yellow,
         flagImage: 'assets/images/flags/niger_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
       Team(
         name: 'Ghana',
         color: Colors.white,
         flagImage: 'assets/images/flags/ghana_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
       Team(
         name: 'Côte d\'Ivoire',
         color: Colors.orange,
         flagImage: 'assets/images/flags/ivory_coast_flag.png',
-        continent: 'Afrique',
+        continent: 'Africa',
       ),
 
       // Asie
@@ -160,34 +160,27 @@ class Team {
         name: '日本',
         color: Colors.greenAccent,
         flagImage: 'assets/images/flags/japan_flag.png',
-        continent: 'Asie',
+        continent: 'Asia',
       ),
       Team(
         name: '대한민국',
         color: Colors.red,
         flagImage: 'assets/images/flags/south_korea_flag.png',
-        continent: 'Asie',
+        continent: 'Asia',
       ),
       Team(
         name: '中国',
         color: Colors.red,
         flagImage: 'assets/images/flags/china_flag.png',
-        continent: 'Asie',
+        continent: 'Asia',
       ),
       Team(
         name: 'المملكة العربية السعودية',
         color: Colors.green,
         flagImage: 'assets/images/flags/saudi_arabia_flag.png',
-        continent: 'Asie',
+        continent: 'Asia',
       ),
 
-      // Océanie
-      Team(
-        name: 'Australia',
-        color: Colors.blue,
-        flagImage: 'assets/images/flags/australia_flag.png',
-        continent: 'Océanie',
-      ),
     ];
   }
 }

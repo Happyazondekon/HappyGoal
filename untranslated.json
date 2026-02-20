@@ -1,15 +1,1 @@
-{
-  "fr": [
-    "heroModeTitle",
-    "heroModeEnd",
-    "heroModeStart",
-    "heroModeResetTitle",
-    "heroModeResetContent",
-    "heroModeResetCancel",
-    "heroModeResetConfirm",
-    "heroModeRewardTitle",
-    "heroModeRewardDescription",
-    "heroModeRewardAdded",
-    "heroModeRewardAdUnavailable"
-  ]
-}
+{}

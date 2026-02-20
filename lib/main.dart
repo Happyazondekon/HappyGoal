@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'l10n/locale_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -9,10 +12,11 @@ import 'utils/audio_manager.dart';
 import 'utils/analytics_service.dart';
 import 'utils/admob_service.dart';
 import 'notification_service.dart';
-import 'utils/iap_service.dart'; // ⭐ NOUVEAU : Import du service IAP
+import 'utils/iap_service.dart';
 import 'services/achievement_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl_standalone.dart';
+
 
 // Instance globale pour l'analytics
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -20,47 +24,30 @@ final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialisation de Firebase
   await Firebase.initializeApp();
-
-  // Initialisation de l'analytics
   AnalyticsService.initialize(analytics);
-
-  // ⭐ NOUVEAU : Initialisation du service d'achats intégrés
-  // Il est important de l'initialiser tôt pour écouter les transactions en attente
   await IAPService.instance.initialize();
-
-  // Initialisation d'AdMob
   await AdMobService.initialize();
-
-  // Initialisation du service de notifications
   await NotificationService().initialize();
-
-  // Programmer les notifications récurrentes
   await NotificationService().scheduleRecurringNotifications();
-
-  // Charger les publicités en arrière-plan
   await AdMobService.instance.loadInterstitialAd();
   await AdMobService.instance.loadRewardedAd();
   await AdMobService.instance.loadRewardedInterstitialAd();
-
-  // Récupération automatique des IDs de test
   final deviceInfo = await MobileAds.instance.getRequestConfiguration();
   debugPrint('Test Device IDs actuels : ${deviceInfo.testDeviceIds}');
-
-  // Initialiser le service d'achievements
   await AchievementService().initialize();
-
-  // Préférences d'orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-  // Initialiser l'audio
   await AudioManager.init();
-
-  // Ensure system locale is loaded
   final systemLocale = await findSystemLocale();
 
-  runApp(const MyApp());
+  final localeProvider = LocaleProvider();
+  await localeProvider.loadLocale();
+  runApp(
+    ChangeNotifierProvider.value(
+      value: localeProvider,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -68,6 +55,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
     return MaterialApp(
       title: 'HappyGoal',
       debugShowCheckedModeBanner: false,
@@ -78,8 +66,10 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
         useMaterial3: true,
       ),
+      locale: localeProvider.locale,
       home: const SplashScreen(),
       localizationsDelegates: const [
+        AppLocalizations.delegate,              // ← AJOUT (clé du fix)
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

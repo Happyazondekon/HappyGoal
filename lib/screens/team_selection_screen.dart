@@ -24,28 +24,29 @@ class TeamSelectionScreen extends StatefulWidget {
     this.aiIntelligence,
     this.preSelectedTeam1,
     this.preSelectedTeam2,
-    this.startDirectly = false, this.onTeamSelected,
+    this.startDirectly = false,
+    this.onTeamSelected,
   }) : super(key: key);
-
 
   @override
   State<TeamSelectionScreen> createState() => _TeamSelectionScreenState();
 }
 
-
-class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTickerProviderStateMixin {
+class _TeamSelectionScreenState extends State<TeamSelectionScreen>
+    with SingleTickerProviderStateMixin {
   Team? selectedTeam1;
   Team? selectedTeam2;
   late final Map<String, List<Team>> _teamsByContinent;
   String? _selectedContinent;
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  late String _modeTitle;
+  // ← Plus de _modeTitle initialisé ici : on le calcule dans build()
 
   @override
   void initState() {
     super.initState();
-    // Grouper les équipes par continent
+
+    // Grouper les équipes par continent (pas de context nécessaire)
     _teamsByContinent = _groupTeamsByContinent(Team.getPredefinedTeams());
 
     if (widget.preSelectedTeam1 != null) {
@@ -61,14 +62,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       });
     }
 
-    if (widget.isTournamentMode) {
-      _modeTitle = AppLocalizations.of(context)!.teamSelectionModeTournament;
-    } else {
-      _modeTitle = widget.isSoloMode
-          ? AppLocalizations.of(context)!.teamSelectionModeSolo
-          : AppLocalizations.of(context)!.teamSelectionModeMulti;
-    }
-
+    // ← NE PAS appeler AppLocalizations.of(context) ici
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -92,7 +86,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     }
     return map;
   }
-
 
   @override
   void dispose() {
@@ -150,14 +143,20 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     }
   }
 
+  // ← Calcul du titre de mode directement dans build(), où context est valide
+  String _getModeTitle(AppLocalizations l10n) {
+    if (widget.isTournamentMode) return l10n.teamSelectionModeTournament;
+    return widget.isSoloMode ? l10n.teamSelectionModeSolo : l10n.teamSelectionModeMulti;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_selectedContinent ?? 'Sélection des équipes'),
-        // Replace with localized title
-        // title: Text(_selectedContinent ?? AppLocalizations.of(context)!.teamSelectionTitle),
+        title: Text(_selectedContinent ?? l10n.teamSelectionTitle),
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
@@ -182,7 +181,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Chip(
-              label: Text(_modeTitle),
+              label: Text(_getModeTitle(l10n)),
               backgroundColor: AppColors.primary,
               labelStyle: const TextStyle(color: Colors.white),
             ),
@@ -196,7 +195,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                AppLocalizations.of(context)!.teamSelectionChooseTeams,
+                l10n.teamSelectionChooseTeams,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -223,15 +222,15 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                       team: selectedTeam1,
                       teamColor: AppColors.team1,
                       label: widget.isSoloMode
-                          ? AppLocalizations.of(context)!.teamSelectionYourTeam
-                          : AppLocalizations.of(context)!.teamSelectionTeam1,
+                          ? l10n.teamSelectionYourTeam
+                          : l10n.teamSelectionTeam1,
                     ),
                     _buildSelectedTeamCard(
                       team: selectedTeam2,
                       teamColor: AppColors.team2,
                       label: widget.isSoloMode
-                          ? AppLocalizations.of(context)!.teamSelectionAITeam
-                          : AppLocalizations.of(context)!.teamSelectionTeam2,
+                          ? l10n.teamSelectionAITeam
+                          : l10n.teamSelectionTeam2,
                     ),
                   ],
                 ),
@@ -253,10 +252,12 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
               duration: const Duration(milliseconds: 300),
               opacity: selectedTeam1 != null && selectedTeam2 != null ? 1.0 : 0.5,
               child: ElevatedButton(
-                onPressed: selectedTeam1 != null && selectedTeam2 != null ? _startGame : null,
+                onPressed:
+                selectedTeam1 != null && selectedTeam2 != null ? _startGame : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -264,7 +265,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                   shadowColor: AppColors.primary.withOpacity(0.5),
                 ),
                 child: Text(
-                  AppLocalizations.of(context)!.teamSelectionStart,
+                  l10n.teamSelectionStart,
                   style: const TextStyle(
                     fontSize: 18,
                     color: Colors.white,
@@ -288,7 +289,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       itemBuilder: (context, index) {
         final continent = continents[index];
         final continentTeams = _teamsByContinent[continent]!;
-        // Déterminer la première équipe du continent pour l'image
         final displayTeam = continentTeams.isNotEmpty ? continentTeams.first : null;
 
         return Card(
@@ -346,9 +346,10 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
       itemCount: teams.length,
       itemBuilder: (context, index) {
         final team = teams[index];
-        final bool isSelected = team == selectedTeam1 || team == selectedTeam2;
-        final bool isDisabled = !isSelected &&
-            (selectedTeam1 != null && selectedTeam2 != null);
+        final bool isSelected =
+            team == selectedTeam1 || team == selectedTeam2;
+        final bool isDisabled =
+            !isSelected && (selectedTeam1 != null && selectedTeam2 != null);
 
         return _buildTeamCard(team, isSelected, isDisabled);
       },
@@ -360,6 +361,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
     required Color teamColor,
     required String label,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 150,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -428,7 +430,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.teamSelectionToSelect,
+              l10n.teamSelectionToSelect,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -489,7 +491,8 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> with SingleTi
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isDisabled && !isSelected ? Colors.grey : Colors.black,
+                    color:
+                    isDisabled && !isSelected ? Colors.grey : Colors.black,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
