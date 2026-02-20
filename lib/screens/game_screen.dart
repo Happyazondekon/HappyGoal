@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:happygoal/constants.dart' hide ShotDirection;
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/screens/game_controller.dart';
 import 'package:happygoal/services/hero_challenge_evaluator.dart';
@@ -127,11 +128,11 @@ class _GameScreenState extends State<GameScreen>
 
   // ── Tutoriel ─────────────────────────────────────────────────────────────
   List<TutorialStep> _createGameplayTutorialSteps() {
+    final l10n = AppLocalizations.of(context)!;
     return [
       TutorialStep(
-        title: 'Bienvenue sur le terrain !',
-        description:
-        'Glisse depuis le ballon vers le haut pour tirer ! La vitesse = la puissance.',
+        title: l10n.tutorialGameSoloTitle1,
+        description: l10n.tutorialGameSoloDesc1,
         targetKey: _goalPostKey,
         position: TutorialPosition.bottom,
         customContent: Column(
@@ -142,7 +143,7 @@ class _GameScreenState extends State<GameScreen>
                 Icon(Icons.swipe_up, color: Colors.green, size: ResponsiveHelper.scale(context, 30)),
                 SizedBox(width: ResponsiveHelper.scale(context, 10)),
                 Text(
-                  'Swipe pour marquer !',
+                  l10n.tutorialGameSoloSwipeLabel,
                   style: TextStyle(
                       fontSize: ResponsiveHelper.textScale(context, 16), fontWeight: FontWeight.bold),
                 ),
@@ -152,38 +153,36 @@ class _GameScreenState extends State<GameScreen>
         ),
       ),
       TutorialStep(
-        title: 'Rembobiner et Récompense ↩️',
-        description:
-        'Si vous ratez un tir, utilisez un **Rembobinage** pour revenir en arrière.',
+        title: l10n.tutorialGameSoloTitle2,
+        description: l10n.tutorialGameSoloDesc2,
         targetKey: _rewindKey,
         position: TutorialPosition.bottom,
         customContent: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTipRow(Icons.ad_units, 'Gagnez plus en regardant une pub.'),
-            _buildTipRow(Icons.history, 'Utilisez-le judicieusement.'),
+            _buildTipRow(Icons.ad_units, l10n.tutorialGameSoloTip2a),
+            _buildTipRow(Icons.history, l10n.tutorialGameSoloTip2b),
           ],
         ),
       ),
       TutorialStep(
-        title: 'Le tableau de score',
-        description: 'Suivez ici les scores des deux équipes.',
+        title: l10n.tutorialGameSoloTitle3,
+        description: l10n.tutorialGameSoloDesc3,
         targetKey: _scoreBoardKey,
         position: TutorialPosition.bottom,
       ),
       TutorialStep(
-        title: 'Choisir l\'effet',
-        description:
-        'Normal, Effet (curve), Lob ou Knuckle — sélectionnez avant de tirer.',
+        title: l10n.tutorialGameSoloTitle4,
+        description: l10n.tutorialGameSoloDesc4,
         targetKey: _shotControllerKey,
         position: TutorialPosition.top,
         customContent: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTipRow(Icons.sports_soccer, 'Normal : tir classique'),
-            _buildTipRow(Icons.rotate_right, 'Effet : trajectoire courbée'),
-            _buildTipRow(Icons.arrow_upward, 'Lob : par-dessus le gardien'),
-            _buildTipRow(Icons.bolt, 'Knuckle : trajectoire imprévisible'),
+            _buildTipRow(Icons.sports_soccer, l10n.tutorialGameSoloEffectNormal),
+            _buildTipRow(Icons.rotate_right, l10n.tutorialGameSoloEffectCurve),
+            _buildTipRow(Icons.arrow_upward, l10n.tutorialGameSoloEffectLob),
+            _buildTipRow(Icons.bolt, l10n.tutorialGameSoloEffectKnuckle),
           ],
         ),
       ),
@@ -191,23 +190,23 @@ class _GameScreenState extends State<GameScreen>
   }
 
   List<TutorialStep> _createMultiplayerTutorialSteps() {
+    final l10n = AppLocalizations.of(context)!;
     return [
       TutorialStep(
-        title: 'Mode Multijoueur !',
-        description: 'Vous jouez contre un ami ! Chacun votre tour.',
+        title: l10n.tutorialGameMultiTitle1,
+        description: l10n.tutorialGameMultiDesc1,
         targetKey: _scoreBoardKey,
         position: TutorialPosition.bottom,
       ),
       TutorialStep(
-        title: 'Glissez pour tirer',
-        description:
-        'Swipez depuis le ballon vers le haut — direction et vitesse comptent !',
+        title: l10n.tutorialGameMultiTitle2,
+        description: l10n.tutorialGameMultiDesc2,
         targetKey: _shotControllerKey,
         position: TutorialPosition.top,
       ),
       TutorialStep(
-        title: 'Rembobiner ↩️',
-        description: 'Utilisez un **Rembobinage** pour annuler un tir raté.',
+        title: l10n.tutorialGameMultiTitle3,
+        description: l10n.tutorialGameMultiDesc3,
         targetKey: _rewindKey,
         position: TutorialPosition.bottom,
       ),
@@ -370,6 +369,8 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     // Détection automatique de fin de match Hero
     if (!_hasPoppedHeroResult &&
         widget.gameState.isHeroMode &&
@@ -554,7 +555,7 @@ class _GameScreenState extends State<GameScreen>
                                     responsivePadding(15)),
                               ),
                               child: Text(
-                                'MORT SUBITE',
+                                l10n.gameSuddenDeath,
                                 style: subtitleStyle.copyWith(
                                     fontSize: responsiveFontSize(14),
                                     color: Colors.white,
@@ -770,8 +771,8 @@ class _GameScreenState extends State<GameScreen>
                               child: Text(
                                 _controller.gameState.currentPhase ==
                                     GamePhase.humanGoalkeeping
-                                    ? "L'IA va tirer - Choisissez votre plongée !"
-                                    : "Tour de l'IA - Patientez...",
+                                    ? l10n.gameAIShootingPrompt
+                                    : l10n.gameAITurnWait,
                                 style: titleStyle.copyWith(
                                     fontSize: responsiveFontSize(16)),
                                 textAlign: TextAlign.center,
