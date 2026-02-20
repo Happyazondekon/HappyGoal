@@ -234,30 +234,41 @@ class _TutorialOverlayState extends State<TutorialOverlay> with TickerProviderSt
         return Transform.scale(
           scale: _scaleAnimation.value,
           child: Opacity(
-            opacity: isDragging ? 0.7 : 1.0,
+            opacity: isDragging ? 0.8 : 1.0,
             child: Container(
               width: tooltipWidth,
               constraints: BoxConstraints(minHeight: tooltipMinHeight),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                gradient: const LinearGradient(
+                borderRadius: BorderRadius.circular(28),
+                gradient: RadialGradient(
+                  center: Alignment.topCenter,
+                  radius: 1.5,
                   colors: [
-                    Color(0xFF2E8B4B),
-                    Color(0xFF1B6B3A),
+                    const Color(0xFF1A3A22),
+                    const Color(0xFF0A1A0F),
+                    const Color(0xFF050D07),
                   ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                ),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withOpacity(0.25),
+                  width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 15,
+                    color: const Color(0xFFFFD700).withOpacity(0.2),
+                    blurRadius: 20,
+                    spreadRadius: 3,
                     offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 25,
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,63 +277,89 @@ class _TutorialOverlayState extends State<TutorialOverlay> with TickerProviderSt
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            step.title,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
+                          child: ShaderMask(
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                const Color(0xFFFFD700),
+                                Colors.white,
+                                const Color(0xFFFFD700),
+                              ],
+                            ).createShader(bounds),
+                            child: Text(
+                              step.title,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 1.5,
+                              ),
                             ),
                           ),
                         ),
                         if (step.showSkip)
-                          TextButton(
-                            onPressed: _skip,
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text(
-                              'Passer',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.white70,
+                          GestureDetector(
+                            onTap: _skip,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Text(
+                                'Passer',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     if (step.customContent != null)
                       step.customContent!
                     else
                       Text(
                         step.description,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style:  TextStyle(
+                          fontSize: 15,
                           color: Colors.white,
                           fontWeight: FontWeight.w400,
-                          height: 1.4,
+                          height: 1.5,
+                          letterSpacing: 0.3,
                         ),
                       ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: List.generate(
                             widget.steps.length,
-                                (index) => Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              width: 8,
-                              height: 8,
+                            (index) => Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              width: 10,
+                              height: 10,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: index == currentStepIndex
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.3),
+                                    ? const Color(0xFFFFD700)
+                                    : Colors.white.withOpacity(0.25),
+                                boxShadow: index == currentStepIndex
+                                    ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withOpacity(0.5),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                                    : [],
                               ),
                             ),
                           ),
@@ -330,43 +367,99 @@ class _TutorialOverlayState extends State<TutorialOverlay> with TickerProviderSt
                         Row(
                           children: [
                             if (currentStepIndex > 0)
-                              ElevatedButton(
-                                onPressed: _previousStep,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withOpacity(0.15),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.all(12),
-                                  shape: const CircleBorder(),
+                              GestureDetector(
+                                onTap: _previousStep,
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white.withOpacity(0.2),
+                                        Colors.white.withOpacity(0.1),
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_back_ios_new_rounded,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
                                 ),
-                                child: const Icon(Icons.arrow_back_ios_new_rounded),
                               ),
-                            const SizedBox(width: 8),
+                            if (currentStepIndex > 0) const SizedBox(width: 10),
                             if (currentStepIndex < widget.steps.length - 1)
-                              ElevatedButton(
-                                onPressed: _nextStep,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withOpacity(0.15),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.all(12),
-                                  shape: const CircleBorder(),
-                                ),
-                                child: Transform.rotate(
-                                  angle: 3.14,
-                                  child: const Icon(Icons.arrow_back_ios_new_rounded),
+                              GestureDetector(
+                                onTap: _nextStep,
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white.withOpacity(0.2),
+                                        Colors.white.withOpacity(0.1),
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Transform.rotate(
+                                    angle: 3.14,
+                                    child: const Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
                                 ),
                               )
                             else
-                              ElevatedButton.icon(
-                                onPressed: _complete,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0D4A2D),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
+                              GestureDetector(
+                                onTap: _complete,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(22),
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFFFD700), Color(0xFFF57F17)],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFD700).withOpacity(0.4),
+                                        blurRadius: 12,
+                                        spreadRadius: 1,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.done_all_rounded, color: Colors.white, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Terminer',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 14,
+                                          letterSpacing: 1,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                icon: const Icon(Icons.done_all_rounded, size: 20),
-                                label: const Text('Terminer'),
                               ),
                           ],
                         ),
@@ -412,23 +505,29 @@ class _TutorialOverlayState extends State<TutorialOverlay> with TickerProviderSt
 
                 // Effet de pulsation sur l'élément ciblé
                 Positioned(
-                  // Utilisation d'un décalage calculé dynamiquement
-                  left: targetRect.left - 5,
-                  top: targetRect.top - 55,
+                  left: targetRect.left - 6,
+                  top: targetRect.top - 56,
                   child: AnimatedBuilder(
                     animation: _pulseAnimation,
                     builder: (context, child) {
                       return Transform.scale(
                         scale: _pulseAnimation.value,
                         child: Container(
-                          width: targetRect.width + 10,
-                          height: targetRect.height + 10,
+                          width: targetRect.width + 12,
+                          height: targetRect.height + 12,
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: Colors.white,
+                              color: const Color(0xFFFFD700),
                               width: 2.5,
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withOpacity(0.4),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -463,14 +562,13 @@ class TutorialOverlayPainter extends CustomPainter {
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
       ..addRRect(RRect.fromRectAndRadius(
         Rect.fromLTWH(
-          targetRect.left - 5,              // comme ton Positioned
-          targetRect.top - 55,              // comme ton Positioned
-          targetRect.width + 10,            // comme ton Container
-          targetRect.height + 10,           // comme ton Container
+          targetRect.left - 6,
+          targetRect.top - 56,
+          targetRect.width + 12,
+          targetRect.height + 12,
         ),
-        const Radius.circular(8),
+        const Radius.circular(10),
       ))
-
       ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);

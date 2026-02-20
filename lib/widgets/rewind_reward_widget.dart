@@ -58,154 +58,174 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
     final coinCount = AdController.instance.currentCoinCount;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF1B6B3A),
-            Color(0xFF2E8B4B),
-            Color(0xFF0D4A2D),
+            const Color(0xFF1A3A22),
+            const Color(0xFF0A2515),
+            const Color(0xFF051108),
           ],
-          stops: [0.0, 0.5, 1.0],
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
+          color: const Color(0xFFFFD700).withOpacity(0.3),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+            color: const Color(0xFFFFD700).withOpacity(0.15),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.08),
-            blurRadius: 4,
-            offset: const Offset(0, -1),
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icône coins (Clic pour ouvrir infos/boutique)
-          GestureDetector(
-            onTap: () => _showCoinInfoDialog(),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFFD700).withOpacity(0.2),
-                border: Border.all(
-                  color: const Color(0xFFFFD700).withOpacity(0.4),
-                  width: 1,
-                ),
-              ),
-              child: const Icon(
-                Icons.monetization_on,
-                color: Color(0xFFFFD700),
-                size: 14,
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 6),
-
-          // Compteur de coins
-          GestureDetector(
-            onTap: () => _showCoinInfoDialog(),
-            child: Text(
-              '$coinCount',
-              style: const TextStyle(
-                color: Color(0xFFFFD700),
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Séparateur
+          // Coins section
+          _buildCoinSection(coinCount),
+          const SizedBox(width: 14),
           Container(
-            width: 1,
-            height: 20,
-            color: Colors.white.withOpacity(0.3),
+            width: 1.5,
+            height: 24,
+            color: Colors.white.withOpacity(0.2),
           ),
+          const SizedBox(width: 14),
+          // Rewinds section
+          _buildRewindSection(totalRewindCount, remainingForGame),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(width: 12),
+  Widget _buildCoinSection(int coinCount) {
+    return GestureDetector(
+      onTap: () => _showCoinInfoDialog(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFFFD700),
+                  const Color(0xFFF57F17),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withOpacity(0.4),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.monetization_on,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$coinCount',
+            style: const TextStyle(
+              color: Color(0xFFFFD700),
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-          // Icône rembobinage avec effet de lueur
+  Widget _buildRewindSection(int totalRewindCount, int remainingForGame) {
+    return GestureDetector(
+      onTap: () {
+        if (totalRewindCount > 0 && remainingForGame == 0) {
+          _showLimitReachedDialog();
+        } else if (totalRewindCount == 0) {
+          _showEarnRewardDialog();
+        }
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, child) {
               return Container(
-                width: 26,
-                height: 26,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.15),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(0.15),
+                      Colors.white.withOpacity(0.08),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.25 * _pulseAnimation.value),
-                      blurRadius: 6 * _pulseAnimation.value,
-                      offset: const Offset(0, 0),
+                      color: Colors.white
+                          .withOpacity(0.2 * _pulseAnimation.value),
+                      blurRadius: 8 * _pulseAnimation.value,
+                      spreadRadius: 1,
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.replay,
                   color: Colors.white,
-                  size: 14,
+                  size: 16,
                 ),
               );
             },
           ),
-
           const SizedBox(width: 8),
-
-          // Compteur principal rembobinages
           Text(
             '$totalRewindCount',
             style: const TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w900,
               fontSize: 14,
-              letterSpacing: 0.3,
-              shadows: [
-                Shadow(
-                  color: Colors.black26,
-                  blurRadius: 3,
-                  offset: Offset(1, 1),
-                ),
-              ],
+              letterSpacing: 0.5,
             ),
           ),
-
-          const SizedBox(width: 6),
-
-          // Badge de status moderne
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: remainingForGame > 0
-                  ? const Color(0xFF4CAF50).withOpacity(0.8)
-                  : const Color(0xFFFF5722).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1,
+              gradient: LinearGradient(
+                colors: remainingForGame > 0
+                    ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
+                    : [Color(0xFFE53935), Color(0xFFC62828)],
               ),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: (remainingForGame > 0 ? Colors.green : Colors.red)
                       .withOpacity(0.25),
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
+                  blurRadius: 6,
+                  spreadRadius: 1,
                 ),
               ],
             ),
@@ -213,56 +233,13 @@ class _RewindRewardWidgetState extends State<RewindRewardWidget>
               '$remainingForGame',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
                 letterSpacing: 0.3,
               ),
             ),
           ),
-
-          const SizedBox(width: 8),
-
-          // Icône d'action compacte
-          _buildCompactActionIcon(totalRewindCount, remainingForGame),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCompactActionIcon(int totalRewindCount, int remainingForGame) {
-    Widget iconWidget;
-    Color iconColor;
-    VoidCallback? onTap;
-
-    if (totalRewindCount > 0 && remainingForGame > 0) {
-      iconWidget = const Icon(Icons.check_circle, size: 14);
-      iconColor = const Color(0xFF4CAF50);
-    } else if (totalRewindCount > 0 && remainingForGame == 0) {
-      iconWidget = const Icon(Icons.warning, size: 14);
-      iconColor = const Color(0xFFFF9800);
-      onTap = _showLimitReachedDialog;
-    } else {
-      iconWidget = const Icon(Icons.add_circle, size: 14);
-      iconColor = const Color(0xFFFFD700);
-      onTap = _showEarnRewardDialog; // Ouvre dialogue récompense/achat
-    }
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: iconColor.withOpacity(0.2),
-          border: Border.all(
-            color: iconColor.withOpacity(0.4),
-            width: 1,
-          ),
-        ),
-        child: IconTheme(
-          data: IconThemeData(color: iconColor),
-          child: iconWidget,
-        ),
       ),
     );
   }

@@ -54,7 +54,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shopDescription => 'Vos coins sont ici. Touchez pour ouvrir la boutique !';
 
   @override
-  String get dailyGift => 'Cadeau Quotidien';
+  String get dailyGift => 'Cadeau';
 
   @override
   String get dailyGiftDescription => 'Récupérez vos coins gratuits ici !';
