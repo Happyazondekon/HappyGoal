@@ -2126,8 +2126,170 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialGameMultiDesc3.
   ///
   /// In en, this message translates to:
-  /// **'Use a Rewind to cancel a missed shot.'**
+  /// **'Use a **Rewind** to cancel a missed shot.'**
   String get tutorialGameMultiDesc3;
+
+  /// No description provided for @challengeWinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Win the match'**
+  String get challengeWinTitle;
+
+  /// No description provided for @challengeWinDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Win the penalty shootout.'**
+  String get challengeWinDesc;
+
+  /// No description provided for @challengeKnuckleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Score a Knuckle goal'**
+  String get challengeKnuckleTitle;
+
+  /// No description provided for @challengeKnuckleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Score at least 1 goal with the Knuckle effect.'**
+  String get challengeKnuckleDesc;
+
+  /// No description provided for @challengePowerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All goals with power > 80'**
+  String get challengePowerTitle;
+
+  /// No description provided for @challengePowerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Every goal scored must be shot with power above 80.'**
+  String get challengePowerDesc;
+
+  /// No description provided for @challengeConcedeLessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Concede max 2 goals'**
+  String get challengeConcedeLessTitle;
+
+  /// No description provided for @challengeConcedeLessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not let the opponent score more than 2 goals.'**
+  String get challengeConcedeLessDesc;
+
+  /// No description provided for @challengeAllLobTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All goals in Lob'**
+  String get challengeAllLobTitle;
+
+  /// No description provided for @challengeAllLobDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Every goal scored must be shot with the Lob effect.'**
+  String get challengeAllLobDesc;
+
+  /// No description provided for @challengeCurveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 2 Curve goals'**
+  String get challengeCurveTitle;
+
+  /// No description provided for @challengeCurveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Score at least 2 goals with the Curve effect.'**
+  String get challengeCurveDesc;
+
+  /// No description provided for @challengeLobTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 3 Lob goals'**
+  String get challengeLobTitle;
+
+  /// No description provided for @challengeLobDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Score at least 3 goals with the Lob effect.'**
+  String get challengeLobDesc;
+
+  /// No description provided for @challengeSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make at least 1 save'**
+  String get challengeSaveTitle;
+
+  /// No description provided for @challengeSaveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goalkeeper must stop at least one opponent shot.'**
+  String get challengeSaveDesc;
+
+  /// No description provided for @heroResultStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'MATCH STATS'**
+  String get heroResultStatsTitle;
+
+  /// No description provided for @heroResultStatShots.
+  ///
+  /// In en, this message translates to:
+  /// **'Shots attempted'**
+  String get heroResultStatShots;
+
+  /// No description provided for @heroResultStatGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals scored'**
+  String get heroResultStatGoals;
+
+  /// No description provided for @heroResultStatSaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves made'**
+  String get heroResultStatSaves;
+
+  /// No description provided for @heroResultStatConceded.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals conceded'**
+  String get heroResultStatConceded;
+
+  /// No description provided for @heroResultStatGoalsEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'{effect} goals'**
+  String heroResultStatGoalsEffect(String effect);
+
+  /// No description provided for @heroResultReplay.
+  ///
+  /// In en, this message translates to:
+  /// **'REPLAY'**
+  String get heroResultReplay;
+
+  /// No description provided for @shotEffectNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get shotEffectNormal;
+
+  /// No description provided for @shotEffectCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'Curve'**
+  String get shotEffectCurve;
+
+  /// No description provided for @shotEffectLob.
+  ///
+  /// In en, this message translates to:
+  /// **'Lob'**
+  String get shotEffectLob;
+
+  /// No description provided for @shotEffectKnuckle.
+  ///
+  /// In en, this message translates to:
+  /// **'Knuckle'**
+  String get shotEffectKnuckle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -103,7 +103,7 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
   @override
   Widget build(BuildContext context) {
     final List<HeroChallenge> challenges =
-        HeroChallengeRepository.getChallenges()[widget.level] ?? [];
+        HeroChallengeRepository.getChallenges(context)[widget.level] ?? [];
 
     return Scaffold(
       body: Stack(
@@ -411,7 +411,7 @@ class _HeroTransitionScreenState extends State<HeroTransitionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Row(
+            Row(
               children: [
                 const Icon(Icons.history, color: Color(0xFFFFD700), size: 14),
                 const SizedBox(width: 6),

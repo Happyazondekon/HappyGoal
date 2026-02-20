@@ -7,8 +7,8 @@ import 'package:happygoal/models/hero_challenge.dart';
 class HeroChallengeEvaluator {
   /// Évalue tous les challenges du niveau et retourne une liste de bool.
   /// Index 0 = challenge 1, index 1 = challenge 2, etc.
-  static List<bool> evaluateAll(int level, GameState state) {
-    final challenges = HeroChallengeRepository.getChallenges()[level] ?? [];
+  static List<bool> evaluateAll(int level, GameState state, context) {
+    final challenges = HeroChallengeRepository.getChallenges(context)[level] ?? [];
     return challenges.map((c) => c.isCompleted(state)).toList();
   }
 

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:happygoal/l10n/app_localizations.dart';
 import 'package:happygoal/models/game_state.dart';
 import 'package:happygoal/services/hero_challenge_evaluator.dart';
 
@@ -19,10 +21,12 @@ class HeroChallenge {
 }
 
 class HeroChallengeRepository {
-  static Map<int, List<HeroChallenge>> getChallenges() {
+  /// Retourne les challenges pour tous les niveaux.
+  /// [context] est requis pour accéder aux strings localisés.
+  static Map<int, List<HeroChallenge>> getChallenges(BuildContext context) {
     final Map<int, List<HeroChallenge>> challenges = {};
     for (int level = 1; level <= 100; level++) {
-      challenges[level] = _buildChallenges(level);
+      challenges[level] = _buildChallenges(context, level);
     }
     return challenges;
   }
@@ -32,33 +36,23 @@ class HeroChallengeRepository {
   /// Challenge 0 : Gagner le match (toujours présent)
   /// Challenge 1 : Objectif offensif (varie selon le niveau)
   /// Challenge 2 : Objectif défensif / arrêt (toujours : au moins 1 arrêt)
-  ///
-  /// Priorité des conditions pour le challenge 1 :
-  /// On utilise des intervalles exclusifs pour éviter toute ambiguïté.
-  ///
-  ///   level % 11 == 0                       → but knuckle
-  ///   level % 13 == 0 (et pas % 11)         → tous les buts puissance > 80
-  ///   level % 7  == 0 (et pas % 11 ni % 13) → encaisser max 2 buts
-  ///   level % 5  == 0 (et pas les précédents)→ tous les buts en lob
-  ///   level % 3  == 0 (et pas les précédents)→ 2 buts curve
-  ///   sinon                                  → 3 buts lob
-  static List<HeroChallenge> _buildChallenges(int level) {
+  static List<HeroChallenge> _buildChallenges(BuildContext context, int level) {
+    final l10n = AppLocalizations.of(context)!;
     return [
-      // ─── Challenge 0 : Victoire (obligatoire, toujours 1ère étoile) ─────────
+      // ─── Challenge 0 : Victoire ──────────────────────────────────────────
       HeroChallenge(
-        title: 'Gagner le match',
-        description: 'Remportez la séance de tirs au but.',
+        title: l10n.challengeWinTitle,
+        description: l10n.challengeWinDesc,
         isCompleted: (state) => HeroChallengeEvaluator.userWon(state),
       ),
 
-      // ─── Challenge 1 : Objectif offensif/défensif (2ème étoile) ─────────────
-      _buildOffensiveChallenge(level),
+      // ─── Challenge 1 : Objectif offensif/défensif ────────────────────────
+      _buildOffensiveChallenge(context, level),
 
-      // ─── Challenge 2 : Arrêt (3ème étoile) ──────────────────────────────────
+      // ─── Challenge 2 : Arrêt ─────────────────────────────────────────────
       HeroChallenge(
-        title: 'Réaliser au moins 1 arrêt',
-        description:
-        'Votre gardien doit stopper au moins un tir adverse.',
+        title: l10n.challengeSaveTitle,
+        description: l10n.challengeSaveDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.madeSaves(state, 1),
@@ -66,13 +60,13 @@ class HeroChallengeRepository {
     ];
   }
 
-  static HeroChallenge _buildOffensiveChallenge(int level) {
-    // Priorité décroissante avec des else-if strictement ordonnés :
-    // les diviseurs les plus rares (11, 13) passent en premier.
+  static HeroChallenge _buildOffensiveChallenge(BuildContext context, int level) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (level % 11 == 0) {
       return HeroChallenge(
-        title: 'Marquer un but en Knuckle',
-        description: 'Marquez au moins 1 but avec l\'effet Knuckle.',
+        title: l10n.challengeKnuckleTitle,
+        description: l10n.challengeKnuckleDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.scoredGoalsWithEffect(
@@ -80,35 +74,32 @@ class HeroChallengeRepository {
       );
     } else if (level % 13 == 0) {
       return HeroChallenge(
-        title: 'Tous les buts puissance > 80',
-        description:
-        'Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.',
+        title: l10n.challengePowerTitle,
+        description: l10n.challengePowerDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.allGoalsWithPowerAbove(state, 80),
       );
     } else if (level % 7 == 0) {
       return HeroChallenge(
-        title: 'Encaisser maximum 2 buts',
-        description: 'Ne laissez pas l\'adversaire marquer plus de 2 buts.',
+        title: l10n.challengeConcedeLessTitle,
+        description: l10n.challengeConcedeLessDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.concededAtMost(state, 2),
       );
     } else if (level % 5 == 0) {
       return HeroChallenge(
-        title: 'Tous les buts en Lob',
-        description:
-        'Chaque but marqué doit avoir été tiré avec l\'effet Lob.',
+        title: l10n.challengeAllLobTitle,
+        description: l10n.challengeAllLobDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
-            HeroChallengeEvaluator.allGoalsWithEffect(
-                state, ShotEffect.lob),
+            HeroChallengeEvaluator.allGoalsWithEffect(state, ShotEffect.lob),
       );
     } else if (level % 3 == 0) {
       return HeroChallenge(
-        title: 'Marquer 2 buts en Curve',
-        description: 'Marquez au moins 2 buts avec l\'effet Curve.',
+        title: l10n.challengeCurveTitle,
+        description: l10n.challengeCurveDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.scoredGoalsWithEffect(
@@ -116,8 +107,8 @@ class HeroChallengeRepository {
       );
     } else {
       return HeroChallenge(
-        title: 'Marquer 3 buts en Lob',
-        description: 'Marquez au moins 3 buts avec l\'effet Lob.',
+        title: l10n.challengeLobTitle,
+        description: l10n.challengeLobDesc,
         isCompleted: (state) =>
         HeroChallengeEvaluator.userWon(state) &&
             HeroChallengeEvaluator.scoredGoalsWithEffect(

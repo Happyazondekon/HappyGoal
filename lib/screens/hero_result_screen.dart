@@ -61,7 +61,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
   @override
   void initState() {
     super.initState();
-    _evaluateChallenges();
+    // _evaluateChallenges() requires context (for l10n) → called in didChangeDependencies
 
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
@@ -90,16 +90,27 @@ class _HeroResultScreenState extends State<HeroResultScreen>
     _runAnimationSequence();
   }
 
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _evaluateChallenges();
+    }
+  }
+
   /// Évalue chaque challenge en interrogeant le GameState réel.
   /// C'est ici que tout est vérifié : effets des tirs, arrêts, victoire, etc.
   void _evaluateChallenges() {
-    _challenges = HeroChallengeRepository.getChallenges()[widget.level] ?? [];
+    _challenges = HeroChallengeRepository.getChallenges(context)[widget.level] ?? [];
 
     // Évaluation stricte : on appelle isCompleted(gameState) pour chaque challenge.
     // isCompleted interroge team1ShotData (tirs du joueur) et team2ShotData (tirs de l'IA)
     // tels qu'ils ont réellement été enregistrés pendant le match.
     _completed =
-        HeroChallengeEvaluator.evaluateAll(widget.level, widget.gameState);
+        HeroChallengeEvaluator.evaluateAll(widget.level, widget.gameState, context);
 
     // Sanity check : si _completed est plus court que _challenges, on complète avec false.
     while (_completed.length < _challenges.length) {
@@ -505,7 +516,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Row(
+            Row(
               children: [
                 Icon(Icons.flag_outlined, color: Color(0xFFFFD700), size: 16),
                 SizedBox(width: 8),
@@ -587,6 +598,23 @@ class _HeroResultScreenState extends State<HeroResultScreen>
     );
   }
 
+  /// Maps a ShotEffect to its localized display name.
+  String _getEffectName(ShotEffect effect) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (effect) {
+      case ShotEffect.normal:
+        return l10n.shotEffectNormal;
+      case ShotEffect.curve:
+        return l10n.shotEffectCurve;
+      case ShotEffect.lob:
+        return l10n.shotEffectLob;
+      case ShotEffect.knuckle:
+        return l10n.shotEffectKnuckle;
+    }
+    // Fallback for exhaustive switch (should never reach here)
+    return '';
+  }
+
   /// Stats réelles du match pour aider le joueur à comprendre ses résultats.
   Widget _buildMatchStatsCard() {
     final state = widget.gameState;
@@ -601,10 +629,10 @@ class _HeroResultScreenState extends State<HeroResultScreen>
     final List<Widget> effectRows = [];
     for (final effect in ShotEffect.getAllEffects()) {
       final int count =
-      HeroChallengeEvaluator.countGoalsWithEffect(state, effect);
+          HeroChallengeEvaluator.countGoalsWithEffect(state, effect);
       if (count > 0) {
         effectRows.add(_statRow(
-          'Buts ${ShotEffect.getDisplayName(effect)}',
+          AppLocalizations.of(context)!.heroResultStatGoalsEffect(effect),
           '$count',
           highlight: true,
         ));
@@ -623,13 +651,13 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.bar_chart, color: Colors.white38, size: 14),
-                SizedBox(width: 8),
+                const Icon(Icons.bar_chart, color: Colors.white38, size: 14),
+                const SizedBox(width: 8),
                 Text(
-                  'STATS DU MATCH',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.heroResultStatsTitle,
+                  style: const TextStyle(
                     color: Colors.white38,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -639,10 +667,10 @@ class _HeroResultScreenState extends State<HeroResultScreen>
               ],
             ),
             const SizedBox(height: 10),
-            _statRow('Tirs tentés', '$totalShots'),
-            _statRow('Buts marqués', '$totalGoals'),
-            _statRow('Arrêts réalisés', '$saves'),
-            _statRow('Buts encaissés', '$goalsConceded'),
+            _statRow(AppLocalizations.of(context)!.heroResultStatShots, '$totalShots'),
+            _statRow(AppLocalizations.of(context)!.heroResultStatGoals, '$totalGoals'),
+            _statRow(AppLocalizations.of(context)!.heroResultStatSaves, '$saves'),
+            _statRow(AppLocalizations.of(context)!.heroResultStatConceded, '$goalsConceded'),
             if (effectRows.isNotEmpty) ...[
               const Divider(color: Colors.white12, height: 16),
               ...effectRows,
@@ -688,7 +716,7 @@ class _HeroResultScreenState extends State<HeroResultScreen>
         children: [
           Expanded(
             child: _buildButton(
-              label: 'REJOUER',
+              label: AppLocalizations.of(context)!.heroResultReplay,
               icon: Icons.refresh_rounded,
               gradient: const [Color(0xFF546E7A), Color(0xFF37474F)],
               onTap: widget.onReplay,

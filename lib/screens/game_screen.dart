@@ -57,7 +57,7 @@ class _GameScreenState extends State<GameScreen>
     }
     final int level = widget.gameState.heroLevel ?? 1;
     final List<bool> completed =
-    HeroChallengeEvaluator.evaluateAll(level, _controller.gameState);
+        HeroChallengeEvaluator.evaluateAll(level, _controller.gameState, context);
     if (completed.isEmpty || !completed[0]) {
       return {'stars': 0, 'completedChallenges': completed};
     }

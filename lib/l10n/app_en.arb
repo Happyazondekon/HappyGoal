@@ -337,5 +337,39 @@
   "tutorialGameMultiTitle2": "Swipe to shoot",
   "tutorialGameMultiDesc2": "Swipe from the ball upward — direction and speed matter!",
   "tutorialGameMultiTitle3": "Rewind ↩️",
-  "tutorialGameMultiDesc3": "Use a Rewind to cancel a missed shot."
+  "tutorialGameMultiDesc3": "Use a **Rewind** to cancel a missed shot.",
+  "challengeWinTitle": "Win the match",
+  "challengeWinDesc": "Win the penalty shootout.",
+  "challengeKnuckleTitle": "Score a Knuckle goal",
+  "challengeKnuckleDesc": "Score at least 1 goal with the Knuckle effect.",
+  "challengePowerTitle": "All goals with power > 80",
+  "challengePowerDesc": "Every goal scored must be shot with power above 80.",
+  "challengeConcedeLessTitle": "Concede max 2 goals",
+  "challengeConcedeLessDesc": "Do not let the opponent score more than 2 goals.",
+  "challengeAllLobTitle": "All goals in Lob",
+  "challengeAllLobDesc": "Every goal scored must be shot with the Lob effect.",
+  "challengeCurveTitle": "Score 2 Curve goals",
+  "challengeCurveDesc": "Score at least 2 goals with the Curve effect.",
+  "challengeLobTitle": "Score 3 Lob goals",
+  "challengeLobDesc": "Score at least 3 goals with the Lob effect.",
+  "challengeSaveTitle": "Make at least 1 save",
+  "challengeSaveDesc": "Your goalkeeper must stop at least one opponent shot.",
+  "heroResultStatsTitle": "MATCH STATS",
+  "heroResultStatShots": "Shots attempted",
+  "heroResultStatGoals": "Goals scored",
+  "heroResultStatSaves": "Saves made",
+  "heroResultStatConceded": "Goals conceded",
+  "@heroResultStatGoalsEffect": {
+    "placeholders": {
+      "effect": {
+        "type": "String"
+      }
+    }
+  },
+  "heroResultStatGoalsEffect": "{effect} goals",
+  "heroResultReplay": "REPLAY",
+  "shotEffectNormal": "Normal",
+  "shotEffectCurve": "Curve",
+  "shotEffectLob": "Lob",
+  "shotEffectKnuckle": "Knuckle"
 }

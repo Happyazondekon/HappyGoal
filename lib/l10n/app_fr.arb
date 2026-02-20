@@ -14,7 +14,7 @@
   "english": "Anglais",
   "shop": "Boutique",
   "shopDescription": "Vos coins sont ici. Touchez pour ouvrir la boutique !",
-  "dailyGift": "Cadeau",
+  "dailyGift": "Cadeau Quotidien",
   "dailyGiftDescription": "Récupérez vos coins gratuits ici !",
   "achievements": "SUCCÈS",
   "achievementsDescription": "Consultez vos achievements et récupérez vos récompenses !",
@@ -347,5 +347,39 @@
   "tutorialGameMultiTitle2": "Glissez pour tirer",
   "tutorialGameMultiDesc2": "Swipez depuis le ballon vers le haut — direction et vitesse comptent !",
   "tutorialGameMultiTitle3": "Rembobiner ↩️",
-  "tutorialGameMultiDesc3": "Utilisez un Rembobinage pour annuler un tir raté."
+  "tutorialGameMultiDesc3": "Utilisez un **Rembobinage** pour annuler un tir raté.",
+  "challengeWinTitle": "Gagner le match",
+  "challengeWinDesc": "Remportez la séance de tirs au but.",
+  "challengeKnuckleTitle": "Marquer un but en Knuckle",
+  "challengeKnuckleDesc": "Marquez au moins 1 but avec l'effet Knuckle.",
+  "challengePowerTitle": "Tous les buts puissance > 80",
+  "challengePowerDesc": "Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.",
+  "challengeConcedeLessTitle": "Encaisser maximum 2 buts",
+  "challengeConcedeLessDesc": "Ne laissez pas l'adversaire marquer plus de 2 buts.",
+  "challengeAllLobTitle": "Tous les buts en Lob",
+  "challengeAllLobDesc": "Chaque but marqué doit avoir été tiré avec l'effet Lob.",
+  "challengeCurveTitle": "Marquer 2 buts en Curve",
+  "challengeCurveDesc": "Marquez au moins 2 buts avec l'effet Curve.",
+  "challengeLobTitle": "Marquer 3 buts en Lob",
+  "challengeLobDesc": "Marquez au moins 3 buts avec l'effet Lob.",
+  "challengeSaveTitle": "Réaliser au moins 1 arrêt",
+  "challengeSaveDesc": "Votre gardien doit stopper au moins un tir adverse.",
+  "heroResultStatsTitle": "STATS DU MATCH",
+  "heroResultStatShots": "Tirs tentés",
+  "heroResultStatGoals": "Buts marqués",
+  "heroResultStatSaves": "Arrêts réalisés",
+  "heroResultStatConceded": "Buts encaissés",
+  "@heroResultStatGoalsEffect": {
+    "placeholders": {
+      "effect": {
+        "type": "String"
+      }
+    }
+  },
+  "heroResultStatGoalsEffect": "Buts {effect}",
+  "heroResultReplay": "REJOUER",
+  "shotEffectNormal": "Normal",
+  "shotEffectCurve": "Curve",
+  "shotEffectLob": "Lob",
+  "shotEffectKnuckle": "Knuckle"
 }

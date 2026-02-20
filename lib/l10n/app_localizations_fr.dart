@@ -54,7 +54,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shopDescription => 'Vos coins sont ici. Touchez pour ouvrir la boutique !';
 
   @override
-  String get dailyGift => 'Cadeau';
+  String get dailyGift => 'Cadeau Quotidien';
 
   @override
   String get dailyGiftDescription => 'Récupérez vos coins gratuits ici !';
@@ -1079,5 +1079,88 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialGameMultiTitle3 => 'Rembobiner ↩️';
 
   @override
-  String get tutorialGameMultiDesc3 => 'Utilisez un Rembobinage pour annuler un tir raté.';
+  String get tutorialGameMultiDesc3 => 'Utilisez un **Rembobinage** pour annuler un tir raté.';
+
+  @override
+  String get challengeWinTitle => 'Gagner le match';
+
+  @override
+  String get challengeWinDesc => 'Remportez la séance de tirs au but.';
+
+  @override
+  String get challengeKnuckleTitle => 'Marquer un but en Knuckle';
+
+  @override
+  String get challengeKnuckleDesc => 'Marquez au moins 1 but avec l\'effet Knuckle.';
+
+  @override
+  String get challengePowerTitle => 'Tous les buts puissance > 80';
+
+  @override
+  String get challengePowerDesc => 'Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.';
+
+  @override
+  String get challengeConcedeLessTitle => 'Encaisser maximum 2 buts';
+
+  @override
+  String get challengeConcedeLessDesc => 'Ne laissez pas l\'adversaire marquer plus de 2 buts.';
+
+  @override
+  String get challengeAllLobTitle => 'Tous les buts en Lob';
+
+  @override
+  String get challengeAllLobDesc => 'Chaque but marqué doit avoir été tiré avec l\'effet Lob.';
+
+  @override
+  String get challengeCurveTitle => 'Marquer 2 buts en Curve';
+
+  @override
+  String get challengeCurveDesc => 'Marquez au moins 2 buts avec l\'effet Curve.';
+
+  @override
+  String get challengeLobTitle => 'Marquer 3 buts en Lob';
+
+  @override
+  String get challengeLobDesc => 'Marquez au moins 3 buts avec l\'effet Lob.';
+
+  @override
+  String get challengeSaveTitle => 'Réaliser au moins 1 arrêt';
+
+  @override
+  String get challengeSaveDesc => 'Votre gardien doit stopper au moins un tir adverse.';
+
+  @override
+  String get heroResultStatsTitle => 'STATS DU MATCH';
+
+  @override
+  String get heroResultStatShots => 'Tirs tentés';
+
+  @override
+  String get heroResultStatGoals => 'Buts marqués';
+
+  @override
+  String get heroResultStatSaves => 'Arrêts réalisés';
+
+  @override
+  String get heroResultStatConceded => 'Buts encaissés';
+
+  @override
+  String heroResultStatGoalsEffect(String effect) {
+    return 'Buts $effect';
+  }
+
+  @override
+  String get heroResultReplay => 'REJOUER';
+
+  @override
+  String get shotEffectNormal => 'Normal';
+
+  @override
+  String get shotEffectCurve => 'Curve';
+
+  @override
+  String get shotEffectLob => 'Lob';
+
+  @override
+  String get shotEffectKnuckle => 'Knuckle';
 }

@@ -1079,5 +1079,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialGameMultiTitle3 => 'Rewind ↩️';
 
   @override
-  String get tutorialGameMultiDesc3 => 'Use a Rewind to cancel a missed shot.';
+  String get tutorialGameMultiDesc3 => 'Use a **Rewind** to cancel a missed shot.';
+
+  @override
+  String get challengeWinTitle => 'Win the match';
+
+  @override
+  String get challengeWinDesc => 'Win the penalty shootout.';
+
+  @override
+  String get challengeKnuckleTitle => 'Score a Knuckle goal';
+
+  @override
+  String get challengeKnuckleDesc => 'Score at least 1 goal with the Knuckle effect.';
+
+  @override
+  String get challengePowerTitle => 'All goals with power > 80';
+
+  @override
+  String get challengePowerDesc => 'Every goal scored must be shot with power above 80.';
+
+  @override
+  String get challengeConcedeLessTitle => 'Concede max 2 goals';
+
+  @override
+  String get challengeConcedeLessDesc => 'Do not let the opponent score more than 2 goals.';
+
+  @override
+  String get challengeAllLobTitle => 'All goals in Lob';
+
+  @override
+  String get challengeAllLobDesc => 'Every goal scored must be shot with the Lob effect.';
+
+  @override
+  String get challengeCurveTitle => 'Score 2 Curve goals';
+
+  @override
+  String get challengeCurveDesc => 'Score at least 2 goals with the Curve effect.';
+
+  @override
+  String get challengeLobTitle => 'Score 3 Lob goals';
+
+  @override
+  String get challengeLobDesc => 'Score at least 3 goals with the Lob effect.';
+
+  @override
+  String get challengeSaveTitle => 'Make at least 1 save';
+
+  @override
+  String get challengeSaveDesc => 'Your goalkeeper must stop at least one opponent shot.';
+
+  @override
+  String get heroResultStatsTitle => 'MATCH STATS';
+
+  @override
+  String get heroResultStatShots => 'Shots attempted';
+
+  @override
+  String get heroResultStatGoals => 'Goals scored';
+
+  @override
+  String get heroResultStatSaves => 'Saves made';
+
+  @override
+  String get heroResultStatConceded => 'Goals conceded';
+
+  @override
+  String heroResultStatGoalsEffect(String effect) {
+    return '$effect goals';
+  }
+
+  @override
+  String get heroResultReplay => 'REPLAY';
+
+  @override
+  String get shotEffectNormal => 'Normal';
+
+  @override
+  String get shotEffectCurve => 'Curve';
+
+  @override
+  String get shotEffectLob => 'Lob';
+
+  @override
+  String get shotEffectKnuckle => 'Knuckle';
 }
