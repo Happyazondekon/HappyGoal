@@ -15,7 +15,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get welcomeMessage => 'Bienvenue sur HappyGoal !';
 
   @override
-  String get chooseCountry => 'Choisissez le pays que vous représenterez dans votre aventure Hero';
+  String get chooseCountry =>
+      'Choisissez le pays que vous représenterez dans votre aventure Hero';
 
   @override
   String get startAdventure => 'Prêt pour une série de tirs au but ?';
@@ -51,7 +52,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shop => 'Boutique';
 
   @override
-  String get shopDescription => 'Vos coins sont ici. Touchez pour ouvrir la boutique !';
+  String get shopDescription =>
+      'Vos coins sont ici. Touchez pour ouvrir la boutique !';
 
   @override
   String get dailyGift => 'Cadeau';
@@ -63,7 +65,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get achievements => 'SUCCÈS';
 
   @override
-  String get achievementsDescription => 'Consultez vos achievements et récupérez vos récompenses !';
+  String get achievementsDescription =>
+      'Consultez vos achievements et récupérez vos récompenses !';
 
   @override
   String get subtitle => 'LE DÉFI DES TIRS AU BUT';
@@ -90,7 +93,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get splashRequiredUpdateTitle => 'Mise à jour requise';
 
   @override
-  String get splashRequiredUpdateContent => 'Une nouvelle version de HappyGoal est disponible.\n\nCette mise à jour est obligatoire pour profiter des fonctionnalités en ligne et des tournois.\n\nVeuillez mettre à jour pour continuer.';
+  String get splashRequiredUpdateContent =>
+      'Une nouvelle version de HappyGoal est disponible.\n\nCette mise à jour est obligatoire pour profiter des fonctionnalités en ligne et des tournois.\n\nVeuillez mettre à jour pour continuer.';
 
   @override
   String get splashRequiredUpdateButton => 'METTRE À JOUR MAINTENANT';
@@ -135,7 +139,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get heroModeResetTitle => 'Changer de pays ?';
 
   @override
-  String get heroModeResetContent => 'Vous perdrez votre progression. Voulez-vous recommencer ?';
+  String get heroModeResetContent =>
+      'Vous perdrez votre progression. Voulez-vous recommencer ?';
 
   @override
   String get heroModeResetCancel => 'Annuler';
@@ -159,7 +164,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get heroModeRewardAdUnavailable => 'Publicité indisponible ou erreur de chargement.';
+  String get heroModeRewardAdUnavailable =>
+      'Publicité indisponible ou erreur de chargement.';
 
   @override
   String get heroTeamSelectHeader1 => 'CHOISISSEZ';
@@ -168,7 +174,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get heroTeamSelectHeader2 => 'VOTRE PAYS';
 
   @override
-  String get heroTeamSelectSubtitle => 'Choisissez le pays que vous représenterez dans votre aventure Hero';
+  String get heroTeamSelectSubtitle =>
+      'Choisissez le pays que vous représenterez dans votre aventure Hero';
 
   @override
   String get heroTeamSelectStart => 'COMMENCER L\'AVENTURE';
@@ -201,7 +208,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String heroTransitionStoryLevel(Object level, Object myTeam, Object opponent) {
+  String heroTransitionStoryLevel(
+      Object level, Object myTeam, Object opponent) {
     return 'Niveau $level : $myTeam affronte $opponent dans un duel décisif. Prouve ta valeur !';
   }
 
@@ -255,7 +263,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get teamSelectionModeTournament => 'Mode Tournoi';
 
   @override
-  String get teamSelectionChooseTeams => 'Choisissez votre équipe et l\'équipe adverse contrôlée par l\'ordinateur';
+  String get teamSelectionChooseTeams =>
+      'Choisissez votre équipe et l\'équipe adverse contrôlée par l\'ordinateur';
 
   @override
   String get teamSelectionTeam1 => 'Équipe 1';
@@ -346,7 +355,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tournamentStatsResetTitle => 'Réinitialiser les statistiques';
 
   @override
-  String get tournamentStatsResetContent => 'Êtes-vous sûr de vouloir réinitialiser toutes vos statistiques de tournoi ? Cette action est irréversible.';
+  String get tournamentStatsResetContent =>
+      'Êtes-vous sûr de vouloir réinitialiser toutes vos statistiques de tournoi ? Cette action est irréversible.';
 
   @override
   String get tournamentStatsResetCancel => 'Annuler';
@@ -355,25 +365,31 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tournamentStatsResetConfirm => 'Réinitialiser';
 
   @override
-  String get tournamentStatsResetSuccess => 'Statistiques réinitialisées avec succès';
+  String get tournamentStatsResetSuccess =>
+      'Statistiques réinitialisées avec succès';
 
   @override
   String get tournamentStatsClickToView => 'Cliquez pour voir vos performances';
 
   @override
-  String get tournamentStatsMotivationStart => 'Commencez votre premier tournoi ! 🚀';
+  String get tournamentStatsMotivationStart =>
+      'Commencez votre premier tournoi ! 🚀';
 
   @override
-  String get tournamentStatsMotivationChampion => 'Excellent taux de victoire ! Vous êtes un champion ! 🏆';
+  String get tournamentStatsMotivationChampion =>
+      'Excellent taux de victoire ! Vous êtes un champion ! 🏆';
 
   @override
-  String get tournamentStatsMotivationGood => 'Bon taux de victoire ! Continuez comme ça ! 💪';
+  String get tournamentStatsMotivationGood =>
+      'Bon taux de victoire ! Continuez comme ça ! 💪';
 
   @override
-  String get tournamentStatsMotivationOpportunity => 'Chaque tournoi est une nouvelle opportunité ! 🔥';
+  String get tournamentStatsMotivationOpportunity =>
+      'Chaque tournoi est une nouvelle opportunité ! 🔥';
 
   @override
-  String get tournamentStatsMotivationPerseverance => 'La persévérance est la clé du succès ! Ne lâchez rien ! ⚽';
+  String get tournamentStatsMotivationPerseverance =>
+      'La persévérance est la clé du succès ! Ne lâchez rien ! ⚽';
 
   @override
   String get tournamentModeTitle => 'TOURNOI';
@@ -415,7 +431,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tournamentChangeTeam => 'CHANGER D\'ÉQUIPE';
 
   @override
-  String get tournamentNotEnoughTeams => 'Pas assez d\'équipes pour un tournoi complet';
+  String get tournamentNotEnoughTeams =>
+      'Pas assez d\'équipes pour un tournoi complet';
 
   @override
   String get tournamentStart => 'LANCER LE TOURNOI';
@@ -542,7 +559,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gameSuddenDeath => 'MORT SUBITE';
 
   @override
-  String get gameAIShootingPrompt => 'L\'IA va tirer - Choisissez votre plongée !';
+  String get gameAIShootingPrompt =>
+      'L\'IA va tirer - Choisissez votre plongée !';
 
   @override
   String get gameAITurnWait => 'Tour de l\'IA - Patientez...';
@@ -579,7 +597,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get coinInfoShopPubFree => 'Pub Gratuit';
 
   @override
-  String get coinInfoShopUseCoins => 'Utilisez vos coins pour acheter des rembobinages !';
+  String get coinInfoShopUseCoins =>
+      'Utilisez vos coins pour acheter des rembobinages !';
 
   @override
   String get settingsOptions => 'Options';
@@ -606,7 +625,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rulesUnderstood => 'Compris !';
 
   @override
-  String get inviteShareText => 'HappyGoal ! ⚽\n\nViens tirer des penalties et défie-moi !\nTélécharge : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
+  String get inviteShareText =>
+      'HappyGoal ! ⚽\n\nViens tirer des penalties et défie-moi !\nTélécharge : https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
 
   @override
   String get inviteShareSubject => 'HappyGoal';
@@ -693,7 +713,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialSettingsHeader => 'Gestion des tutoriels';
 
   @override
-  String get tutorialSettingsHeaderDesc => 'Gérez l\'affichage des tutoriels pour chaque écran. Les tutoriels marqués comme \'Vu\' ne s\'afficheront plus automatiquement.';
+  String get tutorialSettingsHeaderDesc =>
+      'Gérez l\'affichage des tutoriels pour chaque écran. Les tutoriels marqués comme \'Vu\' ne s\'afficheront plus automatiquement.';
 
   @override
   String get tutorialSettingsHome => 'Écran d\'accueil';
@@ -714,10 +735,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialSettingsTournament => 'Mode tournoi';
 
   @override
-  String get tutorialSettingsHomeDesc => 'Guide des fonctionnalités principales';
+  String get tutorialSettingsHomeDesc =>
+      'Guide des fonctionnalités principales';
 
   @override
-  String get tutorialSettingsModeSelectionDesc => 'Explication des différents modes de jeu';
+  String get tutorialSettingsModeSelectionDesc =>
+      'Explication des différents modes de jeu';
 
   @override
   String get tutorialSettingsTeamSelectionDesc => 'Comment choisir vos équipes';
@@ -747,10 +770,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialSettingsResetAll => 'Réinitialiser tous les tutoriels';
 
   @override
-  String get tutorialSettingsResetConfirmTitle => 'Confirmer la réinitialisation';
+  String get tutorialSettingsResetConfirmTitle =>
+      'Confirmer la réinitialisation';
 
   @override
-  String get tutorialSettingsResetConfirmContent => 'Êtes-vous sûr de vouloir réinitialiser tous les tutoriels ? Ils s\'afficheront à nouveau lors de vos prochaines visites.';
+  String get tutorialSettingsResetConfirmContent =>
+      'Êtes-vous sûr de vouloir réinitialiser tous les tutoriels ? Ils s\'afficheront à nouveau lors de vos prochaines visites.';
 
   @override
   String get tutorialSettingsResetCancel => 'Annuler';
@@ -759,7 +784,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialSettingsResetConfirm => 'Confirmer';
 
   @override
-  String get tutorialSettingsResetSuccess => 'Tous les tutoriels ont été réinitialisés';
+  String get tutorialSettingsResetSuccess =>
+      'Tous les tutoriels ont été réinitialisés';
 
   @override
   String tutorialSettingsResetSingle(Object title) {
@@ -785,7 +811,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get audioSettingsBackground => 'Continuer la musique en arrière-plan';
 
   @override
-  String get audioSettingsBackgroundDesc => 'La musique continue lorsque vous quittez l\'application';
+  String get audioSettingsBackgroundDesc =>
+      'La musique continue lorsque vous quittez l\'application';
 
   @override
   String get audioSettingsVolume => 'Volume';
@@ -856,7 +883,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewindLimitTitle => 'Limite atteinte';
 
   @override
-  String get rewindLimitDesc => 'Vous avez utilisé tous vos rembobinages autorisés pour ce match.';
+  String get rewindLimitDesc =>
+      'Vous avez utilisé tous vos rembobinages autorisés pour ce match.';
 
   @override
   String get rewindLimitInfo => 'Informations:';
@@ -877,7 +905,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get rewindLimitReset => 'Vos rembobinages se réinitialiseront au prochain match !';
+  String get rewindLimitReset =>
+      'Vos rembobinages se réinitialiseront au prochain match !';
 
   @override
   String get rewindLimitUnderstood => 'Compris';
@@ -1028,7 +1057,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialGameSoloTitle1 => 'Bienvenue sur le terrain !';
 
   @override
-  String get tutorialGameSoloDesc1 => 'Glisse depuis le ballon vers le haut pour tirer ! La vitesse = la puissance.';
+  String get tutorialGameSoloDesc1 =>
+      'Glisse depuis le ballon vers le haut pour tirer ! La vitesse = la puissance.';
 
   @override
   String get tutorialGameSoloSwipeLabel => 'Swipe pour marquer !';
@@ -1037,7 +1067,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialGameSoloTitle2 => 'Rembobiner et Récompense ↩️';
 
   @override
-  String get tutorialGameSoloDesc2 => 'Si vous ratez un tir, utilisez un **Rembobinage** pour revenir en arrière.';
+  String get tutorialGameSoloDesc2 =>
+      'Si vous ratez un tir, utilisez un **Rembobinage** pour revenir en arrière.';
 
   @override
   String get tutorialGameSoloTip2a => 'Gagnez plus en regardant une pub.';
@@ -1055,7 +1086,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialGameSoloTitle4 => 'Choisir l\'effet';
 
   @override
-  String get tutorialGameSoloDesc4 => 'Normal, Effet (curve), Lob ou Knuckle — sélectionnez avant de tirer.';
+  String get tutorialGameSoloDesc4 =>
+      'Normal, Effet (curve), Lob ou Knuckle — sélectionnez avant de tirer.';
 
   @override
   String get tutorialGameSoloEffectNormal => 'Normal : tir classique';
@@ -1067,25 +1099,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tutorialGameSoloEffectLob => 'Lob : par-dessus le gardien';
 
   @override
-  String get tutorialGameSoloEffectKnuckle => 'Knuckle : trajectoire imprévisible';
+  String get tutorialGameSoloEffectKnuckle =>
+      'Knuckle : trajectoire imprévisible';
 
   @override
   String get tutorialGameMultiTitle1 => 'Mode Multijoueur !';
 
   @override
-  String get tutorialGameMultiDesc1 => 'Vous jouez contre un ami ! Chacun votre tour.';
+  String get tutorialGameMultiDesc1 =>
+      'Vous jouez contre un ami ! Chacun votre tour.';
 
   @override
   String get tutorialGameMultiTitle2 => 'Glissez pour tirer';
 
   @override
-  String get tutorialGameMultiDesc2 => 'Swipez depuis le ballon vers le haut — direction et vitesse comptent !';
+  String get tutorialGameMultiDesc2 =>
+      'Swipez depuis le ballon vers le haut — direction et vitesse comptent !';
 
   @override
   String get tutorialGameMultiTitle3 => 'Rembobiner ↩️';
 
   @override
-  String get tutorialGameMultiDesc3 => 'Utilisez un **Rembobinage** pour annuler un tir raté.';
+  String get tutorialGameMultiDesc3 =>
+      'Utilisez un **Rembobinage** pour annuler un tir raté.';
 
   @override
   String get challengeWinTitle => 'Gagner le match';
@@ -1097,31 +1133,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get challengeKnuckleTitle => 'Marquer un but en Knuckle';
 
   @override
-  String get challengeKnuckleDesc => 'Marquez au moins 1 but avec l\'effet Knuckle.';
+  String get challengeKnuckleDesc =>
+      'Marquez au moins 1 but avec l\'effet Knuckle.';
 
   @override
   String get challengePowerTitle => 'Tous les buts puissance > 80';
 
   @override
-  String get challengePowerDesc => 'Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.';
+  String get challengePowerDesc =>
+      'Chaque but marqué doit avoir été tiré avec une puissance supérieure à 80.';
 
   @override
   String get challengeConcedeLessTitle => 'Encaisser maximum 2 buts';
 
   @override
-  String get challengeConcedeLessDesc => 'Ne laissez pas l\'adversaire marquer plus de 2 buts.';
+  String get challengeConcedeLessDesc =>
+      'Ne laissez pas l\'adversaire marquer plus de 2 buts.';
 
   @override
   String get challengeAllLobTitle => 'Tous les buts en Lob';
 
   @override
-  String get challengeAllLobDesc => 'Chaque but marqué doit avoir été tiré avec l\'effet Lob.';
+  String get challengeAllLobDesc =>
+      'Chaque but marqué doit avoir été tiré avec l\'effet Lob.';
 
   @override
   String get challengeCurveTitle => 'Marquer 2 buts en Curve';
 
   @override
-  String get challengeCurveDesc => 'Marquez au moins 2 buts avec l\'effet Curve.';
+  String get challengeCurveDesc =>
+      'Marquez au moins 2 buts avec l\'effet Curve.';
 
   @override
   String get challengeLobTitle => 'Marquer 3 buts en Lob';
@@ -1133,7 +1174,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get challengeSaveTitle => 'Réaliser au moins 1 arrêt';
 
   @override
-  String get challengeSaveDesc => 'Votre gardien doit stopper au moins un tir adverse.';
+  String get challengeSaveDesc =>
+      'Votre gardien doit stopper au moins un tir adverse.';
 
   @override
   String get heroResultStatsTitle => 'STATS DU MATCH';
@@ -1174,7 +1216,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get achievementTournament1Title => 'Premier Trophée';
 
   @override
-  String get achievementTournament1Desc => 'Remportez votre premier championnat';
+  String get achievementTournament1Desc =>
+      'Remportez votre premier championnat';
 
   @override
   String get achievementTournament5Title => 'Collectionneur de Coupes';
@@ -1198,25 +1241,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get achievementHeroLevel10Title => 'Héros Confirmé';
 
   @override
-  String get achievementHeroLevel10Desc => 'Atteignez le niveau 10 en mode Hero';
+  String get achievementHeroLevel10Desc =>
+      'Atteignez le niveau 10 en mode Hero';
 
   @override
   String get achievementHero3stars4Title => 'Perfectionniste';
 
   @override
-  String get achievementHero3stars4Desc => 'Obtenez 3 étoiles sur 4 niveaux différents en mode Hero';
+  String get achievementHero3stars4Desc =>
+      'Obtenez 3 étoiles sur 4 niveaux différents en mode Hero';
 
   @override
   String get achievementHero3stars10Title => 'Super Perfectionniste';
 
   @override
-  String get achievementHero3stars10Desc => 'Obtenez 3 étoiles sur 10 niveaux différents en mode Hero';
+  String get achievementHero3stars10Desc =>
+      'Obtenez 3 étoiles sur 10 niveaux différents en mode Hero';
 
   @override
   String get achievementHeroAllStarsTitle => 'Légende du Hero';
 
   @override
-  String get achievementHeroAllStarsDesc => 'Obtenez toutes les étoiles sur tous les niveaux du mode Hero';
+  String get achievementHeroAllStarsDesc =>
+      'Obtenez toutes les étoiles sur tous les niveaux du mode Hero';
 
   @override
   String get rarityCommon => 'COMMUN';
@@ -1231,43 +1278,56 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rarityLegendary => 'LÉGENDAIRE';
 
   @override
-  String get notificationMotivational1 => 'Prêt à marquer des buts spectaculaires ? ⚽';
+  String get notificationMotivational1 =>
+      'Prêt à marquer des buts spectaculaires ? ⚽';
 
   @override
-  String get notificationMotivational2 => 'Votre équipe préférée vous attend sur le terrain ! 🏆';
+  String get notificationMotivational2 =>
+      'Votre équipe préférée vous attend sur le terrain ! 🏆';
 
   @override
-  String get notificationMotivational3 => 'Nouveau défi de pénalti contre le Brésil ! 🇧🇷';
+  String get notificationMotivational3 =>
+      'Nouveau défi de pénalti contre le Brésil ! 🇧🇷';
 
   @override
-  String get notificationMotivational4 => 'C\'est le moment de devenir un héros du football ! 🦸‍♂️';
+  String get notificationMotivational4 =>
+      'C\'est le moment de devenir un héros du football ! 🦸‍♂️';
 
   @override
-  String get notificationMotivational5 => 'Les penaltis vous appellent ! Prêt à jouer ? 🎮';
+  String get notificationMotivational5 =>
+      'Les penaltis vous appellent ! Prêt à jouer ? 🎮';
 
   @override
-  String get notificationMotivational6 => 'Transformez-vous en star du football ! ⭐';
+  String get notificationMotivational6 =>
+      'Transformez-vous en star du football ! ⭐';
 
   @override
-  String get notificationMotivational7 => 'Une nouvelle compétition vous attend ! 🌟';
+  String get notificationMotivational7 =>
+      'Une nouvelle compétition vous attend ! 🌟';
 
   @override
-  String get notificationMotivational8 => 'Venez montrer vos compétences de buteur ! 💪';
+  String get notificationMotivational8 =>
+      'Venez montrer vos compétences de buteur ! 💪';
 
   @override
-  String get notificationMotivational9 => 'C\'est l\'heure pour une séance de tirs au but ! 🎉';
+  String get notificationMotivational9 =>
+      'C\'est l\'heure pour une séance de tirs au but ! 🎉';
 
   @override
-  String get notificationMotivational10 => 'Vos compétences ont besoin d\'entraînement ! 🔥';
+  String get notificationMotivational10 =>
+      'Vos compétences ont besoin d\'entraînement ! 🔥';
 
   @override
-  String get notificationCongratulation1 => 'Félicitations champion ! Vous avez remporté le tournoi 🏆';
+  String get notificationCongratulation1 =>
+      'Félicitations champion ! Vous avez remporté le tournoi 🏆';
 
   @override
-  String get notificationCongratulation2 => 'Victoire impressionnante ! Vous dominez le jeu ⭐';
+  String get notificationCongratulation2 =>
+      'Victoire impressionnante ! Vous dominez le jeu ⭐';
 
   @override
-  String get notificationCongratulation3 => 'Tournoi remporté ! Vous êtes un vrai professionnel 💪';
+  String get notificationCongratulation3 =>
+      'Tournoi remporté ! Vous êtes un vrai professionnel 💪';
 
   @override
   String get notificationAchievementUnlocked => '🎉 Succès du Héros Débloqué !';
@@ -1286,7 +1346,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String notificationProgressTowardAchievement(Object achievement, Object coins, Object remaining) {
+  String notificationProgressTowardAchievement(
+      Object achievement, Object coins, Object remaining) {
     return 'Il en manque $remaining pour débloquer $achievement et gagner $coins pièces !';
   }
 }

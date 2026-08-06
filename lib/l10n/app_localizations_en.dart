@@ -15,7 +15,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeMessage => 'Welcome to HappyGoal!';
 
   @override
-  String get chooseCountry => 'Choose the country you will represent in your Hero adventure';
+  String get chooseCountry =>
+      'Choose the country you will represent in your Hero adventure';
 
   @override
   String get startAdventure => 'Ready for a penalty shootout?';
@@ -63,7 +64,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get achievements => 'Achievements';
 
   @override
-  String get achievementsDescription => 'Check your achievements and claim your rewards!';
+  String get achievementsDescription =>
+      'Check your achievements and claim your rewards!';
 
   @override
   String get subtitle => 'THE PENALTY CHALLENGE';
@@ -90,7 +92,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashRequiredUpdateTitle => 'Update required';
 
   @override
-  String get splashRequiredUpdateContent => 'A new version of HappyGoal is available.\n\nThis update is required to enjoy online features and tournaments.\n\nPlease update to continue.';
+  String get splashRequiredUpdateContent =>
+      'A new version of HappyGoal is available.\n\nThis update is required to enjoy online features and tournaments.\n\nPlease update to continue.';
 
   @override
   String get splashRequiredUpdateButton => 'UPDATE NOW';
@@ -135,7 +138,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroModeResetTitle => 'Change country?';
 
   @override
-  String get heroModeResetContent => 'You will lose your progress. Do you want to restart?';
+  String get heroModeResetContent =>
+      'You will lose your progress. Do you want to restart?';
 
   @override
   String get heroModeResetCancel => 'Cancel';
@@ -168,7 +172,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroTeamSelectHeader2 => 'YOUR COUNTRY';
 
   @override
-  String get heroTeamSelectSubtitle => 'Choose the country you will represent in your Hero adventure';
+  String get heroTeamSelectSubtitle =>
+      'Choose the country you will represent in your Hero adventure';
 
   @override
   String get heroTeamSelectStart => 'START THE ADVENTURE';
@@ -201,7 +206,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String heroTransitionStoryLevel(Object level, Object myTeam, Object opponent) {
+  String heroTransitionStoryLevel(
+      Object level, Object myTeam, Object opponent) {
     return 'Level $level: $myTeam faces $opponent in a decisive duel. Prove your worth!';
   }
 
@@ -255,7 +261,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get teamSelectionModeTournament => 'Tournament Mode';
 
   @override
-  String get teamSelectionChooseTeams => 'Choose your team and the opponent team controlled by the computer';
+  String get teamSelectionChooseTeams =>
+      'Choose your team and the opponent team controlled by the computer';
 
   @override
   String get teamSelectionTeam1 => 'Team 1';
@@ -346,7 +353,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentStatsResetTitle => 'Reset statistics';
 
   @override
-  String get tournamentStatsResetContent => 'Are you sure you want to reset all your tournament statistics? This action is irreversible.';
+  String get tournamentStatsResetContent =>
+      'Are you sure you want to reset all your tournament statistics? This action is irreversible.';
 
   @override
   String get tournamentStatsResetCancel => 'Cancel';
@@ -361,19 +369,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentStatsClickToView => 'Click to view your performance';
 
   @override
-  String get tournamentStatsMotivationStart => 'Start your first tournament! 🚀';
+  String get tournamentStatsMotivationStart =>
+      'Start your first tournament! 🚀';
 
   @override
-  String get tournamentStatsMotivationChampion => 'Excellent win rate! You are a champion! 🏆';
+  String get tournamentStatsMotivationChampion =>
+      'Excellent win rate! You are a champion! 🏆';
 
   @override
   String get tournamentStatsMotivationGood => 'Good win rate! Keep it up! 💪';
 
   @override
-  String get tournamentStatsMotivationOpportunity => 'Every tournament is a new opportunity! 🔥';
+  String get tournamentStatsMotivationOpportunity =>
+      'Every tournament is a new opportunity! 🔥';
 
   @override
-  String get tournamentStatsMotivationPerseverance => 'Perseverance is the key to success! Never give up! ⚽';
+  String get tournamentStatsMotivationPerseverance =>
+      'Perseverance is the key to success! Never give up! ⚽';
 
   @override
   String get tournamentModeTitle => 'TOURNAMENT';
@@ -415,7 +427,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentChangeTeam => 'CHANGE TEAM';
 
   @override
-  String get tournamentNotEnoughTeams => 'Not enough teams for a full tournament';
+  String get tournamentNotEnoughTeams =>
+      'Not enough teams for a full tournament';
 
   @override
   String get tournamentStart => 'START TOURNAMENT';
@@ -606,7 +619,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rulesUnderstood => 'Got it!';
 
   @override
-  String get inviteShareText => 'HappyGoal! ⚽\n\nCome take penalties and challenge me!\nDownload: https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
+  String get inviteShareText =>
+      'HappyGoal! ⚽\n\nCome take penalties and challenge me!\nDownload: https://play.google.com/store/apps/details?id=com.heyhappy.happygoal';
 
   @override
   String get inviteShareSubject => 'HappyGoal';
@@ -693,7 +707,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialSettingsHeader => 'Tutorial management';
 
   @override
-  String get tutorialSettingsHeaderDesc => 'Manage tutorial display for each screen. Tutorials marked as \'Seen\' will no longer show automatically.';
+  String get tutorialSettingsHeaderDesc =>
+      'Manage tutorial display for each screen. Tutorials marked as \'Seen\' will no longer show automatically.';
 
   @override
   String get tutorialSettingsHome => 'Home screen';
@@ -750,7 +765,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialSettingsResetConfirmTitle => 'Confirm reset';
 
   @override
-  String get tutorialSettingsResetConfirmContent => 'Are you sure you want to reset all tutorials? They will show again on your next visits.';
+  String get tutorialSettingsResetConfirmContent =>
+      'Are you sure you want to reset all tutorials? They will show again on your next visits.';
 
   @override
   String get tutorialSettingsResetCancel => 'Cancel';
@@ -785,7 +801,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audioSettingsBackground => 'Continue music in background';
 
   @override
-  String get audioSettingsBackgroundDesc => 'Music continues when you leave the app';
+  String get audioSettingsBackgroundDesc =>
+      'Music continues when you leave the app';
 
   @override
   String get audioSettingsVolume => 'Volume';
@@ -856,7 +873,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewindLimitTitle => 'Limit reached';
 
   @override
-  String get rewindLimitDesc => 'You have used all your allowed rewinds for this match.';
+  String get rewindLimitDesc =>
+      'You have used all your allowed rewinds for this match.';
 
   @override
   String get rewindLimitInfo => 'Information:';
@@ -1028,7 +1046,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialGameSoloTitle1 => 'Welcome to the pitch!';
 
   @override
-  String get tutorialGameSoloDesc1 => 'Swipe from the ball upward to shoot! Speed = power.';
+  String get tutorialGameSoloDesc1 =>
+      'Swipe from the ball upward to shoot! Speed = power.';
 
   @override
   String get tutorialGameSoloSwipeLabel => 'Swipe to score!';
@@ -1037,7 +1056,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialGameSoloTitle2 => 'Rewind & Reward ↩️';
 
   @override
-  String get tutorialGameSoloDesc2 => 'If you miss a shot, use a **Rewind** to go back.';
+  String get tutorialGameSoloDesc2 =>
+      'If you miss a shot, use a **Rewind** to go back.';
 
   @override
   String get tutorialGameSoloTip2a => 'Earn more by watching an ad.';
@@ -1055,7 +1075,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialGameSoloTitle4 => 'Choose your effect';
 
   @override
-  String get tutorialGameSoloDesc4 => 'Normal, Curve, Lob or Knuckle — select before shooting.';
+  String get tutorialGameSoloDesc4 =>
+      'Normal, Curve, Lob or Knuckle — select before shooting.';
 
   @override
   String get tutorialGameSoloEffectNormal => 'Normal: classic shot';
@@ -1067,25 +1088,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialGameSoloEffectLob => 'Lob: over the goalkeeper';
 
   @override
-  String get tutorialGameSoloEffectKnuckle => 'Knuckle: unpredictable trajectory';
+  String get tutorialGameSoloEffectKnuckle =>
+      'Knuckle: unpredictable trajectory';
 
   @override
   String get tutorialGameMultiTitle1 => 'Multiplayer Mode!';
 
   @override
-  String get tutorialGameMultiDesc1 => 'You\'re playing against a friend! Take turns.';
+  String get tutorialGameMultiDesc1 =>
+      'You\'re playing against a friend! Take turns.';
 
   @override
   String get tutorialGameMultiTitle2 => 'Swipe to shoot';
 
   @override
-  String get tutorialGameMultiDesc2 => 'Swipe from the ball upward — direction and speed matter!';
+  String get tutorialGameMultiDesc2 =>
+      'Swipe from the ball upward — direction and speed matter!';
 
   @override
   String get tutorialGameMultiTitle3 => 'Rewind ↩️';
 
   @override
-  String get tutorialGameMultiDesc3 => 'Use a **Rewind** to cancel a missed shot.';
+  String get tutorialGameMultiDesc3 =>
+      'Use a **Rewind** to cancel a missed shot.';
 
   @override
   String get challengeWinTitle => 'Win the match';
@@ -1097,31 +1122,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeKnuckleTitle => 'Score a Knuckle goal';
 
   @override
-  String get challengeKnuckleDesc => 'Score at least 1 goal with the Knuckle effect.';
+  String get challengeKnuckleDesc =>
+      'Score at least 1 goal with the Knuckle effect.';
 
   @override
   String get challengePowerTitle => 'All goals with power > 80';
 
   @override
-  String get challengePowerDesc => 'Every goal scored must be shot with power above 80.';
+  String get challengePowerDesc =>
+      'Every goal scored must be shot with power above 80.';
 
   @override
   String get challengeConcedeLessTitle => 'Concede max 2 goals';
 
   @override
-  String get challengeConcedeLessDesc => 'Do not let the opponent score more than 2 goals.';
+  String get challengeConcedeLessDesc =>
+      'Do not let the opponent score more than 2 goals.';
 
   @override
   String get challengeAllLobTitle => 'All goals in Lob';
 
   @override
-  String get challengeAllLobDesc => 'Every goal scored must be shot with the Lob effect.';
+  String get challengeAllLobDesc =>
+      'Every goal scored must be shot with the Lob effect.';
 
   @override
   String get challengeCurveTitle => 'Score 2 Curve goals';
 
   @override
-  String get challengeCurveDesc => 'Score at least 2 goals with the Curve effect.';
+  String get challengeCurveDesc =>
+      'Score at least 2 goals with the Curve effect.';
 
   @override
   String get challengeLobTitle => 'Score 3 Lob goals';
@@ -1133,7 +1163,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeSaveTitle => 'Make at least 1 save';
 
   @override
-  String get challengeSaveDesc => 'Your goalkeeper must stop at least one opponent shot.';
+  String get challengeSaveDesc =>
+      'Your goalkeeper must stop at least one opponent shot.';
 
   @override
   String get heroResultStatsTitle => 'MATCH STATS';
@@ -1204,19 +1235,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get achievementHero3stars4Title => 'Perfectionist';
 
   @override
-  String get achievementHero3stars4Desc => 'Get 3 stars on 4 different Hero mode levels';
+  String get achievementHero3stars4Desc =>
+      'Get 3 stars on 4 different Hero mode levels';
 
   @override
   String get achievementHero3stars10Title => 'Super Perfectionist';
 
   @override
-  String get achievementHero3stars10Desc => 'Get 3 stars on 10 different Hero mode levels';
+  String get achievementHero3stars10Desc =>
+      'Get 3 stars on 10 different Hero mode levels';
 
   @override
   String get achievementHeroAllStarsTitle => 'Hero Legend';
 
   @override
-  String get achievementHeroAllStarsDesc => 'Get all stars on every Hero mode level';
+  String get achievementHeroAllStarsDesc =>
+      'Get all stars on every Hero mode level';
 
   @override
   String get rarityCommon => 'COMMON';
@@ -1234,16 +1268,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationMotivational1 => 'Ready to score spectacular goals? ⚽';
 
   @override
-  String get notificationMotivational2 => 'Your favorite team is waiting for you on the field! 🏆';
+  String get notificationMotivational2 =>
+      'Your favorite team is waiting for you on the field! 🏆';
 
   @override
-  String get notificationMotivational3 => 'New penalty challenge against Brazil! 🇧🇷';
+  String get notificationMotivational3 =>
+      'New penalty challenge against Brazil! 🇧🇷';
 
   @override
-  String get notificationMotivational4 => 'It\'s time to become a football hero! 🦸‍♂️';
+  String get notificationMotivational4 =>
+      'It\'s time to become a football hero! 🦸‍♂️';
 
   @override
-  String get notificationMotivational5 => 'The penalties are calling you! Ready to play? 🎮';
+  String get notificationMotivational5 =>
+      'The penalties are calling you! Ready to play? 🎮';
 
   @override
   String get notificationMotivational6 => 'Transform into a football star! ⭐';
@@ -1252,22 +1290,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationMotivational7 => 'A new competition awaits you! 🌟';
 
   @override
-  String get notificationMotivational8 => 'Come show off your striker skills! 💪';
+  String get notificationMotivational8 =>
+      'Come show off your striker skills! 💪';
 
   @override
-  String get notificationMotivational9 => 'It\'s time for a penalty shootout session! 🎉';
+  String get notificationMotivational9 =>
+      'It\'s time for a penalty shootout session! 🎉';
 
   @override
   String get notificationMotivational10 => 'Your skills need training! 🔥';
 
   @override
-  String get notificationCongratulation1 => 'Congrats champion! You won the tournament 🏆';
+  String get notificationCongratulation1 =>
+      'Congrats champion! You won the tournament 🏆';
 
   @override
-  String get notificationCongratulation2 => 'Impressive victory! You dominate the game ⭐';
+  String get notificationCongratulation2 =>
+      'Impressive victory! You dominate the game ⭐';
 
   @override
-  String get notificationCongratulation3 => 'Tournament won! You\'re a true professional 💪';
+  String get notificationCongratulation3 =>
+      'Tournament won! You\'re a true professional 💪';
 
   @override
   String get notificationAchievementUnlocked => '🎉 Hero Achievement Unlocked!';
@@ -1286,7 +1329,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String notificationProgressTowardAchievement(Object achievement, Object coins, Object remaining) {
+  String notificationProgressTowardAchievement(
+      Object achievement, Object coins, Object remaining) {
     return 'Only $remaining more to unlock $achievement and win $coins coins!';
   }
 }
