@@ -24,20 +24,51 @@ final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
-  AnalyticsService.initialize(analytics);
-  await IAPService.instance.initialize();
-  await AdMobService.initialize();
-  await NotificationService().initialize();
-  await NotificationService().scheduleRecurringNotifications();
-  await AdMobService.instance.loadInterstitialAd();
-  await AdMobService.instance.loadRewardedAd();
-  await AdMobService.instance.loadRewardedInterstitialAd();
-  final deviceInfo = await MobileAds.instance.getRequestConfiguration();
-  debugPrint('Test Device IDs actuels : ${deviceInfo.testDeviceIds}');
-  await AchievementService().initialize();
+  try {
+    await Firebase.initializeApp();
+    AnalyticsService.initialize(analytics);
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
+
+  try {
+    await IAPService.instance.initialize();
+  } catch (e) {
+    debugPrint('IAP initialization error: $e');
+  }
+
+  try {
+    await AdMobService.initialize();
+    // Pre-load ads without blocking main if possible, but keeping sequential for now
+    // if it was working before.
+    await AdMobService.instance.loadInterstitialAd();
+    await AdMobService.instance.loadRewardedAd();
+    await AdMobService.instance.loadRewardedInterstitialAd();
+  } catch (e) {
+    debugPrint('AdMob initialization error: $e');
+  }
+
+  try {
+    await NotificationService().initialize();
+    await NotificationService().scheduleRecurringNotifications();
+  } catch (e) {
+    debugPrint('Notification initialization error: $e');
+  }
+
+  try {
+    await AchievementService().initialize();
+  } catch (e) {
+    debugPrint('Achievement initialization error: $e');
+  }
+
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await AudioManager.init();
+  
+  try {
+    await AudioManager.init();
+  } catch (e) {
+    debugPrint('Audio initialization error: $e');
+  }
+
   final systemLocale = await findSystemLocale();
 
   final localeProvider = LocaleProvider();
